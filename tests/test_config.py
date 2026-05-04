@@ -42,7 +42,7 @@ def test_load_config_reads_windows_script_dir():
 def test_load_config_partial_cython_section():
     """load_config applies defaults for keys absent from a partial [cython] section."""
     with tempfile.TemporaryDirectory() as tmpdir:
-        (Path(tmpdir) / "builder.toml").write_text('[cython]\ncompiled_modules = []\n')
+        (Path(tmpdir) / "builder.toml").write_text("[cython]\ncompiled_modules = []\n")
         config = load_config(Path(tmpdir))
     assert config.cython.source_root == "src"
     assert config.windows.script_dir == "packaging/windows"

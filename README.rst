@@ -104,12 +104,11 @@ Linting and type checking
 Versioning
 ~~~~~~~~~~
 
-Version is declared in two places that must be kept in sync:
+Version is declared once in ``pyproject.toml`` under ``[project] version`` and
+read at runtime via ``importlib.metadata`` in
+``src/scaldys_builder/__about__.py``.
 
-- ``pyproject.toml`` — ``[project] version``
-- ``src/scaldys_builder/__init__.py`` — ``__version__``
-
-Update both before tagging a release.
+Update ``pyproject.toml`` before tagging a release.
 
 Building the package
 ~~~~~~~~~~~~~~~~~~~~

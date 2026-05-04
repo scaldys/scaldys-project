@@ -22,7 +22,7 @@ from pathlib import Path
 from setuptools import setup, Extension, find_packages
 from setuptools.dist import Distribution
 from Cython.Build import cythonize
-from Cython.Distutils import build_ext
+from Cython.Distutils.build_ext import build_ext
 
 
 class BinaryDistribution(Distribution):

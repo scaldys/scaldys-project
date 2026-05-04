@@ -96,7 +96,7 @@ def safe_rmtree(path: Path) -> None:
                     break
                 time.sleep(0.1 * (2**i))
 
-    def handle_error(func: Callable[[Any, Any, Any], None], path_item: Any, exc: Any) -> None:
+    def handle_error(func: Callable[[Any], None], path_item: Any, exc: Any) -> None:
         """Error handler for shutil.rmtree that retries with backoff."""
         for i in range(10):  # More retries for OneDrive
             try:

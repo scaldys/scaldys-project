@@ -4,7 +4,7 @@ import sys
 import shutil
 import tomllib
 from pathlib import Path
-from subprocess import PIPE, run
+from subprocess import PIPE, CalledProcessError, run
 from typing import Optional, Tuple, Any
 
 from scaldys_builder.common.config import load_config, BuildConfig
@@ -129,10 +129,13 @@ class BaseBuildEnvironment:
                 cwd=cwd,
             )
             return proc.stdout, proc.stderr
+        except CalledProcessError as e:
+            logger.error(f"{err_msg}: {e}")
+            if e.stderr:
+                logger.error(f"Error output: {e.stderr}")
+            raise RuntimeError(err_msg) from e
         except Exception as e:
             logger.error(f"{err_msg}: {e}")
-            if hasattr(e, "stderr") and e.stderr:
-                logger.error(f"Error output: {e.stderr}")
             raise RuntimeError(err_msg) from e
 
 
