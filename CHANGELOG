@@ -7,29 +7,43 @@
     Security   in case of vulnerabilities.
     Docs       for any documentation changes
     !
-    [0.2.0]
-    -------
+
+[0.2.0] - 2026-05-04
+---------------------
+
+**Added**:
+    - Sphinx-based user manual under ``docs/manual/``, covering:
+        - User Guide: overview, installation, quickstart, and CLI usage
+        - Topic Guides: project layout, ``builder.toml`` configuration,
+          documentation building, Cython compilation, Windows EXE bundling,
+          and Inno Setup installer creation
+    - ``docs/manual/Makefile`` and ``make.bat`` for building the HTML manual
+    - Added ``licenses/`` directory with license copies and credit information for
+      all third-party tools used by ``scaldys-builder``
+    - Added ``licenses/README.md`` index listing each tool's license type, upstream
+      URL, and link to the corresponding local license file
     !
-    **Added**:
-        - Feature 1
-        - Documentation
+
+**Changed**:
+    - Project version bumped to 0.2.0 in ``pyproject.toml``
     !
-    **Changed**:
-        - Describe the changes to feature X
-    !
-    **Removed**:
-        - Describe features that have been removed
-    !
-    !
-    !
-    [ Unreleased ]
-    !
-    [0.1.0] - yyyy-mm-dd
 
 
-0.1.0 (unreleased)
-------------------
-- Initial release extracted from scaldys-template.
-- Modular build system: common base, Windows builder, Sphinx docs, Cython runner.
-- builder.toml for per-project build configuration (compiled modules, packaging paths).
-- compile_runner module replaces project-level compile.py scripts.
+[0.1.1] - 2025-xx-xx
+---------------------
+
+**Changed**:
+    - Added ``uv.lock`` for reproducible dependency resolution
+    - Minor corrections based on Pyright feedback
+    !
+
+
+[0.1.0] - (unreleased)
+-----------------------
+
+**Added**:
+    - Initial release extracted from scaldys-template
+    - Modular build system: common base, Windows builder, Sphinx docs, Cython runner
+    - ``builder.toml`` for per-project build configuration (compiled modules, packaging paths)
+    - ``compile_runner`` module replaces project-level ``compile.py`` scripts
+    !

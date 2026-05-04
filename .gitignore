@@ -45,5 +45,12 @@ desktop.ini
 # Sphinx
 docs/manual/build/
 
-# uv
+# AI assistants
+.claude
+.junie
 
+# uv
+# uv.lock
+
+# This project
+# None yet
