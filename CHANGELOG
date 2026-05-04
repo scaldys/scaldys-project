@@ -1,0 +1,6 @@
+0.1.0 (unreleased)
+------------------
+- Initial release extracted from scaldys-template.
+- Modular build system: common base, Windows builder, Sphinx docs, Cython runner.
+- builder.toml for per-project build configuration (compiled modules, packaging paths).
+- compile_runner module replaces project-level compile.py scripts.
