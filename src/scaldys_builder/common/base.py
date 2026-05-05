@@ -92,9 +92,7 @@ class BaseBuildEnvironment:
             return Path(tool_path)
         return fallback_path.joinpath(name)
 
-    def run_command(
-        self, cmd: list[str], err_msg: str, cwd: Path | None = None
-    ) -> tuple[str, str]:
+    def run_command(self, cmd: list[str], err_msg: str, cwd: Path | None = None) -> tuple[str, str]:
         """
         Run command in subprocess and raise on unexpected exit status.
 
