@@ -3,6 +3,9 @@
 CLI Reference
 =============
 
+This page is a complete reference for every ``scaldys-builder`` command and
+option.  If you have not yet set up your project, start with :ref:`quickstart`.
+
 ``scaldys-builder`` is invoked from the command line. All commands auto-discover
 the project root by walking up the directory tree from the current working
 directory until a ``pyproject.toml`` file is found.

@@ -1,0 +1,49 @@
+.. _topics:
+
+****************
+In-Depth Guides
+****************
+
+These guides provide detailed explanations of each component and concept in
+``scaldys-builder``.  Use them when you need to go beyond the quickstart —
+to understand exactly what a build step does, tune its behaviour, or
+troubleshoot an issue.
+
+.. toctree::
+   :maxdepth: 2
+
+   project_layout
+   configuration
+   documentation_building
+   cython_compilation
+   windows_exe
+   windows_installer
+
+Guide summaries
+===============
+
+:ref:`project_layout`
+    The directory structure your project must follow and where all build
+    output is written.
+
+:ref:`configuration`
+    Full reference for every ``builder.toml`` setting, with defaults and
+    examples.
+
+:ref:`documentation_building`
+    How ``scaldys-builder`` drives Sphinx to produce the user guide and
+    developer API guide.
+
+:ref:`cython_compilation`
+    How selected Python modules are compiled to native ``.pyd`` extensions —
+    when to use it, how it works, and its limitations.
+
+:ref:`windows_exe`
+    How PyInstaller bundles your project into a self-contained Windows
+    executable, and how to handle common issues like missing modules and
+    antivirus false positives.
+
+:ref:`windows_installer`
+    How Inno Setup is invoked to produce the final ``.exe`` installer,
+    including the required packaging files and a minimal ``.iss`` script
+    template.

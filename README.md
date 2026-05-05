@@ -33,11 +33,13 @@ uv run ruff check src tests && uv run pyright
 
 ### Further reading
 
-The [Contributing guide](docs/manual/source/developers/contributing.rst) in the
-manual covers everything else a contributor needs:
+The manual's Developers section covers everything else a contributor needs:
 
-- Development workflow (linting, type checking, building docs, publishing)
-- Internal architecture and the three-class composition pattern
-- How to add a new Cython module to a consuming project
-- How to add a new build step to `WindowsBuilder.main()`
-- How to implement a new platform builder
+- [Architecture](docs/manual/source/developers/architecture.rst) — module
+  layout, three-class composition pattern, execution flow, configuration
+  loading, and why `compile_runner.py` runs as a subprocess
+- [Extension Points](docs/manual/source/developers/extension_points.rst) —
+  design conventions and how to add Cython modules, build steps, or a new
+  platform builder
+- [Contributing](docs/manual/source/developers/contributing.rst) — linting,
+  type checking, building docs, versioning, and publishing

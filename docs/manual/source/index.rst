@@ -24,15 +24,19 @@ Documentation Contents
    :maxdepth: 2
    :caption: Users
 
-   users/index
-   topics/index
+   users/overview
+   users/installation
+   users/quickstart
+   users/cli_usage
+   users/topics/index
 
 .. toctree::
    :maxdepth: 2
    :caption: Developers
 
-   developers/index
    developers/architecture
+   developers/extension_points
+   developers/contributing
 
 .. toctree::
    :maxdepth: 1

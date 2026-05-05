@@ -3,6 +3,17 @@
 Installation
 ============
 
+This page explains how to add ``scaldys-builder`` as a development dependency
+of **your own Python project**.  ``scaldys-builder`` is a build-time tool — it
+automates your Windows distribution pipeline but is never shipped as part of
+your application.
+
+.. note::
+
+   If you are setting up a development environment for ``scaldys-builder``
+   itself (cloning the repo, running tests, publishing), see
+   :ref:`contributing` instead.
+
 Requirements
 ------------
 
@@ -12,9 +23,6 @@ Requirements
 
 Installing as a development dependency
 ---------------------------------------
-
-``scaldys-builder`` is a build-time tool and should be added as a development
-dependency of your project, not a runtime dependency.
 
 With **uv** (recommended)::
 
@@ -54,15 +62,21 @@ To install all extras at once::
 Using a local development version
 -----------------------------------
 
-While iterating on the library itself, point a consuming project directly at
-the local source tree::
+If you are working on a fork or local patch of ``scaldys-builder`` and want
+to test it from a consuming project before publishing, point that project
+directly at the local source tree::
 
     uv add --dev "scaldys-builder @ path/to/scaldys-builder"
 
-Or install in editable mode so changes are reflected immediately without
-reinstalling::
+Or install in editable mode so changes to ``scaldys-builder`` are reflected
+immediately without reinstalling::
 
     uv add --dev --editable "path/to/scaldys-builder"
+
+.. note::
+
+   If you are contributing to ``scaldys-builder`` itself (not just consuming
+   it), see :ref:`contributing` for the full development setup.
 
 Verifying the installation
 ---------------------------

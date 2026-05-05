@@ -5,9 +5,6 @@ Architecture
 ************
 
 
-Architecture Overview
-=====================
-
 ``scaldys-builder`` is built around **three cooperating responsibilities**:
 
 * **Environment** — discovers tools and paths, runs pre-flight checks.
@@ -74,4 +71,109 @@ For the Windows platform the composition looks like this:
     ``build_installer``) are also exposed so the CLI can invoke them
     independently.
 
+
+Execution Flow
+--------------
+
+Tracing what happens when ``scaldys-builder build windows all`` is run:
+
+1. **Module load** — ``builder.py`` is the Typer CLI entry point.  At import
+   time, ``_find_project_root()`` walks up from ``cwd`` until it finds a
+   ``pyproject.toml`` file and stores the result in ``PROJECT_ROOT``.
+
+2. **Builder instantiation** — the ``windows_all`` command function calls
+   ``WindowsBuilder(PROJECT_ROOT, verbose=verbose)``.  The constructor chain:
+
+   a. ``WindowsBuilder.__init__`` creates a ``WindowsBuildEnvironment``.
+   b. ``WindowsBuildEnvironment.__init__`` calls ``super().__init__()``
+      (``BaseBuildEnvironment``), which reads ``pyproject.toml`` for ``name``
+      and ``version``, calls ``load_config()`` to read ``builder.toml``, and
+      discovers shared tools (``sphinx-build``, ``sphinx-apidoc``).
+   c. Back in ``WindowsBuildEnvironment``, Windows-specific tools are
+      discovered (``pyinstaller.exe``, ``ISCC.exe``) and Windows-specific
+      paths are resolved from the loaded config.
+   d. ``WindowsBuilder.__init__`` then creates the three step objects:
+      ``DocumentationBuilder(env)``, ``Compiler(env)``, ``Packager(env)``.
+
+3. **Pipeline execution** — ``builder.main(console=console)`` assembles the
+   ``steps`` list and drives a Rich progress bar through each entry in order:
+
+   .. code-block:: python
+
+       steps = [
+           ("Pre-flight checks",          lambda: self.env.pre_flight_checks(...)),
+           ("Cleaning build directories", self.clean),
+           ("Building documentation",     self.build_docs),
+           ("Building executable",        self.build_exe),
+           ("Building installer",         self.build_installer),
+       ]
+
+   Any exception raised by a step aborts the pipeline and surfaces the error
+   via the Rich console.
+
+4. **Individual commands** — ``build windows docs``, ``build windows exe``,
+   and ``build windows installer`` each instantiate ``WindowsBuilder``,
+   call ``env.pre_flight_checks()`` with the specific tool flags they need,
+   and invoke a single step method directly, bypassing the full pipeline.
+
+
+Configuration Loading
+---------------------
+
+``common/config.py`` provides the single ``load_config(project_path)``
+function.  It is called once inside ``BaseBuildEnvironment.__init__`` and its
+result is stored as ``self.config``.
+
+.. code-block:: text
+
+    builder.toml  ──▶  load_config()  ──▶  BuildConfig
+                                              ├── cython: CythonConfig
+                                              │       compiled_modules: list[str]
+                                              │       source_root: str
+                                              └── windows: WindowsConfig
+                                                      script_dir: str
+
+If ``builder.toml`` is absent ``load_config()`` returns ``BuildConfig()``
+immediately, applying all dataclass defaults.  If the file is present,
+``tomllib`` parses it and each section is mapped to the corresponding
+dataclass; any missing key falls back to its dataclass default.
+
+The config object is accessed throughout the codebase via ``self.env.config``
+(for step classes) or ``self.config`` (inside ``BaseBuildEnvironment``
+subclasses).  No component re-reads the file at runtime — the single load at
+construction time is the authoritative source.
+
+
+Why *compile_runner.py* Runs as a Subprocess
+-----------------------------------------------
+
+``setuptools.setup()`` is designed to be called once as the main entry point
+of a script.  It reads directly from ``sys.argv``, modifies global
+``distutils`` and ``sys.modules`` state, and is not safe to call from inside
+a long-running process.  Invoking it inside the parent ``scaldys-builder``
+process would corrupt its ``sys.argv`` and import state.
+
+Running it as a subprocess solves this cleanly::
+
+    python -P -m scaldys_builder.common.compile_runner build_ext \
+        --build-lib <path> --compiler=msvc
+
+The child process receives a controlled ``sys.argv``, starts with a clean
+import state, and exits after ``setup()`` completes — leaving the parent
+process unaffected.
+
+The ``-P`` flag additionally prevents Python from prepending the current
+working directory to ``sys.path``, so only installed packages and the staging
+directory influence the build, regardless of what the parent process has on
+its path.
+
+The deferred Cython import in ``compile_runner.py`` (inside the
+``if __name__ == "__main__":`` block) is a direct consequence of this design:
+the module can be safely scanned by import tools and test runners without
+requiring the ``[cython]`` extra to be installed.
+
 ---
+
+To extend the system with new modules, build steps, or a new platform builder,
+see :ref:`extension_points`.  For the contributor workflow (cloning, testing,
+publishing), see :ref:`contributing`.

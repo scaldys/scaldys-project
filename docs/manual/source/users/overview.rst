@@ -39,12 +39,12 @@ The build pipeline at a glance
          │
          ▼
     ┌─────────────┐     Sphinx        ┌──────────────────────────┐
-    │  docs/      │ ─────────────────▶│ build/manual/singlehtml/ │
+    │  docs/      │ ────────────────▶│ build/manual/singlehtml/ │
     │  manual/    │                   └──────────────┬───────────┘
     └─────────────┘                                  │
                                                      │ copied into installer
     ┌─────────────┐   Cython (opt.)  ┌─────────────────────────────┐
-    │  src/       │ ────────────────▶│ build/compiled/             │
+    │  src/       │ ───────────────▶│ build/compiled/             │
     │  myapp/     │                  └───────────────┬─────────────┘
     └─────────────┘                                  │
                                                      │ PyInstaller
@@ -86,8 +86,18 @@ Windows distribution pipeline already in place.
 Where to go next
 =================
 
-- :ref:`installation` — add ``scaldys-builder`` to an existing project
-- :ref:`quickstart` — step-by-step first build walkthrough
+**Starting a new project from scratch?**
+    Use `scaldys-template <https://github.com/scaldys/scaldys-template>`_ — it
+    comes with everything pre-wired.  Clone it and skip straight to
+    :ref:`quickstart` to run your first build.
+
+**Adding ``scaldys-builder`` to an existing project?**
+    Start with :ref:`installation` to add it as a dev dependency, then follow
+    the :ref:`quickstart` to set up the required files and run your first build.
+
+**Already set up and looking for reference information?**
+
 - :ref:`cli_usage` — complete command reference
 - :ref:`configuration` — ``builder.toml`` options
 - :ref:`project_layout` — expected directory structure and build output
+- :ref:`topics` — in-depth guides for each build step

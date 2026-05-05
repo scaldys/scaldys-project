@@ -3,36 +3,26 @@
 Quick Start
 ===========
 
-This guide walks you through adding ``scaldys-builder`` to an existing Python
-project and running your first complete Windows build in a few steps.
+This guide walks you through setting up an existing Python project to use
+``scaldys-builder`` and running your first complete Windows build.
+
+It assumes ``scaldys-builder`` is already installed in your project — if not,
+see :ref:`installation` first.
 
 Prerequisites
 -------------
 
-- A Python project managed with ``pyproject.toml``
-- ``uv`` installed
-- Windows (for the build steps)
+- ``scaldys-builder`` installed as a dev dependency (see :ref:`installation`)
+- A Python project with a ``pyproject.toml`` at its root
+- Windows (required for the build steps)
+- Inno Setup installed — download from `jrsoftware.org
+  <https://jrsoftware.org/isinfo.php>`_ and install to the default location
 
-For a full list of external tool requirements, see :ref:`installation`.
+Step 1 — Create builder.toml
+------------------------------
 
-Step 1 — Add scaldys-builder to your project
----------------------------------------------
-
-From your project root, add ``scaldys-builder`` as a development dependency
-with all build extras::
-
-    uv add --dev "scaldys-builder[cython,windows,docs]"
-
-If you do not need Cython compilation, omit that extra::
-
-    uv add --dev "scaldys-builder[windows,docs]"
-
-Step 2 — Create builder.toml (optional)
------------------------------------------
-
-For a pure-Python project with no Cython compilation and packaging files in
-the default location (``packaging/windows/``), no configuration file is
-needed — skip to Step 3.
+For a pure-Python project with packaging files in the default location
+(``packaging/windows/``), no configuration file is needed — skip to Step 2.
 
 For anything else, create ``builder.toml`` in your project root:
 
@@ -49,7 +39,7 @@ For anything else, create ``builder.toml`` in your project root:
 
 See :ref:`configuration` for the full configuration reference.
 
-Step 3 — Add Windows packaging files
+Step 2 — Add Windows packaging files
 --------------------------------------
 
 Create the directory specified by ``[windows] script_dir`` (default:
@@ -66,22 +56,27 @@ inside it:
 
 Replace ``myapp`` with your project name as declared in ``pyproject.toml``.
 
-See :ref:`windows_installer` for Inno Setup script guidance.
+See :ref:`windows_installer` for the expected content of each file, including
+a minimal ``myapp.iss`` template.
 
-Step 4 — Prepare your Sphinx documentation
+Step 3 — Prepare your Sphinx documentation
 --------------------------------------------
 
-``scaldys-builder`` expects a Sphinx project under ``docs/manual/`` in your
-project root. The documentation source must be at ``docs/manual/source/``.
+``scaldys-builder`` expects a Sphinx project at ``docs/manual/`` with source
+files at ``docs/manual/source/``.
 
-If you do not already have a Sphinx project, create one::
+If you do not already have a Sphinx project, create one from your project root::
 
-    mkdir -p docs/manual
     sphinx-quickstart docs/manual
 
-See :ref:`documentation_building` for the expected layout.
+When prompted, choose **yes** to separate source and build directories.
+This produces the ``docs/manual/source/`` layout that ``scaldys-builder``
+requires.
 
-Step 5 — Run the full build
+See :ref:`documentation_building` for the complete expected layout and Sphinx
+configuration tips.
+
+Step 4 — Run the full build
 -----------------------------
 
 From anywhere inside your project tree, run::
@@ -89,7 +84,7 @@ From anywhere inside your project tree, run::
     scaldys-builder build windows all
 
 ``scaldys-builder`` walks up the directory tree to find ``pyproject.toml``
-automatically, so you do not need to ``cd`` to the project root first.
+automatically — you do not need to ``cd`` to the project root first.
 
 The command runs the following stages in order:
 
@@ -106,7 +101,7 @@ A Rich progress bar tracks each stage. Output artefacts land in:
         pyinstaller/bin/    ← standalone executable + libraries
         setup/              ← generated Windows installer (.exe)
 
-Step 6 — Run individual stages
+Step 5 — Run individual stages
 --------------------------------
 
 You can run each stage independently:

@@ -12,15 +12,38 @@
 ---------------------
 
 **Added**:
-    - Sphinx-based user manual under ``docs/manual/``, covering:
-        - User Guide: overview, installation, quickstart, and CLI usage
-        - Topic Guides: project layout, ``builder.toml`` configuration,
-          documentation building, Cython compilation, Windows EXE bundling,
-          and Inno Setup installer creation
+    - Sphinx-based user manual under ``docs/manual/``, structured in three sections:
+
+      *Users*
+
+        - Overview — what ``scaldys-builder`` does, the build pipeline diagram,
+          and two clear entry paths (new project vs. existing project)
+        - Installation — adding ``scaldys-builder`` as a dev dependency with
+          extras, external tool requirements, and installation verification
+        - Quick Start — step-by-step project setup and first build walkthrough
+        - CLI Reference — complete reference for every command and option
+        - In-Depth Guides: project layout and build output, ``builder.toml``
+          configuration, documentation building, Cython compilation, Windows
+          EXE bundling, and Inno Setup installer creation
+
+      *Developers*
+
+        - Architecture — module layout, three-class composition pattern,
+          execution flow, configuration loading, and an explanation of why
+          ``compile_runner.py`` runs as a subprocess
+        - Extension Points — design conventions and how to add Cython modules,
+          build steps, or a new platform builder
+        - Contributing — dev environment setup, testing, linting, publishing,
+          and testing changes against a consuming project
+
+      *About*
+
+        - Changelog, authors, license, and get-help page
+
     - ``docs/manual/Makefile`` and ``make.bat`` for building the HTML manual
-    - Added ``licenses/`` directory with license copies and credit information for
+    - ``licenses/`` directory with license copies and credit information for
       all third-party tools used by ``scaldys-builder``
-    - Added ``licenses/README.md`` index listing each tool's license type, upstream
+    - ``licenses/README.md`` index listing each tool's license type, upstream
       URL, and link to the corresponding local license file
 
 **Changed**:

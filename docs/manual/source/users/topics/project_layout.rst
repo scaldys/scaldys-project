@@ -4,24 +4,10 @@
 Project Layout
 **************
 
-This topic explains the directory conventions that ``scaldys-builder``
-expects in a consuming project and how it discovers the project root and
-configuration at runtime.
-
-Project root discovery
-======================
-
-Every ``scaldys-builder`` command locates the *project root* at startup by
-walking up the directory tree from the current working directory until it
-finds a directory containing a ``pyproject.toml`` file.  If no
-``pyproject.toml`` is found, ``cwd`` is used as the fallback.
-
-This means you can invoke ``scaldys-builder`` from any subdirectory of your
-project — you do not need to ``cd`` to the root first::
-
-    # All of these work from any subdirectory
-    scaldys-builder build windows all
-    scaldys-builder build windows docs
+This page describes the directory structure your project must follow for
+``scaldys-builder`` to work correctly, and documents where all build output
+is written.  For how ``scaldys-builder`` locates the project root at runtime,
+see :ref:`cli_usage`.
 
 Project name and version
 ========================
