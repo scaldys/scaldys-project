@@ -88,8 +88,11 @@ def load_config(project_path: Path) -> BuildConfig:
     if not config_file.exists():
         return BuildConfig()
 
-    with open(config_file, "rb") as f:
-        data = tomllib.load(f)
+    try:
+        with open(config_file, "rb") as f:
+            data = tomllib.load(f)
+    except tomllib.TOMLDecodeError as exc:
+        raise RuntimeError(f"{config_file}: malformed TOML — {exc}") from exc
 
     cython_data = data.get("cython", {})
     windows_data = data.get("windows", {})
