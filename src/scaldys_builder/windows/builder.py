@@ -417,7 +417,7 @@ class WindowsBuilder(BaseBuilder):
         """
         env = WindowsBuildEnvironment(project_path, verbose)
         super().__init__(env)
-        self.env: WindowsBuildEnvironment = env
+        self.env: WindowsBuildEnvironment = env  # Narrow type from BaseBuildEnvironment
         self.doc_builder = DocumentationBuilder(self.env)
         self.compiler = Compiler(self.env)
         self.packager = Packager(self.env)
