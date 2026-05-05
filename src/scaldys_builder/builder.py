@@ -69,6 +69,7 @@ def windows_exe(
 ) -> None:
     """Build Windows executables."""
     builder = WindowsBuilder(PROJECT_ROOT, verbose=verbose)
+    builder.env.pre_flight_checks(require_pyinstaller=True)
     builder.build_exe()
 
 
@@ -78,6 +79,7 @@ def windows_installer(
 ) -> None:
     """Build Windows setup installer."""
     builder = WindowsBuilder(PROJECT_ROOT, verbose=verbose)
+    builder.env.pre_flight_checks(require_innosetup=True)
     builder.build_installer()
 
 
