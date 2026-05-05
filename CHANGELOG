@@ -6,7 +6,7 @@
     Fixed      for any bug fixes.
     Security   in case of vulnerabilities.
     Docs       for any documentation changes
-    !
+
 
 [0.2.0] - 2026-05-04
 ---------------------
@@ -22,11 +22,9 @@
       all third-party tools used by ``scaldys-builder``
     - Added ``licenses/README.md`` index listing each tool's license type, upstream
       URL, and link to the corresponding local license file
-    !
 
 **Changed**:
     - Project version bumped to 0.2.0 in ``pyproject.toml``
-    !
 
 
 [0.1.1] - 2025-xx-xx
@@ -35,7 +33,6 @@
 **Changed**:
     - Added ``uv.lock`` for reproducible dependency resolution
     - Minor corrections based on Pyright feedback
-    !
 
 
 [0.1.0] - (unreleased)
@@ -46,4 +43,3 @@
     - Modular build system: common base, Windows builder, Sphinx docs, Cython runner
     - ``builder.toml`` for per-project build configuration (compiled modules, packaging paths)
     - ``compile_runner`` module replaces project-level ``compile.py`` scripts
-    !

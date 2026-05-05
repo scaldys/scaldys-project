@@ -28,6 +28,13 @@ Documentation Contents
    topics/index
 
 .. toctree::
+   :maxdepth: 2
+   :caption: Developers
+
+   developers/index
+   developers/architecture
+
+.. toctree::
    :maxdepth: 1
    :caption: About
 
