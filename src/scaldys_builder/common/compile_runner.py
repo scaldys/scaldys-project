@@ -21,8 +21,6 @@ import tomllib
 from pathlib import Path
 from setuptools import setup, Extension, find_packages
 from setuptools.dist import Distribution
-from Cython.Build import cythonize
-from Cython.Distutils.build_ext import build_ext
 
 
 class BinaryDistribution(Distribution):
@@ -64,6 +62,12 @@ def _get_extensions(compiled_modules: list[str], source_root: str) -> list[Exten
 
 
 if __name__ == "__main__":
+    # Deferred import: Cython may not be installed in doc-build or pure-Python
+    # environments.  Keeping these imports here ensures the module can be safely
+    # imported without executing it (e.g., by test runners or import scanners).
+    from Cython.Build import cythonize
+    from Cython.Distutils.build_ext import build_ext
+
     compiled_modules, source_root = _load_cython_config()
 
     if not compiled_modules:
