@@ -5,7 +5,7 @@ import shutil
 import tomllib
 from pathlib import Path
 from subprocess import PIPE, CalledProcessError, run
-from typing import Optional, Tuple, Any
+from typing import Any
 
 from scaldys_builder.common.config import load_config, BuildConfig
 from scaldys_builder.common.utils import safe_empty_dir, safe_unlink
@@ -93,8 +93,8 @@ class BaseBuildEnvironment:
         return fallback_path.joinpath(name)
 
     def run_command(
-        self, cmd: list[str], err_msg: str, cwd: Optional[Path] = None
-    ) -> Tuple[str, str]:
+        self, cmd: list[str], err_msg: str, cwd: Path | None = None
+    ) -> tuple[str, str]:
         """
         Run command in subprocess and raise on unexpected exit status.
 

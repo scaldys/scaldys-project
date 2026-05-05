@@ -93,7 +93,12 @@ class DocumentationBuilder:
         Orchestrate the documentation build process.
 
         Assumes required tools are available (verified by pre-flight checks).
-        Skips a guide silently only if its source directory does not exist.
+
+        The user guide is mandatory: a warning is logged when its source
+        directory is absent, because every project is expected to ship one.
+        The developer guide is optional: it is silently skipped when its
+        source directory does not exist, so projects that intentionally omit
+        it do not produce noisy warnings.
         """
         if self.env.user_guide_dir_path.exists():
             self.build_user_guide()
