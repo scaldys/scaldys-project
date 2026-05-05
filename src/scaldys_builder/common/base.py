@@ -134,7 +134,7 @@ class BaseBuildEnvironment:
             if e.stderr:
                 logger.error(f"Error output: {e.stderr}")
             raise RuntimeError(err_msg) from e
-        except Exception as e:
+        except Exception as e:  # Catch-all for unexpected OS-level errors (FileNotFoundError, etc.)
             logger.error(f"{err_msg}: {e}")
             raise RuntimeError(err_msg) from e
 
