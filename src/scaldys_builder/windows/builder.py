@@ -69,9 +69,7 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
         # Windows packaging files (.iss, .bat, .ps1, .ico) live in the directory
         # specified by builder.toml [windows] script_dir (default: packaging/windows).
         self.script_dir_path = (self.project_path / self.config.windows.script_dir).resolve()
-        self.win32_icon_file_path = self.script_dir_path.joinpath(
-            f"{self.project_package_name}.ico"
-        )
+        self.win32_icon_file_path = self.script_dir_path.joinpath(f"{self.project_name}.ico")
 
         self.src_compiled_dir_path = self.build_dir_path.joinpath("compiled")
         self.examples_dir_path = self.project_path.joinpath("examples")
@@ -116,6 +114,84 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
             for item in missing:
                 logger.error(f"  - {item}")
             raise RuntimeError("Pre-flight checks failed.")
+
+    def check_compliance(
+        self,
+        require_exe: bool = False,
+        require_installer: bool = False,
+    ) -> None:
+        """
+        Verify that the target project has the required structure for scaldys-builder.
+
+        Checks project-level files and layout — not tool availability (use
+        ``pre_flight_checks`` for that).  All issues are collected and reported
+        together so the user can fix everything in one pass.
+
+        Parameters
+        ----------
+        require_exe : bool, default False
+            Check that the PyInstaller entry point exists
+            (``{source_root}/{package}/__main__.py``).
+        require_installer : bool, default False
+            Check that the Inno Setup script and launcher scripts exist in the
+            Windows packaging directory.
+
+        Raises
+        ------
+        SystemExit
+            If any compliance issues are found.
+        """
+        logger.info("[bold blue]Checking project compliance...[/bold blue]")
+
+        issues: list[str] = []
+
+        # Always: source root and package directory must exist.
+        pkg_dir = self.src_dir_path / self.project_package_name
+        if not self.src_dir_path.is_dir():
+            issues.append(f"Source root directory not found: '{self.config.cython.source_root}/'")
+        elif not pkg_dir.is_dir():
+            issues.append(
+                f"Package directory not found: "
+                f"'{self.config.cython.source_root}/{self.project_package_name}/'"
+            )
+        elif require_exe:
+            # Only check __main__.py when the package dir exists (avoids duplicate noise).
+            main_py = pkg_dir / "__main__.py"
+            if not main_py.exists():
+                issues.append(
+                    f"PyInstaller entry point not found: "
+                    f"'{self.config.cython.source_root}/{self.project_package_name}/__main__.py'"
+                )
+
+        if require_installer:
+            if not self.script_dir_path.is_dir():
+                issues.append(
+                    f"Windows packaging directory not found: '{self.config.windows.script_dir}/'"
+                )
+            else:
+                for fname in [
+                    f"{self.project_name}.iss",
+                    f"{self.project_name}_commandline.bat",
+                    f"{self.project_name}_powershell.ps1",
+                ]:
+                    if not self.script_dir_path.joinpath(fname).exists():
+                        issues.append(
+                            f"Required packaging file not found: "
+                            f"'{self.config.windows.script_dir}/{fname}'"
+                        )
+
+        if issues:
+            logger.error(
+                f"[bold red]Project compliance check failed — "
+                f"{len(issues)} issue(s) must be resolved before building:[/bold red]"
+            )
+            for issue in issues:
+                logger.error(f"  [red]\u2717[/red] {issue}")
+            logger.error(
+                'For details on each requirement, see "Project Compliance" '
+                "in the documentation (In-Depth Guides \u2192 Project Compliance)."
+            )
+            raise SystemExit(1)
 
 
 class Compiler:
@@ -327,8 +403,8 @@ class Packager:
         bin_dir.mkdir(parents=True, exist_ok=True)
 
         for script in [
-            f"{self.env.project_package_name}_commandline.bat",
-            f"{self.env.project_package_name}_powershell.ps1",
+            f"{self.env.project_name}_commandline.bat",
+            f"{self.env.project_name}_powershell.ps1",
         ]:
             script_path = self.env.script_dir_path.joinpath(script)
             if script_path.exists():
@@ -368,7 +444,7 @@ class Packager:
             return
 
         logger.info("[bold]Running Inno Setup...[/bold]")
-        iss_file = self.env.script_dir_path.joinpath(f"{self.env.project_package_name}.iss")
+        iss_file = self.env.script_dir_path.joinpath(f"{self.env.project_name}.iss")
         if not iss_file.exists():
             logger.warning(f"Inno Setup script not found: {iss_file}")
             return
@@ -483,6 +559,10 @@ class WindowsBuilder(BaseBuilder):
 
         steps = [
             (
+                "Checking project compliance",
+                lambda: self.env.check_compliance(require_exe=True, require_installer=True),
+            ),
+            (
                 "Pre-flight checks",
                 lambda: self.env.pre_flight_checks(
                     require_sphinx=self.env.docs_dir_path.joinpath("manual").exists(),
@@ -505,7 +585,7 @@ class WindowsBuilder(BaseBuilder):
             console=console,
         ) as progress:
             total_task = progress.add_task(
-                f"[green]Building {self.env.project_package_name}...", total=len(steps)
+                f"[green]Building {self.env.project_name}...", total=len(steps)
             )
             for description, step_func in steps:
                 progress.update(total_task, description=f"[cyan]{description}...")

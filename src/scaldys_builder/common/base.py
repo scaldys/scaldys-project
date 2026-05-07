@@ -41,7 +41,12 @@ class BaseBuildEnvironment:
         # Read project name and version from pyproject.toml — single source of truth.
         with open(self.project_path / "pyproject.toml", "rb") as _f:
             _meta = tomllib.load(_f)["project"]
-        self.project_package_name: str = _meta["name"]
+        # Raw name (hyphens preserved) — used for exe naming, packaging file names,
+        # and display.  Do not use for Python import paths.
+        self.project_name: str = _meta["name"]
+        # PEP 503/508: package directories must use underscores; hyphens are
+        # valid in pyproject.toml [project] name but illegal in Python imports.
+        self.project_package_name: str = _meta["name"].replace("-", "_")
         self.version: str = _meta["version"]
 
         # Load project-specific build configuration from builder.toml (defaults if absent).
@@ -49,7 +54,7 @@ class BaseBuildEnvironment:
 
         self.python_exe_path = Path(sys.executable)
         self.python_dir_path = self.python_exe_path.parent
-        self.exe_name = self.project_package_name
+        self.exe_name = self.project_name
 
         # Core project paths
         self.build_dir_path = self.project_path.joinpath("build")

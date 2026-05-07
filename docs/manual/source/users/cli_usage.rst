@@ -27,6 +27,7 @@ Command tree
 .. code-block:: text
 
     scaldys-builder
+    ├── check
     └── build
         └── windows
             ├── docs
@@ -34,6 +35,45 @@ Command tree
             ├── installer
             ├── all
             └── clean
+
+----
+
+``check``
+----------
+
+Validate that the current project meets all scaldys-builder requirements
+without running any build step.
+
+.. code-block:: bash
+
+    scaldys-builder check [OPTIONS]
+
+**What it does**
+
+Runs the full compliance check (rules 1–8) and reports any issues found.
+Exits with code ``0`` if the project is compliant, or code ``1`` if any
+requirement is not met.  This is identical to the automatic check that runs
+at the start of ``exe``, ``installer``, and ``all``, but without triggering
+a build.
+
+Use this command to verify a freshly cloned project, or to diagnose issues
+after a compliance failure during a build.
+
+For the complete list of rules and what each one requires, see
+:ref:`compliance_checking`.
+
+**Options**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Option
+     - Description
+   * - ``--verbose``, ``-v``
+     - Enable verbose (DEBUG-level) logging.
+   * - ``--help``
+     - Show command help and exit.
 
 ----
 
@@ -104,6 +144,9 @@ Windows executable using PyInstaller.
 
     dist/pyinstaller/bin/   ← executable + all supporting libraries
 
+**Compliance check**: Before running, verifies that the source package
+directory and ``__main__.py`` entry point exist.  See :ref:`compliance_checking`.
+
 **Pre-flight requirement**: PyInstaller must be installed.
 Install it via the ``[windows]`` extra.
 
@@ -146,6 +189,10 @@ Inno Setup.
 
     dist/setup/     ← Windows installer executable
 
+**Compliance check**: Before running, verifies that the Windows packaging
+directory, ``.iss`` script, and launcher scripts exist.  See
+:ref:`compliance_checking`.
+
 **Note**: If Inno Setup is not found, this step is skipped with a warning
 rather than failing the build.
 
@@ -175,9 +222,10 @@ Run the complete end-to-end Windows build workflow.
 
 **What it does**
 
-Executes ``docs`` → ``exe`` → ``installer`` in sequence, with a Rich
-progress bar tracking the overall workflow. Any stage failure stops the build
-and reports the error.
+Runs the full compliance check (all rules) and pre-flight checks first, then
+executes ``docs`` → ``exe`` → ``installer`` in sequence, with a Rich progress
+bar tracking the overall workflow.  Any stage failure stops the build and
+reports the error.
 
 Also performs an OneDrive synchronisation check at startup: if OneDrive is
 actively syncing files in the project tree, a warning is displayed because

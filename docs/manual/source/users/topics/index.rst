@@ -14,6 +14,7 @@ troubleshoot an issue.
 
    project_layout
    configuration
+   compliance_checking
    documentation_building
    cython_compilation
    windows_exe
@@ -29,6 +30,10 @@ Guide summaries
 :ref:`configuration`
     Full reference for every ``builder.toml`` setting, with defaults and
     examples.
+
+:ref:`compliance_checking`
+    The full list of compliance rules validated before any build step runs,
+    with a description of each requirement and links to the relevant guides.
 
 :ref:`documentation_building`
     How ``scaldys-builder`` drives Sphinx to produce the user guide and

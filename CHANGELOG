@@ -8,6 +8,36 @@
     Docs       for any documentation changes
 
 
+[0.3.0] - 2026-05-07
+---------------------
+
+**Added**:
+    - Project compliance checking: ``scaldys-builder`` now validates the target
+      project's required files and structure before running any build step.  All
+      issues are reported together in a single pass so they can be fixed at once.
+      If any requirement is not met the tool exits cleanly with a descriptive
+      message rather than failing mid-build with a cryptic error.
+
+      Compliance is checked automatically at the start of ``build windows exe``,
+      ``build windows installer``, and ``build windows all``.
+
+    - New top-level command ``scaldys-builder check``: runs the full compliance
+      check on the current project without triggering a build.  Useful for
+      verifying a freshly cloned project or diagnosing issues.
+
+    - New documentation page *Project Compliance* (In-Depth Guides section):
+      lists all eight compliance rules with descriptions, the commands each rule
+      applies to, and cross-reference links to the relevant guide sections.
+
+**Fixed**:
+    - Project names containing hyphens (e.g. ``my-app``) are now normalised to
+      underscores when resolving Python package paths (e.g. ``src/my_app/``,
+      ``my_app/__main__.py``, ``--collect-submodules my_app``), matching the
+      Python import system convention (PEP 503 / PEP 508).  The raw project name
+      is preserved for artefact naming (executable, ``.iss`` script, launcher
+      scripts, icon).
+
+
 [0.2.0] - 2026-05-04
 ---------------------
 
