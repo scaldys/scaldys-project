@@ -16,6 +16,10 @@ Example ``builder.toml``::
 
     [windows]
     script_dir = "packaging/windows"
+
+    [docs]
+    dist_dirs = ["manual"]
+    apidoc_dirs = ["developer_guide"]
 """
 
 import tomllib
@@ -59,6 +63,27 @@ class WindowsConfig:
 
 
 @dataclass
+class DocsConfig:
+    """
+    Documentation build settings.
+
+    Attributes
+    ----------
+    dist_dirs : list of str
+        Subdirectory names under ``docs/`` whose built HTML output is copied
+        into distribution artifacts (PyInstaller dist + Inno Setup).
+        An empty list means no documentation is distributed.
+    apidoc_dirs : list of str
+        Subdirectory names that require a ``sphinx-apidoc`` pre-pass before
+        ``sphinx-build`` is invoked.  Must be a subset of the Sphinx directories
+        (i.e. those containing ``source/conf.py``).
+    """
+
+    dist_dirs: list[str] = field(default_factory=list)
+    apidoc_dirs: list[str] = field(default_factory=list)
+
+
+@dataclass
 class BuildConfig:
     """
     Complete build configuration for a consuming project.
@@ -68,6 +93,7 @@ class BuildConfig:
 
     cython: CythonConfig = field(default_factory=CythonConfig)
     windows: WindowsConfig = field(default_factory=WindowsConfig)
+    docs: DocsConfig = field(default_factory=DocsConfig)
 
 
 def load_config(project_path: Path) -> BuildConfig:
@@ -96,6 +122,7 @@ def load_config(project_path: Path) -> BuildConfig:
 
     cython_data = data.get("cython", {})
     windows_data = data.get("windows", {})
+    docs_data = data.get("docs", {})
 
     return BuildConfig(
         cython=CythonConfig(
@@ -104,5 +131,9 @@ def load_config(project_path: Path) -> BuildConfig:
         ),
         windows=WindowsConfig(
             script_dir=windows_data.get("script_dir", "packaging/windows"),
+        ),
+        docs=DocsConfig(
+            dist_dirs=docs_data.get("dist_dirs", []),
+            apidoc_dirs=docs_data.get("apidoc_dirs", []),
         ),
     )

@@ -73,6 +73,48 @@ Controls Cython compilation.
 
 See :ref:`cython_compilation` for a full explanation of how compilation works.
 
+``[docs]``
+----------
+
+Controls which documentation units are distributed and which require a
+``sphinx-apidoc`` pre-pass.
+
+.. code-block:: toml
+
+    [docs]
+    dist_dirs = ["manual"]
+    apidoc_dirs = ["developer_guide"]
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 15 60
+
+   * - Key
+     - Default
+     - Description
+   * - ``dist_dirs``
+     - ``[]``
+     - List of subdirectory names under ``docs/`` whose built HTML output
+       (``build/<name>/html/``) is copied into the distribution artefacts
+       (``dist/pyinstaller/documentation/<name>/``).  An empty list means
+       no documentation is distributed.
+   * - ``apidoc_dirs``
+     - ``[]``
+     - List of subdirectory names that require a ``sphinx-apidoc`` pre-pass
+       before ``sphinx-build`` is invoked.  Must be a subset of the Sphinx
+       directories (those containing ``source/conf.py``).
+
+**Example — distribute one unit, generate one unit from source code**
+
+.. code-block:: toml
+
+    [docs]
+    dist_dirs = ["manual"]
+    apidoc_dirs = ["developer_guide"]
+
+See :ref:`documentation_building` for a full explanation of how the doc
+build works.
+
 ``[windows]``
 -------------
 
@@ -114,6 +156,10 @@ Complete example
     [windows]
     script_dir = "packaging/windows"
 
+    [docs]
+    dist_dirs = ["manual"]
+    apidoc_dirs = ["developer_guide"]
+
 Defaults summary
 ================
 
@@ -132,3 +178,7 @@ defaults apply:
      - ``"src"``
    * - ``windows.script_dir``
      - ``"packaging/windows"``
+   * - ``docs.dist_dirs``
+     - ``[]`` (no documentation distributed)
+   * - ``docs.apidoc_dirs``
+     - ``[]`` (no apidoc pre-pass)

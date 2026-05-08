@@ -8,6 +8,70 @@
     Docs       for any documentation changes
 
 
+[0.4.0] - 2026-05-08
+---------------------
+
+**Added**:
+    - Generic documentation system: every immediate subdirectory of ``docs/``
+      is now treated as an independent documentation unit.  There is no longer
+      a fixed set of names — subdirectory names are freely choosable.  All
+      units are discovered and built automatically; no configuration is needed
+      to add a new unit.
+
+    - Engine auto-detection: the documentation engine for each unit is
+      determined by inspecting its contents.  A ``source/conf.py`` file
+      selects Sphinx; a ``mkdocs.yml`` selects MkDocs (detected but not yet
+      built — a warning is logged and the unit is skipped).  Units whose
+      directory matches neither marker also produce a warning and are skipped.
+
+    - ``[docs]`` section in ``builder.toml``:
+
+      - ``dist_dirs`` — list of subdirectory names whose built HTML is copied
+        into the distribution artefacts (``dist/pyinstaller/documentation/<name>/``).
+        Defaults to ``[]`` (no documentation distributed).
+
+      - ``apidoc_dirs`` — list of subdirectory names that require a
+        ``sphinx-apidoc`` pre-pass before ``sphinx-build``.  Defaults to
+        ``[]``.  This replaces the previously hardcoded behaviour of always
+        running ``sphinx-apidoc`` for a directory named ``developer_guide``.
+
+    - ``DocEngine`` enum and ``_detect_engine()`` function in
+      ``scaldys_builder.common.docs``, providing a testable, reusable engine
+      detection primitive.
+
+    - ``WindowsBuilder._any_sphinx_docs()`` helper: replaces the hardcoded
+      check for ``docs/manual/`` when determining whether Sphinx must be
+      present at pre-flight time.
+
+**Changed**:
+    - Distribution path for documentation changed from the single fixed
+      destination ``dist/pyinstaller/documentation/help files/`` to
+      ``dist/pyinstaller/documentation/<name>/`` (one sub-folder per entry in
+      ``[docs] dist_dirs``).
+
+      .. note::
+         **Breaking change for consuming projects.**  Any Inno Setup ``.iss``
+         script that references the old ``documentation\help files\`` path
+         must be updated to reference ``documentation\<name>\`` instead.
+
+    - ``DocumentationBuilder`` refactored: the two hardcoded methods
+      ``build_user_guide()`` and ``build_developer_guide()`` are replaced by
+      a generic ``build()`` / ``_build_one()`` / ``_build_sphinx()`` loop
+      that works for any number of doc units.
+
+    - ``BaseBuildEnvironment`` no longer exposes the four hardcoded path
+      attributes ``user_guide_dir_path``, ``user_guide_build_dir_path``,
+      ``developer_guide_dir_path``, and ``developer_guide_build_dir_path``.
+      Paths are now derived at call-time from the directory name.
+
+    - Documentation updated throughout: *Documentation Building* guide
+      rewritten for the generic system; *Configuration* guide updated with
+      the new ``[docs]`` section; *Project Layout*, *CLI Reference*,
+      *Overview*, *Quick Start*, and *Windows Installer* pages updated to
+      reflect the new paths and behaviour.
+
+
+
 [0.3.0] - 2026-05-07
 ---------------------
 

@@ -108,9 +108,9 @@ The installer step performs the following actions in sequence:
 1. **Copy launcher scripts** — ``.bat`` and ``.ps1`` files from
    ``[windows] script_dir`` are copied to ``dist/pyinstaller/``.
 
-2. **Copy documentation** — the single-page HTML documentation built by
-   ``build windows docs`` (from ``build/manual/singlehtml/``) is copied to
-   ``dist/pyinstaller/docs/``.
+2. **Copy documentation** — for each directory listed in ``[docs] dist_dirs``
+   in ``builder.toml``, the HTML output (from ``build/<name>/html/``) is
+   copied to ``dist/pyinstaller/documentation/<name>/``.
 
 3. **Copy examples** (optional) — if an ``examples/`` directory exists in
    the project root, it is copied to ``dist/pyinstaller/examples/``.

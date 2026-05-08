@@ -62,12 +62,6 @@ class BaseBuildEnvironment:
         self.src_dir_path = self.project_path / self.config.cython.source_root
         self.dist_dir_path = self.project_path.joinpath("dist")
 
-        # Documentation paths
-        self.user_guide_dir_path = self.docs_dir_path.joinpath("manual")
-        self.user_guide_build_dir_path = self.build_dir_path.joinpath("manual")
-        self.developer_guide_dir_path = self.docs_dir_path.joinpath("developer_guide")
-        self.developer_guide_build_dir_path = self.build_dir_path.joinpath("developer_guide")
-
         # Executables (find in PATH)
         self.sphinx_exe_path = self._find_tool(
             "sphinx-build" + (".exe" if os.name == "nt" else ""), self.python_dir_path

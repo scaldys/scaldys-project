@@ -88,18 +88,24 @@ Build the Sphinx documentation for the project.
 
 **What it does**
 
-1. Builds the *user guide* from ``docs/manual/`` into two HTML formats:
-   standard multi-page HTML and a single-page HTML (``singlehtml``).
-2. Runs ``sphinx-apidoc`` over the source tree to generate API stubs, then
-   builds the *developer guide* into HTML.
+Scans every immediate subdirectory of ``docs/`` and builds each one as an
+independent documentation unit.  The engine (Sphinx, MkDocs, …) is
+auto-detected from each subdirectory's contents.
+
+For each Sphinx unit (``source/conf.py`` present), two HTML formats are
+produced: standard multi-page HTML and single-page HTML.  For units listed
+in ``[docs] apidoc_dirs`` in ``builder.toml``, ``sphinx-apidoc`` runs first
+to generate ``.rst`` stubs from source code docstrings.
 
 **Output locations**
 
 .. code-block:: text
 
-    build/manual/html/          ← user guide (multi-page)
-    build/manual/singlehtml/    ← user guide (single page)
-    build/developer_guide/html/ ← developer / API guide
+    build/<name>/html/          ← multi-page HTML
+    build/<name>/singlehtml/    ← single-page HTML
+
+where ``<name>`` is the subdirectory name (e.g. ``manual``,
+``developer_guide``).
 
 **Pre-flight requirement**: Sphinx (``sphinx-build``) must be installed.
 Install it via the ``[docs]`` extra.
@@ -178,7 +184,8 @@ Inno Setup.
 **What it does**
 
 1. Copies launcher scripts (``.bat``, ``.ps1``) and the HTML documentation
-   from ``build/manual/singlehtml/`` into ``dist/pyinstaller/``.
+   for each directory listed in ``[docs] dist_dirs`` (``builder.toml``) from
+   ``build/<name>/html/`` into ``dist/pyinstaller/documentation/<name>/``.
 2. Copies any example files from ``examples/`` (if the directory exists).
 3. Runs ``ISCC.exe`` with the ``.iss`` script found in
    ``[windows] script_dir``, injecting the project version automatically.

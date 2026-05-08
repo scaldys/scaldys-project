@@ -21,7 +21,7 @@ import os
 from pathlib import Path
 from typing import Optional, Any, Union, Iterable
 from scaldys_builder.common.base import BaseBuildEnvironment, BaseBuilder
-from scaldys_builder.common.docs import DocumentationBuilder
+from scaldys_builder.common.docs import DocumentationBuilder, DocEngine, _detect_engine
 from scaldys_builder.common.utils import (
     safe_empty_dir,
     safe_copy,
@@ -410,9 +410,14 @@ class Packager:
             if script_path.exists():
                 safe_copy(script_path, bin_dir.joinpath(script))
 
-        help_src = self.env.user_guide_build_dir_path.joinpath("html")
-        if help_src.is_dir():
-            dist_doc = self.env.dist_exe_dir_path.joinpath("documentation", "help files")
+        for dir_name in self.env.config.docs.dist_dirs:
+            help_src = self.env.build_dir_path.joinpath(dir_name, "html")
+            if not help_src.is_dir():
+                logger.warning(
+                    f"Built HTML for dist_dir '{dir_name}' not found at '{help_src}'. Skipping."
+                )
+                continue
+            dist_doc = self.env.dist_exe_dir_path.joinpath("documentation", dir_name)
             safe_empty_dir(dist_doc)
             safe_copytree(help_src, dist_doc, dirs_exist_ok=True)
             for f in ["_sources", "objects.inv", ".buildinfo"]:
@@ -498,6 +503,17 @@ class WindowsBuilder(BaseBuilder):
         self.compiler = Compiler(self.env)
         self.packager = Packager(self.env)
 
+    def _any_sphinx_docs(self) -> bool:
+        """Return True if any docs subdirectory is detected as a Sphinx project."""
+        docs_root = self.env.docs_dir_path
+        if not docs_root.is_dir():
+            return False
+        return any(
+            _detect_engine(p) == DocEngine.SPHINX
+            for p in docs_root.iterdir()
+            if p.is_dir()
+        )
+
     def _is_in_onedrive(self) -> bool:
         """Check if the project is located within a OneDrive-synchronized folder."""
         project_path = self.env.project_path.resolve()
@@ -565,7 +581,7 @@ class WindowsBuilder(BaseBuilder):
             (
                 "Pre-flight checks",
                 lambda: self.env.pre_flight_checks(
-                    require_sphinx=self.env.docs_dir_path.joinpath("manual").exists(),
+                    require_sphinx=self._any_sphinx_docs(),
                     require_pyinstaller=True,
                     require_innosetup=True,
                 ),

@@ -62,19 +62,27 @@ a minimal ``myapp.iss`` template.
 Step 3 — Prepare your Sphinx documentation
 --------------------------------------------
 
-``scaldys-builder`` expects a Sphinx project at ``docs/manual/`` with source
-files at ``docs/manual/source/``.
+Create a subdirectory under ``docs/`` for each documentation unit.  The name
+is freely choosable — ``manual``, ``help``, ``guide``, or anything else.
+``scaldys-builder`` detects the engine automatically: a directory containing
+``source/conf.py`` is treated as a Sphinx project.
 
-If you do not already have a Sphinx project, create one from your project root::
+If you do not already have a Sphinx project, create one from your project root
+(replace ``manual`` with your chosen name)::
 
     sphinx-quickstart docs/manual
 
 When prompted, choose **yes** to separate source and build directories.
-This produces the ``docs/manual/source/`` layout that ``scaldys-builder``
-requires.
+This produces the ``docs/manual/source/`` layout that Sphinx requires.
 
-See :ref:`documentation_building` for the complete expected layout and Sphinx
-configuration tips.
+To declare which documentation units should be bundled into the installer, add
+to ``builder.toml``::
+
+    [docs]
+    dist_dirs = ["manual"]
+
+See :ref:`documentation_building` for the complete expected layout, engine
+auto-detection rules, and Sphinx configuration tips.
 
 Step 4 — Run the full build
 -----------------------------

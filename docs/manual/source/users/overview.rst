@@ -16,8 +16,8 @@ Running a single command from your project root::
 
 produces, in order:
 
-1. **HTML documentation** — your Sphinx user guide compiled to a
-   self-contained single-page HTML file, ready to be opened offline.
+1. **HTML documentation** — every documentation unit under ``docs/`` built to
+   HTML, with configured units bundled into the installer for offline use.
 2. **A standalone executable** — your application bundled by PyInstaller
    into a folder that runs on any Windows machine without a Python
    installation.  Optionally, selected modules are first compiled to native
@@ -39,10 +39,10 @@ The build pipeline at a glance
          │
          ▼
     ┌─────────────┐     Sphinx        ┌──────────────────────────┐
-    │  docs/      │ ────────────────▶│ build/manual/singlehtml/ │
+    │  docs/      │ ────────────────▶│ build/<name>/html/       │
     │  manual/    │                   └──────────────┬───────────┘
-    └─────────────┘                                  │
-                                                     │ copied into installer
+    │  dev_guide/ │                                  │
+    └─────────────┘                                  │ dist_dirs → installer
     ┌─────────────┐   Cython (opt.)  ┌─────────────────────────────┐
     │  src/       │ ───────────────▶│ build/compiled/             │
     │  myapp/     │                  └───────────────┬─────────────┘
@@ -75,7 +75,7 @@ template that already has everything wired together:
 - ``builder.toml`` pre-configured with an example Cython module
 - ``packaging/windows/`` with a complete ``.iss`` script, launcher scripts,
   and an application icon
-- ``docs/manual/`` with a working Sphinx project
+- ``docs/manual/`` with a working Sphinx project (freely renameable)
 - ``pyproject.toml`` declaring ``scaldys-builder[cython,windows,docs]`` as a
   dev dependency
 - GitHub Actions workflows for CI, PyPI publishing, and release management

@@ -45,11 +45,14 @@ The following layout is the recommended structure for a project using
     │           ├── engine.py
     │           └── utils.py
     ├── docs/
-    │   └── manual/                 ← Sphinx documentation project
-    │       ├── source/
-    │       │   ├── conf.py
-    │       │   └── index.rst
-    │       └── Makefile
+    │   ├── manual/                 ← Sphinx project (user guide)
+    │   │   ├── source/
+    │   │   │   ├── conf.py
+    │   │   │   └── index.rst
+    │   │   └── Makefile
+    │   └── developer_guide/        ← Sphinx project (API docs, optional)
+    │       └── source/
+    │           └── conf.py
     ├── packaging/
     │   └── windows/                ← Windows packaging files (default location)
     │       ├── myapp.iss
@@ -72,8 +75,17 @@ the project root), set::
 Documentation layout
 ---------------------
 
-The Sphinx documentation project must be at ``docs/manual/`` with source
-files at ``docs/manual/source/``.  This path is not currently configurable.
+Every immediate subdirectory of ``docs/`` is treated as an independent
+documentation unit.  The subdirectory names are freely choosable — there
+are no fixed or required names.  ``scaldys-builder`` auto-detects the engine
+used by each unit from its contents (see :ref:`documentation_building`).
+
+Configure which units are included in the distribution and which need a
+``sphinx-apidoc`` pre-pass via ``[docs]`` in ``builder.toml``::
+
+    [docs]
+    dist_dirs = ["manual"]
+    apidoc_dirs = ["developer_guide"]
 
 Windows packaging layout
 --------------------------
@@ -106,12 +118,24 @@ project root.  Both are safe to delete (use ``build windows clean``).
 
     build/
         compiled/               ← staged source tree for Cython + PyInstaller
-        manual/
-            html/               ← user guide (multi-page HTML)
-            singlehtml/         ← user guide (single-page HTML)
-        developer_guide/
-            html/               ← developer / API guide (multi-page HTML)
+        <name>/                 ← one directory per docs/ subdirectory
+            html/               ← multi-page HTML
+            singlehtml/         ← single-page HTML
         pyinstaller/            ← PyInstaller work directory
+
+For example, with ``docs/manual/`` and ``docs/developer_guide/``:
+
+.. code-block:: text
+
+    build/
+        compiled/
+        manual/
+            html/
+            singlehtml/
+        developer_guide/
+            html/
+            singlehtml/
+        pyinstaller/
 
 ``dist/`` — final artefacts
 ------------------------------
@@ -121,12 +145,28 @@ project root.  Both are safe to delete (use ``build windows clean``).
     dist/
         pyinstaller/
             bin/                ← executable + libraries (from PyInstaller)
-            docs/               ← single-page HTML documentation (copied in)
+            documentation/
+                <name>/         ← one directory per entry in dist_dirs
             examples/           ← example files (copied in, if examples/ exists)
             myapp_commandline.bat
             myapp_powershell.ps1
         setup/
             MyApp-Setup-1.2.3.exe   ← Windows installer (from Inno Setup)
+
+For example, with ``dist_dirs = ["manual"]``:
+
+.. code-block:: text
+
+    dist/
+        pyinstaller/
+            bin/
+            documentation/
+                manual/         ← copied from build/manual/html/
+            examples/
+            myapp_commandline.bat
+            myapp_powershell.ps1
+        setup/
+            MyApp-Setup-1.2.3.exe
 
 Relationship between stages
 ============================
@@ -135,12 +175,12 @@ The three build stages consume each other's output:
 
 .. code-block:: text
 
-    [docs]  →  build/manual/singlehtml/
+    [docs]  →  build/<name>/html/   (for each docs/ subdirectory)
                           ↓
     [exe]   →  dist/pyinstaller/bin/
                           ↓
-    [installer]  →  copies singlehtml + launchers + examples
-                        into dist/pyinstaller/
+    [installer]  →  copies build/<name>/html/ (for each dist_dirs entry)
+                        + launchers + examples into dist/pyinstaller/
                      runs ISCC.exe → dist/setup/MyApp-Setup-x.y.z.exe
 
 Running stages out of order is possible but the later stages depend on
