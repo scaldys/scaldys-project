@@ -18,6 +18,8 @@ and a ``main()`` entry point for the complete end-to-end workflow.
 
 import logging
 import os
+import shutil
+import sys
 from pathlib import Path
 from typing import Optional, Any, Union, Iterable
 from scaldys_builder.common.base import BaseBuildEnvironment, BaseBuilder
@@ -162,6 +164,14 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
                     f"PyInstaller entry point not found: "
                     f"'{self.config.cython.source_root}/{self.project_package_name}/__main__.py'"
                 )
+
+        # .python-version is always required: it is the single source of truth
+        # for the Python version used by the build and the PythonRuntime setup.
+        if not self.python_version_file_path.exists():
+            issues.append(
+                ".python-version not found in project root. "
+                "Create it with the target Python version (e.g. '3.13')."
+            )
 
         if require_installer:
             if not self.script_dir_path.is_dir():
@@ -355,12 +365,68 @@ class Compiler:
             safe_rmtree(bin_dir)
             safe_rename(pkg_dir, bin_dir)
 
+    def _build_wheel(self) -> None:
+        """
+        Build a distribution wheel from the compiled staging area.
+
+        Copies ``pyproject.toml`` into ``build/compiled/`` so that setuptools
+        can discover the package (which is at the root of the staging tree,
+        not under ``src/``), then runs ``uv build --wheel``.  The resulting
+        ``.whl`` file — containing the compiled ``.pyd`` extensions but no
+        Python source files — is written to ``dist/pyinstaller/bin/wheels/``
+        so that Inno Setup includes it in the installer and
+        ``setup_pyruntime.ps1`` can install it into the PythonRuntime via
+        ``uv pip install --find-links``.
+
+        Raises
+        ------
+        RuntimeError
+            If ``uv`` is not found or the build command fails.
+        """
+        uv_exe = shutil.which("uv")
+        if not uv_exe:
+            raise RuntimeError(
+                "uv not found in PATH. Cannot build the distribution wheel."
+            )
+
+        compiled_path = self.env.src_compiled_dir_path
+        wheels_dir = self.env.dist_exe_dir_path / "bin" / "wheels"
+        wheels_dir.mkdir(parents=True, exist_ok=True)
+
+        # Place pyproject.toml alongside the compiled package so that the build
+        # backend (setuptools) can discover it in the flat layout of build/compiled/.
+        dest_pyproject = compiled_path / "pyproject.toml"
+        safe_copy(self.env.project_path / "pyproject.toml", dest_pyproject)
+
+        # Restrict setuptools package discovery to the project package only.
+        # build/compiled/ contains extra_hooks/ (PyInstaller hooks) alongside the
+        # package directory, and setuptools flat-layout auto-discovery refuses to
+        # proceed when it finds more than one top-level package.
+        with open(dest_pyproject, "a", encoding="utf-8") as f:
+            f.write(
+                "\n"
+                "[tool.setuptools.packages.find]\n"
+                f'include = ["{self.env.project_package_name}*"]\n'
+                "\n"
+                "[tool.setuptools.package-data]\n"
+                '"*" = ["*.pyd"]\n'
+            )
+
+        logger.info("[bold]Building distribution wheel from compiled sources...[/bold]")
+        self.env.run_command(
+            [uv_exe, "build", "--wheel", "--out-dir", str(wheels_dir)],
+            "Failed to build the distribution wheel",
+            cwd=compiled_path,
+        )
+        logger.info(f"  Wheel written to '{wheels_dir}'")
+
     def build(self) -> None:
         """
         Execute the compilation and bundling pipeline.
         """
         self.run_cython()
         self.run_pyinstaller()
+        self._build_wheel()
 
 
 class Packager:
@@ -405,10 +471,31 @@ class Packager:
         for script in [
             f"{self.env.project_name}_commandline.bat",
             f"{self.env.project_name}_powershell.ps1",
+            "setup_pyruntime.ps1",
         ]:
             script_path = self.env.script_dir_path.joinpath(script)
             if script_path.exists():
                 safe_copy(script_path, bin_dir.joinpath(script))
+
+        # Copy .python-version so setup_pyruntime.ps1 can read the required
+        # Python version without any hardcoded value in the packaging scripts.
+        if self.env.python_version_file_path.exists():
+            safe_copy(self.env.python_version_file_path, bin_dir / ".python-version")
+            logger.info("  Copied .python-version")
+        else:
+            logger.warning("  .python-version not found; setup_pyruntime.ps1 will not be able to determine the Python version.")
+
+        # Bundle uv.exe so that the online PythonRuntime setup script can run
+        # without requiring uv to be installed on the end-user's machine.
+        uv_path = shutil.which("uv")
+        if uv_path:
+            safe_copy(Path(uv_path), bin_dir / "uv.exe")
+            logger.info(f"  Copied uv.exe from '{uv_path}'")
+        else:
+            logger.warning(
+                "  uv not found in PATH. The PythonRuntime online setup will require "
+                "uv to be installed on the end-user's machine."
+            )
 
         for dir_name in self.env.config.docs.dist_dirs:
             help_src = self.env.build_dir_path.joinpath(dir_name, "html")
@@ -463,17 +550,92 @@ class Packager:
             "/Q",
             str(iss_file),
         ]
+
+        # Offline mode: if a pre-built PythonRuntime environment exists in the
+        # dist directory, tell Inno Setup where to find it so it can include
+        # it as an optional component without an internet download at install time.
+        pyruntime_dir = self.env.dist_dir_path / "pyruntime"
+        if pyruntime_dir.is_dir():
+            cmd.append(f"/DPythonRuntimeDir={pyruntime_dir}")
+            logger.info(f"  Offline mode: PythonRuntime bundled from '{pyruntime_dir}'")
+        else:
+            logger.info("  Online mode: PythonRuntime will be downloaded at install time")
+
         self.env.run_command(cmd, "Error running Inno Setup", cwd=self.env.project_path)
+
+    def _build_pyruntime(self) -> None:
+        """
+        Pre-build the PythonRuntime virtual environment for offline installer packaging.
+
+        Uses the ``uv`` tool (must be on PATH) to:
+
+        1. Download the Python version declared in ``.python-version``.
+        2. Create a virtual environment at ``dist/pyruntime/``.
+        3. Install ``jupyter`` and ``pyyaml`` and all their dependencies.
+
+        The resulting directory is picked up automatically by ``run_innosetup()``
+        and included in the ``setup.exe`` as an optional component, producing an
+        *offline* installer that does not require an internet connection at
+        install time.
+
+        Raises
+        ------
+        RuntimeError
+            If ``uv`` is not found or any build step fails.
+        """
+        uv_exe = shutil.which("uv")
+        if not uv_exe:
+            raise RuntimeError(
+                "uv not found in PATH. Cannot pre-build the PythonRuntime environment. "
+                "Install uv (https://docs.astral.sh/uv/) and retry, or set "
+                "bundle_pyruntime = false in builder.toml to use the online installer."
+            )
+
+        python_version = self.env.python_version_file_path.read_text().strip()
+        pyruntime_dir = self.env.dist_dir_path / "pyruntime"
+        safe_empty_dir(pyruntime_dir)
+
+        logger.info("[bold]Pre-building PythonRuntime environment (offline installer)...[/bold]")
+
+        logger.info(f"  [1/3] Installing Python {python_version} via uv ...")
+        self.env.run_command(
+            [uv_exe, "python", "install", python_version],
+            f"Failed to install Python {python_version} via uv",
+        )
+
+        logger.info(f"  [2/3] Creating virtual environment at '{pyruntime_dir}' ...")
+        self.env.run_command(
+            [uv_exe, "venv", str(pyruntime_dir), "--python", python_version],
+            "Failed to create PythonRuntime virtual environment",
+        )
+
+        python_exe = pyruntime_dir / "Scripts" / "python.exe"
+        wheels_dir = self.env.dist_exe_dir_path / "bin" / "wheels"
+        logger.info("  [3/3] Installing softspin (with dependencies) and pyyaml ...")
+        self.env.run_command(
+            [
+                uv_exe, "pip", "install",
+                "--python", str(python_exe),
+                "--find-links", str(wheels_dir),
+                "softspin", "pyyaml",
+            ],
+            "Failed to install packages into PythonRuntime environment",
+        )
+
+        logger.info(f"  PythonRuntime environment ready at '{pyruntime_dir}'")
 
     def build(self) -> None:
         """
         Orchestrate the final packaging process.
 
-        Includes preparing examples, copying Windows-specific files, and
+        Includes preparing examples, copying Windows-specific files, optionally
+        pre-building the PythonRuntime environment (offline installer), and
         running Inno Setup.
         """
         self.prepare_examples()
         self.prepare_windows_files()
+        if self.env.config.windows.bundle_pyruntime:
+            self._build_pyruntime()
         self.run_innosetup()
 
 

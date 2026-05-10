@@ -57,9 +57,21 @@ class WindowsConfig:
         Directory (relative to project root) containing Windows packaging files:
         the Inno Setup script (``.iss``), launcher scripts (``.bat``, ``.ps1``),
         and application icon (``.ico``).  Defaults to ``"packaging/windows"``.
+    bundle_pyruntime : bool
+        When ``True``, the packager uses the bundled ``uv.exe`` to pre-build a
+        ``PythonRuntime`` virtual environment (Python 3.12 + Jupyter + PyYAML)
+        at ``dist/pyruntime/`` and passes its path to Inno Setup via the
+        ``/DPythonRuntimeDir`` preprocessor define.  The resulting
+        ``setup.exe`` is an *offline* installer — no internet connection is
+        needed at install time.
+
+        When ``False`` (default), ``uv.exe`` is still bundled in ``bin/`` but
+        the environment is created *online* by ``setup_pyruntime.ps1``
+        during installation.
     """
 
     script_dir: str = "packaging/windows"
+    bundle_pyruntime: bool = False
 
 
 @dataclass
@@ -131,6 +143,7 @@ def load_config(project_path: Path) -> BuildConfig:
         ),
         windows=WindowsConfig(
             script_dir=windows_data.get("script_dir", "packaging/windows"),
+            bundle_pyruntime=windows_data.get("bundle_pyruntime", False),
         ),
         docs=DocsConfig(
             dist_dirs=docs_data.get("dist_dirs", []),

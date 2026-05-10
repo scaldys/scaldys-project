@@ -58,6 +58,7 @@ class BaseBuildEnvironment:
 
         # Core project paths
         self.build_dir_path = self.project_path.joinpath("build")
+        self.python_version_file_path = self.project_path / ".python-version"
         self.docs_dir_path = self.project_path.joinpath("docs")
         self.src_dir_path = self.project_path / self.config.cython.source_root
         self.dist_dir_path = self.project_path.joinpath("dist")
