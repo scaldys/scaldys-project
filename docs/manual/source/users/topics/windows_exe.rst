@@ -96,9 +96,55 @@ Output location
                 myapp.exe
                 python313.dll
                 ...
+                wheels/
+                    myapp-1.2.3-cp313-cp313-win_amd64.whl   ← distribution wheel
 
 The ``build windows installer`` step copies launcher scripts and
 documentation into ``dist/pyinstaller/`` before creating the final installer.
+
+Distribution wheel
+==================
+
+After PyInstaller completes, ``scaldys-builder`` automatically builds a
+``.pyd``-only distribution wheel from the compiled staging area
+(``build/compiled/``).  This wheel contains compiled ``.pyd`` extension
+modules only — no Python source files — which protects proprietary algorithm
+details while still making the full package importable in a Python environment.
+
+The wheel is placed in ``dist/pyinstaller/bin/wheels/`` where Inno Setup
+can bundle it into the installer and the PythonRuntime setup script
+(``setup_pyruntime.ps1``) can install it via
+``uv pip install --find-links <wheels_dir>``.
+
+How the wheel is built
+----------------------
+
+1. A copy of the project's ``pyproject.toml`` is written into
+   ``build/compiled/`` so that setuptools can discover the package.
+2. The copy is patched to:
+
+   - restrict package discovery to the project package only (excluding
+     ``extra_hooks/`` and other top-level directories), and
+   - declare ``*.pyd`` files as package data so that setuptools includes the
+     compiled extensions in the wheel.
+
+3. ``uv build --wheel`` is invoked from ``build/compiled/`` and the resulting
+   ``.whl`` file is moved to ``dist/pyinstaller/bin/wheels/``.
+
+.. note::
+
+   The wheel build requires ``uv`` to be available on ``PATH``.  ``uv`` is
+   already used throughout the rest of the build pipeline, so no additional
+   installation is needed.  If ``uv`` is not found, the step raises an error
+   and the build fails.
+
+.. note::
+
+   The wheel build is only meaningful when Cython compilation is enabled
+   (``[cython] compiled_modules`` is non-empty in ``builder.toml``).  If no
+   modules are compiled, the staged ``build/compiled/`` tree contains plain
+   Python source and the resulting wheel is equivalent to a regular sdist wheel
+   with no source-protection benefit.
 
 Build directories
 =================

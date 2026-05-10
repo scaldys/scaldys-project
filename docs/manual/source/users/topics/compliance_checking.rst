@@ -99,6 +99,14 @@ when they are relevant to the requested build step — for example, the
        start the application from PowerShell.
      - ``installer``, ``all``
      - :ref:`windows_installer`
+   * - 9
+     - ``.python-version`` must exist at the project root.  It is the single
+       source of truth for the Python version used by the build pipeline, the
+       distribution wheel build, and the PythonRuntime setup script.  Create
+       the file with the target version string on a single line (e.g.
+       ``3.13``).
+     - All commands
+     - :ref:`windows_installer` — *Online and offline installer modes*
 
 .. note::
 

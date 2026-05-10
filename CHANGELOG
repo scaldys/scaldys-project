@@ -8,6 +8,35 @@
     Docs       for any documentation changes
 
 
+[0.5.0] - 2026-05-10
+---------------------
+
+**Added**:
+    - ``_build_wheel()`` build step: after PyInstaller completes, a ``.pyd``-only
+      distribution wheel is built from ``build/compiled/`` (which contains compiled
+      ``.pyd`` extensions only, no Python source).  The step patches a copy of the
+      project's ``pyproject.toml`` to restrict setuptools package discovery to the
+      project package (excluding ``extra_hooks/``) and to declare ``*.pyd`` files as
+      package data.  The resulting wheel is placed in ``dist/`` ready for
+      ``uv pip install --find-links``.
+
+    - Online and offline installer modes: the build supports an optional
+      ``PythonRuntimeDir`` variable in the Inno Setup ``.iss`` script.  When set,
+      the pre-built PythonRuntime directory is embedded inside ``setup.exe``
+      (offline mode); when absent, Python is downloaded at install time via ``uv``
+      (online mode).
+
+    - ``.python-version`` compliance requirement: ``scaldys-builder`` now rejects
+      a build if the target project's root does not contain a ``.python-version``
+      file.  This file serves as the single source of truth for the Python version
+      shared between the build pipeline, the wheel build, and the PythonRuntime
+      setup script.
+
+**Changed**:
+    - Compliance rule set extended with the ``.python-version`` check (see
+      ``scaldys-builder check`` and the *Project Compliance* guide).
+
+
 [0.4.0] - 2026-05-08
 ---------------------
 

@@ -115,10 +115,79 @@ The installer step performs the following actions in sequence:
 3. **Copy examples** (optional) — if an ``examples/`` directory exists in
    the project root, it is copied to ``dist/pyinstaller/examples/``.
 
-4. **Run Inno Setup** — ``ISCC.exe`` is invoked with the ``.iss`` script and
-   the version define::
+4. **Build PythonRuntime** (optional, offline mode only) — if
+   ``[windows] bundle_pyruntime = true`` is set in ``builder.toml``,
+   ``scaldys-builder`` pre-builds a ``uv``-managed Python virtual environment
+   at ``dist/pyruntime/`` containing all runtime dependencies.  See
+   `Online and offline installer modes`_ below.
 
+5. **Run Inno Setup** — ``ISCC.exe`` is invoked with the ``.iss`` script,
+   the version define, and — in offline mode — the ``PythonRuntimeDir``
+   define pointing to the pre-built environment::
+
+       # online mode (no pre-built runtime):
        ISCC.exe /DMyAppVersion=1.2.3 packaging\windows\myapp.iss
+
+       # offline mode (pre-built runtime bundled):
+       ISCC.exe /DMyAppVersion=1.2.3 /DPythonRuntimeDir=..\..\dist\pyruntime packaging\windows\myapp.iss
+
+Online and offline installer modes
+===================================
+
+``scaldys-builder`` supports two distribution modes for projects that require
+a Python runtime environment alongside the application (e.g. to run Jupyter
+notebooks or execute Python scripts at end-user sites).
+
+**Online mode** (default)
+    The installer downloads Python at install time using ``uv``.  No
+    pre-built environment is bundled — the ``setup.exe`` is smaller but the
+    end user's machine must have internet access during installation.
+
+    To use online mode, omit ``bundle_pyruntime`` from ``builder.toml`` (or
+    set it to ``false``).  The Inno Setup script should call
+    ``setup_pyruntime.ps1`` during install to create the environment.
+
+**Offline mode**
+    A complete PythonRuntime virtual environment is pre-built on the build
+    machine and embedded inside ``setup.exe``.  Installation succeeds on
+    air-gapped machines.  The ``setup.exe`` is correspondingly larger.
+
+    To enable offline mode, set in ``builder.toml``:
+
+    .. code-block:: toml
+
+        [windows]
+        bundle_pyruntime = true
+
+    During the build, ``scaldys-builder``:
+
+    1. Reads the required Python version from ``.python-version`` at the
+       project root.
+    2. Installs that Python version via ``uv python install``.
+    3. Creates a virtual environment at ``dist/pyruntime/`` and installs
+       ``jupyter``, ``pyyaml``, and the project's distribution wheel
+       (from ``dist/pyinstaller/bin/wheels/``) into it.
+    4. Passes ``/DPythonRuntimeDir=<path>`` to Inno Setup so the script
+       can bundle the pre-built environment.
+
+    Your ``.iss`` script should use the ``PythonRuntimeDir`` define
+    conditionally:
+
+    .. code-block:: ini
+
+        ; Bundle offline PythonRuntime if provided at build time
+        #ifdef PythonRuntimeDir
+        [Files]
+        Source: "{#PythonRuntimeDir}\*"; DestDir: "{app}\PythonRuntime"; Flags: recursesubdirs
+        #endif
+
+.. note::
+
+   Both modes require ``.python-version`` to exist at the project root (see
+   :ref:`compliance_checking` — Rule 9).  In online mode the file is copied
+   into ``bin\`` so ``setup_pyruntime.ps1`` can read it at install time.  In
+   offline mode it is used during the build to select the correct Python
+   version.
 
 Output location
 ===============

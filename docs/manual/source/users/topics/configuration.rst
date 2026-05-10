@@ -118,12 +118,13 @@ build works.
 ``[windows]``
 -------------
 
-Controls Windows-specific packaging paths.
+Controls Windows-specific packaging paths and distribution options.
 
 .. code-block:: toml
 
     [windows]
     script_dir = "packaging/windows"
+    bundle_pyruntime = false
 
 .. list-table::
    :header-rows: 1
@@ -137,6 +138,14 @@ Controls Windows-specific packaging paths.
      - Directory relative to the project root containing the Windows
        packaging files: Inno Setup script (``.iss``), launcher scripts
        (``.bat``, ``.ps1``), and the optional application icon (``.ico``).
+   * - ``bundle_pyruntime``
+     - ``false``
+     - When ``true``, pre-builds a PythonRuntime virtual environment at
+       ``dist/pyruntime/`` and passes its path to Inno Setup as
+       ``/DPythonRuntimeDir``, enabling an offline installer that requires
+       no internet access on the end-user's machine.  Requires
+       ``.python-version`` at the project root and ``uv`` on ``PATH``.
+       See :ref:`windows_installer` — *Online and offline installer modes*.
 
 See :ref:`windows_installer` for details on what each packaging file should
 contain.
@@ -178,6 +187,8 @@ defaults apply:
      - ``"src"``
    * - ``windows.script_dir``
      - ``"packaging/windows"``
+   * - ``windows.bundle_pyruntime``
+     - ``false`` (online installer mode)
    * - ``docs.dist_dirs``
      - ``[]`` (no documentation distributed)
    * - ``docs.apidoc_dirs``

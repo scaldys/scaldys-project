@@ -385,9 +385,7 @@ class Compiler:
         """
         uv_exe = shutil.which("uv")
         if not uv_exe:
-            raise RuntimeError(
-                "uv not found in PATH. Cannot build the distribution wheel."
-            )
+            raise RuntimeError("uv not found in PATH. Cannot build the distribution wheel.")
 
         compiled_path = self.env.src_compiled_dir_path
         wheels_dir = self.env.dist_exe_dir_path / "bin" / "wheels"
@@ -483,7 +481,9 @@ class Packager:
             safe_copy(self.env.python_version_file_path, bin_dir / ".python-version")
             logger.info("  Copied .python-version")
         else:
-            logger.warning("  .python-version not found; setup_pyruntime.ps1 will not be able to determine the Python version.")
+            logger.warning(
+                "  .python-version not found; setup_pyruntime.ps1 will not be able to determine the Python version."
+            )
 
         # Bundle uv.exe so that the online PythonRuntime setup script can run
         # without requiring uv to be installed on the end-user's machine.
@@ -614,10 +614,15 @@ class Packager:
         logger.info("  [3/3] Installing softspin (with dependencies) and pyyaml ...")
         self.env.run_command(
             [
-                uv_exe, "pip", "install",
-                "--python", str(python_exe),
-                "--find-links", str(wheels_dir),
-                "softspin", "pyyaml",
+                uv_exe,
+                "pip",
+                "install",
+                "--python",
+                str(python_exe),
+                "--find-links",
+                str(wheels_dir),
+                "softspin",
+                "pyyaml",
             ],
             "Failed to install packages into PythonRuntime environment",
         )
@@ -670,11 +675,7 @@ class WindowsBuilder(BaseBuilder):
         docs_root = self.env.docs_dir_path
         if not docs_root.is_dir():
             return False
-        return any(
-            _detect_engine(p) == DocEngine.SPHINX
-            for p in docs_root.iterdir()
-            if p.is_dir()
-        )
+        return any(_detect_engine(p) == DocEngine.SPHINX for p in docs_root.iterdir() if p.is_dir())
 
     def _is_in_onedrive(self) -> bool:
         """Check if the project is located within a OneDrive-synchronized folder."""

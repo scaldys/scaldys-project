@@ -78,9 +78,7 @@ def test_load_config_reads_dist_dirs():
 def test_load_config_reads_apidoc_dirs():
     """load_config reads apidoc_dirs from [docs] section."""
     with tempfile.TemporaryDirectory() as tmpdir:
-        (Path(tmpdir) / "builder.toml").write_text(
-            '[docs]\napidoc_dirs = ["developer_guide"]\n'
-        )
+        (Path(tmpdir) / "builder.toml").write_text('[docs]\napidoc_dirs = ["developer_guide"]\n')
         config = load_config(Path(tmpdir))
     assert config.docs.apidoc_dirs == ["developer_guide"]
     assert config.docs.dist_dirs == []
