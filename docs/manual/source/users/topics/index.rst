@@ -14,6 +14,7 @@ troubleshoot an issue.
 
    project_layout
    configuration
+   builder_toml_reference
    compliance_checking
    documentation_building
    cython_compilation
@@ -30,6 +31,10 @@ Guide summaries
 :ref:`configuration`
     Full reference for every ``builder.toml`` setting, with defaults and
     examples.
+
+:ref:`builder_toml_reference`
+    A single, fully-annotated ``builder.toml`` block listing every available
+    option with inline comments — ready to copy into a new project.
 
 :ref:`compliance_checking`
     The full list of compliance rules validated before any build step runs,

@@ -1,0 +1,184 @@
+.. _builder_toml_reference:
+
+****************************
+builder.toml — Full Reference
+****************************
+
+The annotated file below lists every available ``builder.toml`` setting in
+one place.  Each option is accompanied by an inline comment that describes
+its purpose, accepted values, and default.  Copy this block into your project
+root, adjust the values to suit your project, and delete any comments or
+sections you do not need.
+
+For narrative explanations of each section see :ref:`configuration`.
+
+.. code-block:: toml
+
+    # builder.toml — complete annotated reference
+    #
+    # Place this file alongside pyproject.toml in your project root.
+    # Every setting has a default, so the file is entirely optional —
+    # pure-Python projects with packaging files in the default locations
+    # require no configuration at all.
+    # ──────────────────────────────────────────────────────────────────────────
+
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # [cython] — Cython compilation settings
+    # ══════════════════════════════════════════════════════════════════════════
+    #
+    # Controls whether selected Python modules are compiled to native Windows
+    # extension (.pyd) files before PyInstaller bundles the application.
+    # Cython compilation serves two purposes:
+    #
+    #   1. Performance  — tight inner loops and numerical code can be 2–10×
+    #                     faster than the equivalent pure-Python bytecode.
+    #   2. Obfuscation  — compiled .pyd files do not expose Python source,
+    #                     making proprietary algorithms harder to reverse-engineer.
+    #
+    # If the [cython] section is omitted entirely, all defaults below apply and
+    # no Cython compilation is performed.
+
+    [cython]
+
+    # compiled_modules
+    #
+    # A list of fully-qualified, dotted module paths to compile with Cython.
+    # Each entry must resolve to a .py file under `source_root`.  The builder
+    # runs cythonize() on each listed module, produces a .pyd extension, and
+    # stages everything (compiled and uncompiled alike) under build/compiled/
+    # before handing the tree to PyInstaller.
+    #
+    # Example:
+    #   compiled_modules = [
+    #       "myapp.core.engine",   # performance-critical inner loop
+    #       "myapp.core.crypto",   # obfuscation: hide algorithm details
+    #   ]
+    #
+    # Default: [] — Cython is disabled; all source files are staged as-is.
+    compiled_modules = []
+
+    # source_root
+    #
+    # Directory (relative to the project root) that contains the top-level
+    # Python source packages.
+    #
+    #   src-layout project  →  source_root = "src"   (default)
+    #   flat-layout project →  source_root = "."  or  source_root = "mypackage"
+    #
+    # Default: "src"
+    source_root = "src"
+
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # [docs] — Documentation build settings
+    # ══════════════════════════════════════════════════════════════════════════
+    #
+    # Controls which documentation units are processed by `build windows docs`,
+    # which of those are distributed alongside the Windows application, and
+    # which require a sphinx-apidoc pre-pass to auto-generate API reference
+    # stubs.
+    #
+    # A "documentation unit" is a subdirectory of docs/ that contains its own
+    # Sphinx source tree (i.e. a source/conf.py file), for example:
+    #   docs/manual/
+    #   docs/developer_guide/
+    #
+    # If the [docs] section is omitted entirely, all defaults below apply.
+
+    [docs]
+
+    # dist_dirs
+    #
+    # A list of subdirectory names under docs/ whose built HTML output is
+    # copied into the distribution artefacts after a successful
+    # `build windows installer` (or `build windows all`) run.
+    #
+    # For each name listed, the builder copies:
+    #   build/<name>/html/  →  dist/pyinstaller/documentation/<name>/
+    #
+    # That tree is then picked up by the Inno Setup script and bundled inside
+    # the Windows setup.exe, making the documentation available to end-users
+    # offline after installation.  An empty list builds all documentation units
+    # but ships none of them with the installer.
+    #
+    # Example:
+    #   dist_dirs = ["manual"]
+    #
+    # Default: [] — no documentation is distributed with the installer.
+    dist_dirs = []
+
+    # apidoc_dirs
+    #
+    # A list of subdirectory names under docs/ for which `sphinx-apidoc` is
+    # run automatically before `sphinx-build`.  sphinx-apidoc scans the Python
+    # source tree and generates .rst stub files for every public module,
+    # producing the API reference section of the documentation from docstrings.
+    #
+    # Only include units that actually contain an API reference section;
+    # purely hand-authored documentation units (tutorials, user guides, etc.)
+    # do not need an apidoc pre-pass and should be omitted from this list.
+    # Must be a subset of the Sphinx directories — i.e. those that have a
+    # source/conf.py file.
+    #
+    # Example:
+    #   apidoc_dirs = ["developer_guide"]
+    #
+    # Default: [] — no sphinx-apidoc pre-pass; all .rst files are hand-authored.
+    apidoc_dirs = []
+
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # [windows] — Windows packaging settings
+    # ══════════════════════════════════════════════════════════════════════════
+    #
+    # Controls the Windows distribution pipeline: where the packaging files
+    # live and whether the installer targets offline or online deployment.
+    #
+    # This section is consumed by `build windows installer` and
+    # `build windows all`.  It expects the following files to exist inside
+    # script_dir, named after the project (hyphens replaced by underscores):
+    #
+    #   {project_name}.iss                 Inno Setup script       (required)
+    #   {project_name}_commandline.bat     command-line launcher   (required)
+    #   {project_name}_powershell.ps1      PowerShell launcher     (required)
+    #   {project_name}.ico                 application icon        (optional)
+    #
+    # If the [windows] section is omitted entirely, all defaults below apply.
+
+    [windows]
+
+    # script_dir
+    #
+    # Directory (relative to the project root) containing the Windows packaging
+    # files listed above.  The builder reads launcher scripts from here, copies
+    # them into the PyInstaller distribution tree, and passes the .iss script
+    # to Inno Setup's ISCC compiler.
+    #
+    # Default: "packaging/windows"
+    script_dir = "packaging/windows"
+
+    # bundle_pyruntime
+    #
+    # Selects between online and offline installer modes.
+    #
+    # false (default) — ONLINE mode
+    #   uv.exe is embedded in the bin/ directory of the installation.  During
+    #   the installation wizard, setup_pyruntime.ps1 uses uv to download and
+    #   create the PythonRuntime virtual environment on the end-user's machine.
+    #   The resulting setup.exe is significantly smaller.
+    #
+    # true            — OFFLINE mode
+    #   A complete PythonRuntime virtual environment is pre-built at
+    #   dist/pyruntime/ during the build itself (using uv).  Its path is then
+    #   passed to Inno Setup via the /DPythonRuntimeDir preprocessor define,
+    #   and the entire environment is embedded inside setup.exe.
+    #   No internet access is needed on the end-user's machine at install time.
+    #
+    #   Prerequisites for offline mode:
+    #     - A .python-version file must exist at the project root (single line,
+    #       e.g. "3.13") specifying which Python version to install.
+    #     - uv must be available on PATH at build time.
+    #
+    # Default: false
+    bundle_pyruntime = false

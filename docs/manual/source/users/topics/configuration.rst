@@ -169,6 +169,12 @@ Complete example
     dist_dirs = ["manual"]
     apidoc_dirs = ["developer_guide"]
 
+Annotated reference file
+========================
+
+For a single copy-paste-ready block that lists every option with inline
+comments, see :ref:`builder_toml_reference`.
+
 Defaults summary
 ================
 
