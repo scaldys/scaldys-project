@@ -96,7 +96,7 @@ Controls which documentation units are distributed and which require a
      - ``[]``
      - List of subdirectory names under ``docs/`` whose built HTML output
        (``build/<name>/html/``) is copied into the distribution artefacts
-       (``dist/pyinstaller/documentation/<name>/``).  An empty list means
+       (``dist/portable/documentation/<name>/``).  An empty list means
        no documentation is distributed.
    * - ``apidoc_dirs``
      - ``[]``

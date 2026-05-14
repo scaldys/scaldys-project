@@ -50,13 +50,13 @@ in your script:
     AppPublisher=My Company
     DefaultDirName={autopf}\MyApp
     DefaultGroupName=MyApp
-    OutputDir=..\..\dist\setup
+    OutputDir=..\..\dist\installer
     OutputBaseFilename=MyApp-Setup-{#MyAppVersion}
     Compression=lzma
     SolidCompression=yes
 
     [Files]
-    Source: "..\..\dist\pyinstaller\bin\*"; DestDir: "{app}\bin"; Flags: recursesubdirs
+    Source: "..\..\dist\portable\bin\*"; DestDir: "{app}\bin"; Flags: recursesubdirs
 
     [Icons]
     Name: "{group}\MyApp"; Filename: "{app}\bin\myapp.exe"
@@ -68,14 +68,14 @@ in your script:
 .. tip::
 
    Use relative paths in the ``.iss`` script relative to the script's own
-   location (``packaging/windows/``).  The paths ``..\..\dist\pyinstaller\bin\*``
-   and ``..\..\dist\setup`` navigate from the packaging directory to the
+   location (``packaging/windows/``).  The paths ``..\..\dist\portable\bin\*``
+   and ``..\..\dist\installer`` navigate from the packaging directory to the
    project root's ``dist/`` output.
 
 Launcher scripts
 ----------------
 
-Launcher scripts are copied into ``dist/pyinstaller/`` alongside the
+Launcher scripts are copied into ``dist/portable/`` alongside the
 executable bundle so they are included in the installer.
 
 **myapp_commandline.bat** — opens a command prompt in the application directory:
@@ -106,14 +106,14 @@ How it works
 The installer step performs the following actions in sequence:
 
 1. **Copy launcher scripts** — ``.bat`` and ``.ps1`` files from
-   ``[windows] script_dir`` are copied to ``dist/pyinstaller/``.
+   ``[windows] script_dir`` are copied to ``dist/portable/``.
 
 2. **Copy documentation** — for each directory listed in ``[docs] dist_dirs``
    in ``builder.toml``, the HTML output (from ``build/<name>/html/``) is
-   copied to ``dist/pyinstaller/documentation/<name>/``.
+   copied to ``dist/portable/documentation/<name>/``.
 
 3. **Copy examples** (optional) — if an ``examples/`` directory exists in
-   the project root, it is copied to ``dist/pyinstaller/examples/``.
+   the project root, it is copied to ``dist/portable/examples/``.
 
 4. **Build PythonRuntime** (optional, offline mode only) — if
    ``[windows] bundle_pyruntime = true`` is set in ``builder.toml``,
@@ -166,7 +166,7 @@ notebooks or execute Python scripts at end-user sites).
     2. Installs that Python version via ``uv python install``.
     3. Creates a virtual environment at ``dist/pyruntime/`` and installs
        ``jupyter``, ``pyyaml``, and the project's distribution wheel
-       (from ``dist/pyinstaller/bin/wheels/``) into it.
+       (from ``dist/portable/bin/wheels/``) into it.
     4. Passes ``/DPythonRuntimeDir=<path>`` to Inno Setup so the script
        can bundle the pre-built environment.
 
@@ -195,7 +195,7 @@ Output location
 .. code-block:: text
 
     dist/
-        setup/
+        installer/
             MyApp-Setup-1.2.3.exe   ← Windows installer
 
 The output filename and location are controlled entirely by the ``[Setup]``

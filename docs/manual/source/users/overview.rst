@@ -27,7 +27,7 @@ produces, in order:
    executable, the documentation, launcher scripts, and example files; adds
    Start Menu and Desktop shortcuts; and handles uninstallation cleanly.
 
-The end result is a ``dist/setup/`` folder containing a single
+The end result is a ``dist/installer/`` folder containing a single
 ``MyApp-Setup-x.y.z.exe`` that you can ship directly to users.
 
 The build pipeline at a glance
@@ -50,7 +50,7 @@ The build pipeline at a glance
                                                      │ PyInstaller
                                                      ▼
                                        ┌──────────────────────────┐
-                                       │ dist/pyinstaller/bin/    │
+                                       │ dist/portable/bin/    │
                                        │   myapp.exe              │
                                        └─────────────┬────────────┘
                                                      │
@@ -58,7 +58,7 @@ The build pipeline at a glance
     │ packaging/       │ ────────────────────────────▶
     │ windows/         │
     │   myapp.iss      │               ┌────────────────────────────┐
-    └──────────────────┘               │ dist/setup/                │
+    └──────────────────┘               │ dist/installer/                │
                                        │   MyApp-Setup-x.y.z.exe    │
                                        └────────────────────────────┘
 

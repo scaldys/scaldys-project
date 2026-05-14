@@ -148,7 +148,7 @@ Windows executable using PyInstaller.
 
 .. code-block:: text
 
-    dist/pyinstaller/bin/   ← executable + all supporting libraries
+    dist/portable/bin/   ← executable + all supporting libraries
 
 **Compliance check**: Before running, verifies that the source package
 directory and ``__main__.py`` entry point exist.  See :ref:`compliance_checking`.
@@ -185,7 +185,7 @@ Inno Setup.
 
 1. Copies launcher scripts (``.bat``, ``.ps1``) and the HTML documentation
    for each directory listed in ``[docs] dist_dirs`` (``builder.toml``) from
-   ``build/<name>/html/`` into ``dist/pyinstaller/documentation/<name>/``.
+   ``build/<name>/html/`` into ``dist/portable/documentation/<name>/``.
 2. Copies any example files from ``examples/`` (if the directory exists).
 3. Runs ``ISCC.exe`` with the ``.iss`` script found in
    ``[windows] script_dir``, injecting the project version automatically.
@@ -194,7 +194,7 @@ Inno Setup.
 
 .. code-block:: text
 
-    dist/setup/     ← Windows installer executable
+    dist/installer/     ← Windows installer executable
 
 **Compliance check**: Before running, verifies that the Windows packaging
 directory, ``.iss`` script, and launcher scripts exist.  See

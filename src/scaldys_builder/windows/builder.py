@@ -18,6 +18,7 @@ and a ``main()`` entry point for the complete end-to-end workflow.
 
 import logging
 import os
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -34,6 +35,24 @@ from scaldys_builder.common.utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _remove_toml_sections(text: str, *section_headers: str) -> str:
+    """Return *text* with the named TOML table sections (and their keys) removed.
+
+    Each *section_header* should be the bare header string, e.g.
+    ``"tool.setuptools.packages.find"``.  The section extends from its header
+    line up to (but not including) the next ``[``-prefixed header line or the
+    end of the file.
+    """
+    for header in section_headers:
+        # Match the header line and all subsequent non-header lines.
+        pattern = re.compile(
+            r"^\[" + re.escape(header) + r"\]\s*\n(?:(?!\[)[^\n]*\n)*",
+            re.MULTILINE,
+        )
+        text = pattern.sub("", text)
+    return text
 
 
 class WindowsBuildEnvironment(BaseBuildEnvironment):
@@ -75,8 +94,8 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
 
         self.src_compiled_dir_path = self.build_dir_path.joinpath("compiled")
         self.examples_dir_path = self.project_path.joinpath("examples")
-        self.dist_exe_dir_path = self.dist_dir_path.joinpath("pyinstaller")
-        self.dist_setup_dir_path = self.dist_dir_path.joinpath("setup")
+        self.dist_exe_dir_path = self.dist_dir_path.joinpath("portable")
+        self.dist_setup_dir_path = self.dist_dir_path.joinpath("installer")
 
     def pre_flight_checks(
         self,
@@ -373,7 +392,7 @@ class Compiler:
         can discover the package (which is at the root of the staging tree,
         not under ``src/``), then runs ``uv build --wheel``.  The resulting
         ``.whl`` file — containing the compiled ``.pyd`` extensions but no
-        Python source files — is written to ``dist/pyinstaller/bin/wheels/``
+        Python source files — is written to ``dist/portable/bin/wheels/``
         so that Inno Setup includes it in the installer and
         ``setup_pyruntime.ps1`` can install it into the PythonRuntime via
         ``uv pip install --find-links``.
@@ -400,15 +419,25 @@ class Compiler:
         # build/compiled/ contains extra_hooks/ (PyInstaller hooks) alongside the
         # package directory, and setuptools flat-layout auto-discovery refuses to
         # proceed when it finds more than one top-level package.
-        with open(dest_pyproject, "a", encoding="utf-8") as f:
-            f.write(
-                "\n"
-                "[tool.setuptools.packages.find]\n"
-                f'include = ["{self.env.project_package_name}*"]\n'
-                "\n"
-                "[tool.setuptools.package-data]\n"
-                '"*" = ["*.pyd"]\n'
-            )
+        #
+        # Strip any existing copies of these sections before appending so that we
+        # don't produce duplicate TOML table headers when the source pyproject.toml
+        # already defines them (which would cause a parse error).
+        text = dest_pyproject.read_text(encoding="utf-8")
+        text = _remove_toml_sections(
+            text,
+            "tool.setuptools.packages.find",
+            "tool.setuptools.package-data",
+        )
+        text = text.rstrip() + (
+            "\n\n"
+            "[tool.setuptools.packages.find]\n"
+            f'include = ["{self.env.project_package_name}*"]\n'
+            "\n"
+            "[tool.setuptools.package-data]\n"
+            '"*" = ["*.pyd"]\n'
+        )
+        dest_pyproject.write_text(text, encoding="utf-8")
 
         logger.info("[bold]Building distribution wheel from compiled sources...[/bold]")
         self.env.run_command(

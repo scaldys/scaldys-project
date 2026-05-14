@@ -12,6 +12,14 @@
 ---------------------
 
 **Changed**:
+    - Output subdirectory ``dist/pyinstaller/`` renamed to ``dist/portable/``
+      to describe the content (copy-and-run standalone bundle) rather than the
+      tool that produced it.
+
+    - Output subdirectory ``dist/setup/`` renamed to ``dist/installer/``
+      to describe the artifact type (Windows installer) rather than the
+      conventional filename of the executable it contains.
+
     - ``builder.py`` renamed to ``__main__.py``, making ``scaldys-builder``
       consistent with the project layout it enforces on consuming projects.
       The module is now also runnable as ``python -m scaldys_builder``.
@@ -71,7 +79,7 @@
     - ``[docs]`` section in ``builder.toml``:
 
       - ``dist_dirs`` — list of subdirectory names whose built HTML is copied
-        into the distribution artefacts (``dist/pyinstaller/documentation/<name>/``).
+        into the distribution artefacts (``dist/portable/documentation/<name>/``).
         Defaults to ``[]`` (no documentation distributed).
 
       - ``apidoc_dirs`` — list of subdirectory names that require a
@@ -89,8 +97,8 @@
 
 **Changed**:
     - Distribution path for documentation changed from the single fixed
-      destination ``dist/pyinstaller/documentation/help files/`` to
-      ``dist/pyinstaller/documentation/<name>/`` (one sub-folder per entry in
+      destination ``dist/portable/documentation/help files/`` to
+      ``dist/portable/documentation/<name>/`` (one sub-folder per entry in
       ``[docs] dist_dirs``).
 
       .. note::

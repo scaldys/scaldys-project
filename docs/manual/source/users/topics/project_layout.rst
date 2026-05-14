@@ -102,7 +102,7 @@ Examples directory
 
 If an ``examples/`` directory exists in the project root,
 ``scaldys-builder build windows installer`` copies its contents to
-``dist/pyinstaller/examples/`` so the examples are included in the Windows
+``dist/portable/examples/`` so the examples are included in the Windows
 installer.  This directory is entirely optional.
 
 Build output layout
@@ -143,14 +143,14 @@ For example, with ``docs/manual/`` and ``docs/developer_guide/``:
 .. code-block:: text
 
     dist/
-        pyinstaller/
+        portable/
             bin/                ← executable + libraries (from PyInstaller)
             documentation/
                 <name>/         ← one directory per entry in dist_dirs
             examples/           ← example files (copied in, if examples/ exists)
             myapp_commandline.bat
             myapp_powershell.ps1
-        setup/
+        installer/
             MyApp-Setup-1.2.3.exe   ← Windows installer (from Inno Setup)
 
 For example, with ``dist_dirs = ["manual"]``:
@@ -158,14 +158,14 @@ For example, with ``dist_dirs = ["manual"]``:
 .. code-block:: text
 
     dist/
-        pyinstaller/
+        portable/
             bin/
             documentation/
                 manual/         ← copied from build/manual/html/
             examples/
             myapp_commandline.bat
             myapp_powershell.ps1
-        setup/
+        installer/
             MyApp-Setup-1.2.3.exe
 
 Relationship between stages
@@ -177,11 +177,11 @@ The three build stages consume each other's output:
 
     [docs]  →  build/<name>/html/   (for each docs/ subdirectory)
                           ↓
-    [exe]   →  dist/pyinstaller/bin/
+    [exe]   →  dist/portable/bin/
                           ↓
     [installer]  →  copies build/<name>/html/ (for each dist_dirs entry)
-                        + launchers + examples into dist/pyinstaller/
-                     runs ISCC.exe → dist/setup/MyApp-Setup-x.y.z.exe
+                        + launchers + examples into dist/portable/
+                     runs ISCC.exe → dist/installer/MyApp-Setup-x.y.z.exe
 
 Running stages out of order is possible but the later stages depend on
 earlier output.  Use ``build windows all`` to run them in the correct

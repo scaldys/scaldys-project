@@ -37,7 +37,7 @@ antivirus software less likely to flag the executable during extraction.
 
 .. code-block:: text
 
-    dist/pyinstaller/
+    dist/portable/
         bin/
             myapp.exe           ← launcher executable
             python313.dll
@@ -91,7 +91,7 @@ Output location
 .. code-block:: text
 
     dist/
-        pyinstaller/
+        portable/
             bin/
                 myapp.exe
                 python313.dll
@@ -100,7 +100,7 @@ Output location
                     myapp-1.2.3-cp313-cp313-win_amd64.whl   ← distribution wheel
 
 The ``build windows installer`` step copies launcher scripts and
-documentation into ``dist/pyinstaller/`` before creating the final installer.
+documentation into ``dist/portable/`` before creating the final installer.
 
 Distribution wheel
 ==================
@@ -111,7 +111,7 @@ After PyInstaller completes, ``scaldys-builder`` automatically builds a
 modules only — no Python source files — which protects proprietary algorithm
 details while still making the full package importable in a Python environment.
 
-The wheel is placed in ``dist/pyinstaller/bin/wheels/`` where Inno Setup
+The wheel is placed in ``dist/portable/bin/wheels/`` where Inno Setup
 can bundle it into the installer and the PythonRuntime setup script
 (``setup_pyruntime.ps1``) can install it via
 ``uv pip install --find-links <wheels_dir>``.
@@ -129,7 +129,7 @@ How the wheel is built
      compiled extensions in the wheel.
 
 3. ``uv build --wheel`` is invoked from ``build/compiled/`` and the resulting
-   ``.whl`` file is moved to ``dist/pyinstaller/bin/wheels/``.
+   ``.whl`` file is moved to ``dist/portable/bin/wheels/``.
 
 .. note::
 

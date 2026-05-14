@@ -95,7 +95,7 @@ For narrative explanations of each section see :ref:`configuration`.
     # `build windows installer` (or `build windows all`) run.
     #
     # For each name listed, the builder copies:
-    #   build/<name>/html/  →  dist/pyinstaller/documentation/<name>/
+    #   build/<name>/html/  →  dist/portable/documentation/<name>/
     #
     # That tree is then picked up by the Inno Setup script and bundled inside
     # the Windows setup.exe, making the documentation available to end-users

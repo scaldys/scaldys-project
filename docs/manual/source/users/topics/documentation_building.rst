@@ -140,7 +140,7 @@ packager should copy into the distribution:
     dist_dirs = ["manual"]
 
 Each listed name is copied from ``build/<name>/html/`` into
-``dist/pyinstaller/documentation/<name>/``.  If a name is absent from
+``dist/portable/documentation/<name>/``.  If a name is absent from
 ``dist_dirs``, its built output is never included in the distribution but is
 still produced during the ``docs`` step.
 
@@ -171,4 +171,4 @@ Given an example project with two documentation units — ``manual`` and
 With ``dist_dirs = ["manual"]`` in ``builder.toml``, the distribution
 contains::
 
-    dist/pyinstaller/documentation/manual/   ← copied from build/manual/html/
+    dist/portable/documentation/manual/   ← copied from build/manual/html/

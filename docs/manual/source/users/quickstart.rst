@@ -106,8 +106,8 @@ A Rich progress bar tracks each stage. Output artefacts land in:
 
     build/           ← intermediate artefacts
     dist/
-        pyinstaller/bin/    ← standalone executable + libraries
-        setup/              ← generated Windows installer (.exe)
+        portable/bin/    ← standalone executable + libraries
+        installer/          ← generated Windows installer (.exe)
 
 Step 5 — Run individual stages
 --------------------------------
