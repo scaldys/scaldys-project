@@ -42,7 +42,7 @@ The build pipeline at a glance
     │  docs/      │ ────────────────▶│ build/<name>/html/       │
     │  manual/    │                   └──────────────┬───────────┘
     │  dev_guide/ │                                  │
-    └─────────────┘                                  │ dist_dirs → installer
+    └─────────────┘                                  │ public_doc_dirs → installer
     ┌─────────────┐   Cython (opt.)  ┌─────────────────────────────┐
     │  src/       │ ───────────────▶│ build/compiled/             │
     │  myapp/     │                  └───────────────┬─────────────┘

@@ -110,7 +110,7 @@ class DocumentationBuilder:
         Build a single documentation unit.
 
         Detects the engine, optionally runs sphinx-apidoc (if configured in
-        ``builder.toml`` ``[docs] apidoc_dirs``), then builds.  Logs a warning
+        ``builder.toml`` ``[docs] internal_doc_dirs``), then builds.  Logs a warning
         and returns without building for unknown or unsupported engines.
 
         Parameters
@@ -139,7 +139,7 @@ class DocumentationBuilder:
         build_dir = self.env.build_dir_path / dir_name
         logger.info(f"[bold]Building Sphinx documentation: '{dir_name}'...[/bold]")
 
-        if dir_name in self.env.config.docs.apidoc_dirs:
+        if dir_name in self.env.config.docs.internal_doc_dirs:
             self._run_apidoc(doc_dir)
 
         self._build_sphinx(doc_dir, build_dir)

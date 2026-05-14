@@ -18,8 +18,8 @@ Example ``builder.toml``::
     script_dir = "packaging/windows"
 
     [docs]
-    dist_dirs = ["manual"]
-    apidoc_dirs = ["developer_guide"]
+    public_doc_dirs = ["manual"]
+    internal_doc_dirs = ["developer_guide"]
 """
 
 import tomllib
@@ -81,18 +81,18 @@ class DocsConfig:
 
     Attributes
     ----------
-    dist_dirs : list of str
+    public_doc_dirs : list of str
         Subdirectory names under ``docs/`` whose built HTML output is copied
         into distribution artifacts (PyInstaller dist + Inno Setup).
         An empty list means no documentation is distributed.
-    apidoc_dirs : list of str
+    internal_doc_dirs : list of str
         Subdirectory names that require a ``sphinx-apidoc`` pre-pass before
         ``sphinx-build`` is invoked.  Must be a subset of the Sphinx directories
         (i.e. those containing ``source/conf.py``).
     """
 
-    dist_dirs: list[str] = field(default_factory=list)
-    apidoc_dirs: list[str] = field(default_factory=list)
+    public_doc_dirs: list[str] = field(default_factory=list)
+    internal_doc_dirs: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -146,7 +146,7 @@ def load_config(project_path: Path) -> BuildConfig:
             bundle_pyruntime=windows_data.get("bundle_pyruntime", False),
         ),
         docs=DocsConfig(
-            dist_dirs=docs_data.get("dist_dirs", []),
-            apidoc_dirs=docs_data.get("apidoc_dirs", []),
+            public_doc_dirs=docs_data.get("public_doc_dirs", []),
+            internal_doc_dirs=docs_data.get("internal_doc_dirs", []),
         ),
     )

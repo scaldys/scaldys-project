@@ -49,12 +49,14 @@ def test_detect_engine_sphinx_takes_priority_over_mkdocs():
 # ---------------------------------------------------------------------------
 
 
-def _make_env(docs_dir: Path, build_dir: Path, apidoc_dirs: list[str] | None = None) -> MagicMock:
+def _make_env(
+    docs_dir: Path, build_dir: Path, internal_doc_dirs: list[str] | None = None
+) -> MagicMock:
     """Return a minimal mock BaseBuildEnvironment."""
     env = MagicMock()
     env.docs_dir_path = docs_dir
     env.build_dir_path = build_dir
-    env.config.docs.apidoc_dirs = apidoc_dirs or []
+    env.config.docs.internal_doc_dirs = internal_doc_dirs or []
     env.run_command.return_value = ("", "")
     return env
 
@@ -136,7 +138,7 @@ def test_build_sphinx_calls_sphinx_build(caplog):
 
 
 def test_build_sphinx_apidoc_calls_apidoc_then_sphinx_build(caplog):
-    """build() runs sphinx-apidoc before sphinx-build for apidoc_dirs entries."""
+    """build() runs sphinx-apidoc before sphinx-build for internal_doc_dirs entries."""
     with tempfile.TemporaryDirectory() as tmpdir:
         docs_dir = Path(tmpdir) / "docs"
         docs_dir.mkdir()
@@ -145,7 +147,7 @@ def test_build_sphinx_apidoc_calls_apidoc_then_sphinx_build(caplog):
         (dev_dir / "source").mkdir()
         (dev_dir / "source" / "conf.py").touch()
         build_dir = Path(tmpdir) / "build"
-        env = _make_env(docs_dir, build_dir, apidoc_dirs=["developer_guide"])
+        env = _make_env(docs_dir, build_dir, internal_doc_dirs=["developer_guide"])
         builder = DocumentationBuilder(env)
         builder.build()
     # Three calls: sphinx-apidoc + html + singlehtml

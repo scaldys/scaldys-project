@@ -79,7 +79,7 @@ To declare which documentation units should be bundled into the installer, add
 to ``builder.toml``::
 
     [docs]
-    dist_dirs = ["manual"]
+    public_doc_dirs = ["manual"]
 
 See :ref:`documentation_building` for the complete expected layout, engine
 auto-detection rules, and Sphinx configuration tips.

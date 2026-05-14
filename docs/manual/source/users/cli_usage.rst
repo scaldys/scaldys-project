@@ -94,8 +94,8 @@ auto-detected from each subdirectory's contents.
 
 For each Sphinx unit (``source/conf.py`` present), two HTML formats are
 produced: standard multi-page HTML and single-page HTML.  For units listed
-in ``[docs] apidoc_dirs`` in ``builder.toml``, ``sphinx-apidoc`` runs first
-to generate ``.rst`` stubs from source code docstrings.
+in ``[docs] internal_doc_dirs`` in ``builder.toml``, ``sphinx-apidoc`` runs
+first to generate ``.rst`` stubs from source code docstrings.
 
 **Output locations**
 
@@ -184,7 +184,7 @@ Inno Setup.
 **What it does**
 
 1. Copies launcher scripts (``.bat``, ``.ps1``) and the HTML documentation
-   for each directory listed in ``[docs] dist_dirs`` (``builder.toml``) from
+   for each directory listed in ``[docs] public_doc_dirs`` (``builder.toml``) from
    ``build/<name>/html/`` into ``dist/portable/documentation/<name>/`` and
    ``dist/documentation/<name>/``.
 2. Copies any example files from ``examples/`` (if the directory exists).

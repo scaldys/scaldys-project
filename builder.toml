@@ -78,11 +78,12 @@ source_root = "src"
 
 [docs]
 
-# dist_dirs
+# public_doc_dirs
 #
 # A list of subdirectory names under docs/ whose built HTML output is copied
 # into the distribution artefacts after a successful `build windows installer`
-# (or `build windows all`) run.
+# (or `build windows all`) run.  These are the documentation units destined
+# for end users of the program.
 #
 # For each name listed, the builder copies:
 #   build/<name>/html/  →  dist/portable/documentation/<name>/
@@ -94,36 +95,40 @@ source_root = "src"
 # but ships none of them with the installer.
 #
 # Example:
-#   dist_dirs = ["manual"]
+#   public_doc_dirs = ["manual"]
 #
 # Default: [] — no documentation is distributed with the installer.
 #
 # Not applicable to scaldys-builder: this project is distributed via PyPI,
 # not as a Windows end-user installer, so no docs are ever bundled into
 # dist artefacts.
-# dist_dirs = []
+# public_doc_dirs = []
 
-# apidoc_dirs
+# internal_doc_dirs
 #
-# A list of subdirectory names under docs/ for which `sphinx-apidoc` is run
-# automatically before `sphinx-build`.  sphinx-apidoc scans the Python source
-# tree and generates .rst stub files for every public module, producing the
-# API reference section of the documentation from docstrings.
+# A list of subdirectory names under docs/ that contain internal documentation
+# for the developers of the program — information that explains how the
+# software works internally, and which is not distributed to end users.
 #
-# Only include units that actually contain an API reference section; purely
-# hand-authored documentation units (tutorials, user guides, etc.) do not
-# need an apidoc pre-pass and should be omitted from this list.
+# For each name listed, `sphinx-apidoc` is run automatically before
+# `sphinx-build`.  sphinx-apidoc scans the Python source tree and generates
+# .rst stub files for every public module, producing an API reference section
+# from docstrings.  A sphinx-apidoc pre-pass is one common use case; the
+# directory may also contain fully hand-authored internal documentation.
+#
+# Only include units that actually require the sphinx-apidoc pre-pass;
+# purely hand-authored internal units do not need it and should be omitted.
 #
 # Must be a subset of the Sphinx directories — i.e. those that have a
 # source/conf.py file.
 #
 # Example:
-#   apidoc_dirs = ["developer_guide"]
+#   internal_doc_dirs = ["developer_guide"]
 #
 # Default: [] — no sphinx-apidoc pre-pass; all .rst files are hand-authored.
 #
 # scaldys-builder's manual is fully hand-authored; no apidoc pass is needed.
-apidoc_dirs = []
+internal_doc_dirs = []
 
 
 # ══════════════════════════════════════════════════════════════════════════════

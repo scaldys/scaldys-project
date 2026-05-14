@@ -105,7 +105,7 @@ To enable the ``sphinx-apidoc`` pre-pass for a directory, list it in
 ``builder.toml``::
 
     [docs]
-    apidoc_dirs = ["developer_guide"]
+    internal_doc_dirs = ["developer_guide"]
 
 When ``developer_guide`` (or any listed name) is encountered during the build:
 
@@ -131,13 +131,13 @@ Distribution of built docs
 ==========================
 
 Not every documentation unit needs to be shipped to end users.  Use
-``[docs] dist_dirs`` in ``builder.toml`` to declare which built units the
-packager should copy into the distribution:
+``[docs] public_doc_dirs`` in ``builder.toml`` to declare which built units
+the packager should copy into the distribution:
 
 .. code-block:: toml
 
     [docs]
-    dist_dirs = ["manual"]
+    public_doc_dirs = ["manual"]
 
 Each listed name is copied from ``build/<name>/html/`` into two locations:
 
@@ -146,11 +146,11 @@ Each listed name is copied from ``build/<name>/html/`` into two locations:
 - ``dist/documentation/<name>/`` — a standalone documentation-only copy,
   useful when you only want the docs without the full portable package.
 
-If a name is absent from ``dist_dirs``, its built output is never included in
-the distribution but is still produced during the ``docs`` step.
+If a name is absent from ``public_doc_dirs``, its built output is never
+included in the distribution but is still produced during the ``docs`` step.
 
-An empty (or absent) ``dist_dirs`` means no documentation is distributed —
-useful when all doc units are for internal/developer use only.
+An empty (or absent) ``public_doc_dirs`` means no documentation is distributed
+— useful when all doc units are for internal/developer use only.
 
 Build output summary
 ====================
@@ -173,7 +173,7 @@ Given an example project with two documentation units — ``manual`` and
    * - ``build/developer_guide/singlehtml/``
      - Developer / API guide, single-page HTML
 
-With ``dist_dirs = ["manual"]`` in ``builder.toml``, the distribution
+With ``public_doc_dirs = ["manual"]`` in ``builder.toml``, the distribution
 contains::
 
     dist/portable/documentation/manual/   ← copied from build/manual/html/

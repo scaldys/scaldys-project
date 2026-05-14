@@ -76,14 +76,15 @@ See :ref:`cython_compilation` for a full explanation of how compilation works.
 ``[docs]``
 ----------
 
-Controls which documentation units are distributed and which require a
-``sphinx-apidoc`` pre-pass.
+Controls which documentation units are distributed to end users and which
+contain internal developer documentation (with an optional ``sphinx-apidoc``
+pre-pass).
 
 .. code-block:: toml
 
     [docs]
-    dist_dirs = ["manual"]
-    apidoc_dirs = ["developer_guide"]
+    public_doc_dirs = ["manual"]
+    internal_doc_dirs = ["developer_guide"]
 
 .. list-table::
    :header-rows: 1
@@ -92,26 +93,29 @@ Controls which documentation units are distributed and which require a
    * - Key
      - Default
      - Description
-   * - ``dist_dirs``
+   * - ``public_doc_dirs``
      - ``[]``
      - List of subdirectory names under ``docs/`` whose built HTML output
        (``build/<name>/html/``) is copied into the distribution artefacts:
        ``dist/portable/documentation/<name>/`` (alongside the portable package)
        and ``dist/documentation/<name>/`` (standalone documentation copy).
+       These are the documentation units destined for end users of the program.
        An empty list means no documentation is distributed.
-   * - ``apidoc_dirs``
+   * - ``internal_doc_dirs``
      - ``[]``
-     - List of subdirectory names that require a ``sphinx-apidoc`` pre-pass
-       before ``sphinx-build`` is invoked.  Must be a subset of the Sphinx
-       directories (those containing ``source/conf.py``).
+     - List of subdirectory names containing internal documentation for
+       developers of the program — not distributed to end users.  For each
+       listed name, a ``sphinx-apidoc`` pre-pass runs before ``sphinx-build``
+       to generate ``.rst`` stubs from docstrings.  Must be a subset of the
+       Sphinx directories (those containing ``source/conf.py``).
 
 **Example — distribute one unit, generate one unit from source code**
 
 .. code-block:: toml
 
     [docs]
-    dist_dirs = ["manual"]
-    apidoc_dirs = ["developer_guide"]
+    public_doc_dirs = ["manual"]
+    internal_doc_dirs = ["developer_guide"]
 
 See :ref:`documentation_building` for a full explanation of how the doc
 build works.
@@ -167,8 +171,8 @@ Complete example
     script_dir = "packaging/windows"
 
     [docs]
-    dist_dirs = ["manual"]
-    apidoc_dirs = ["developer_guide"]
+    public_doc_dirs = ["manual"]
+    internal_doc_dirs = ["developer_guide"]
 
 Annotated reference file
 ========================
@@ -196,7 +200,7 @@ defaults apply:
      - ``"packaging/windows"``
    * - ``windows.bundle_pyruntime``
      - ``false`` (online installer mode)
-   * - ``docs.dist_dirs``
+   * - ``docs.public_doc_dirs``
      - ``[]`` (no documentation distributed)
-   * - ``docs.apidoc_dirs``
+   * - ``docs.internal_doc_dirs``
      - ``[]`` (no apidoc pre-pass)

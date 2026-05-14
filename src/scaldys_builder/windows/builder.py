@@ -526,11 +526,11 @@ class Packager:
                 "uv to be installed on the end-user's machine."
             )
 
-        for dir_name in self.env.config.docs.dist_dirs:
+        for dir_name in self.env.config.docs.public_doc_dirs:
             help_src = self.env.build_dir_path.joinpath(dir_name, "html")
             if not help_src.is_dir():
                 logger.warning(
-                    f"Built HTML for dist_dir '{dir_name}' not found at '{help_src}'. Skipping."
+                    f"Built HTML for public_doc_dir '{dir_name}' not found at '{help_src}'. Skipping."
                 )
                 continue
             for dest_root in [

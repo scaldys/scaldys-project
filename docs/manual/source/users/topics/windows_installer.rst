@@ -108,7 +108,7 @@ The installer step performs the following actions in sequence:
 1. **Copy launcher scripts** — ``.bat`` and ``.ps1`` files from
    ``[windows] script_dir`` are copied to ``dist/portable/``.
 
-2. **Copy documentation** — for each directory listed in ``[docs] dist_dirs``
+2. **Copy documentation** — for each directory listed in ``[docs] public_doc_dirs``
    in ``builder.toml``, the HTML output (from ``build/<name>/html/``) is
    copied to both ``dist/portable/documentation/<name>/`` (bundled with the
    portable package) and ``dist/documentation/<name>/`` (standalone docs only).

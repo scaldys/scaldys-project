@@ -84,8 +84,8 @@ Configure which units are included in the distribution and which need a
 ``sphinx-apidoc`` pre-pass via ``[docs]`` in ``builder.toml``::
 
     [docs]
-    dist_dirs = ["manual"]
-    apidoc_dirs = ["developer_guide"]
+    public_doc_dirs = ["manual"]
+    internal_doc_dirs = ["developer_guide"]
 
 Windows packaging layout
 --------------------------
@@ -146,16 +146,16 @@ For example, with ``docs/manual/`` and ``docs/developer_guide/``:
         portable/
             bin/                ← executable + libraries (from PyInstaller)
             documentation/
-                <name>/         ← one directory per entry in dist_dirs
+                <name>/         ← one directory per entry in public_doc_dirs
             examples/           ← example files (copied in, if examples/ exists)
             myapp_commandline.bat
             myapp_powershell.ps1
         documentation/
-            <name>/             ← standalone docs copy, one per entry in dist_dirs
+            <name>/             ← standalone docs copy, one per entry in public_doc_dirs
         installer/
             MyApp-Setup-1.2.3.exe   ← Windows installer (from Inno Setup)
 
-For example, with ``dist_dirs = ["manual"]``:
+For example, with ``public_doc_dirs = ["manual"]``:
 
 .. code-block:: text
 
@@ -183,7 +183,7 @@ The three build stages consume each other's output:
                           ↓
     [exe]   →  dist/portable/bin/
                           ↓
-    [installer]  →  copies build/<name>/html/ (for each dist_dirs entry)
+    [installer]  →  copies build/<name>/html/ (for each public_doc_dirs entry)
                         + launchers + examples into dist/portable/
                      runs ISCC.exe → dist/installer/MyApp-Setup-x.y.z.exe
 
