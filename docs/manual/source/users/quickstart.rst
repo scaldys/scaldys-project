@@ -15,8 +15,9 @@ Prerequisites
 - ``scaldys-builder`` installed as a dev dependency (see :ref:`installation`)
 - A Python project with a ``pyproject.toml`` at its root
 - Windows (required for the build steps)
-- Inno Setup installed — download from `jrsoftware.org
-  <https://jrsoftware.org/isinfo.php>`_ and install to the default location
+- Inno Setup installed (``pyinstaller`` and ``pyruntime`` modes only) — download
+  from `jrsoftware.org <https://jrsoftware.org/isinfo.php>`_ and install to
+  the default location
 
 Step 1 — Create builder.toml
 ------------------------------
@@ -36,6 +37,7 @@ For anything else, create ``builder.toml`` in your project root:
 
     [windows]
     script_dir = "packaging/windows"
+    deployment_mode = "pyinstaller"   # or "pyruntime" or "wheel_only"
 
 See :ref:`configuration` for the full configuration reference.
 
@@ -56,8 +58,10 @@ inside it:
 
 Replace ``myapp`` with your project name as declared in ``pyproject.toml``.
 
+In ``wheel_only`` mode these files are not required.
+
 See :ref:`windows_installer` for the expected content of each file, including
-a minimal ``myapp.iss`` template.
+a minimal ``myapp.iss`` template and auto-detecting launcher script examples.
 
 Step 3 — Prepare your Sphinx documentation
 --------------------------------------------
@@ -89,16 +93,17 @@ Step 4 — Run the full build
 
 From anywhere inside your project tree, run::
 
-    scaldys-builder build windows all
+    scaldys-builder build all
 
 ``scaldys-builder`` walks up the directory tree to find ``pyproject.toml``
 automatically — you do not need to ``cd`` to the project root first.
 
 The command runs the following stages in order:
 
-1. **docs** — Builds the Sphinx user guide and developer guide
-2. **exe** — Optionally compiles modules with Cython, then bundles with PyInstaller
-3. **installer** — Copies launcher scripts and HTML docs, then runs Inno Setup
+1. **docs** — Builds the Sphinx documentation
+2. **Cython compilation** (if configured) — compiles selected modules to ``.pyd``
+3. **Windows distribution** — mode-dependent (PyInstaller or wheel build)
+4. **installer** (``pyinstaller`` and ``pyruntime`` modes) — runs Inno Setup
 
 A Rich progress bar tracks each stage. Output artefacts land in:
 
@@ -106,8 +111,9 @@ A Rich progress bar tracks each stage. Output artefacts land in:
 
     build/           ← intermediate artefacts
     dist/
-        portable/bin/    ← standalone executable + libraries
-        installer/          ← generated Windows installer (.exe)
+        wheels/          ← distribution wheel (.whl)
+        portable/        ← staged distribution tree (pyinstaller/pyruntime modes)
+        installer/       ← generated Windows installer (pyinstaller/pyruntime modes)
 
 Step 5 — Run individual stages
 --------------------------------
@@ -117,20 +123,17 @@ You can run each stage independently:
 .. code-block:: bash
 
     # Build documentation only
-    scaldys-builder build windows docs
+    scaldys-builder build docs
 
-    # Build the executable only (includes optional Cython compilation)
-    scaldys-builder build windows exe
-
-    # Build the installer only
-    scaldys-builder build windows installer
+    # Build Windows distribution only (mode-dependent, no docs rebuild)
+    scaldys-builder build windows
 
     # Remove build/ and dist/ directories
-    scaldys-builder build windows clean
+    scaldys-builder build clean
 
 All commands accept ``--verbose`` / ``-v`` for detailed debug output::
 
-    scaldys-builder build windows all --verbose
+    scaldys-builder build all --verbose
 
 Next steps
 ----------
@@ -138,5 +141,5 @@ Next steps
 - :ref:`cli_usage` — complete command reference
 - :ref:`configuration` — full ``builder.toml`` options
 - :ref:`cython_compilation` — how Cython compilation works
-- :ref:`windows_exe` — PyInstaller bundling details
+- :ref:`windows_exe` — Windows deployment modes
 - :ref:`windows_installer` — Inno Setup integration

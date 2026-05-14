@@ -21,7 +21,8 @@ Project name and version
 
 These values are used:
 
-- As the base name for PyInstaller artefacts (``myapp.exe``).
+- As the base name for PyInstaller artefacts (``myapp.exe``) in
+  ``pyinstaller`` mode.
 - As the base name when searching for packaging files in ``script_dir``
   (``myapp.iss``, ``myapp.ico``).
 - As the version injected into the Inno Setup script
@@ -38,9 +39,11 @@ The following layout is the recommended structure for a project using
     my-project/
     ├── pyproject.toml              ← project metadata (required)
     ├── builder.toml                ← scaldys-builder config (optional)
+    ├── .python-version             ← Python version pin (required for pyruntime mode)
     ├── src/
     │   └── myapp/                  ← Python source packages
     │       ├── __init__.py
+    │       ├── __main__.py         ← application entry point (required)
     │       └── core/
     │           ├── engine.py
     │           └── utils.py
@@ -55,12 +58,16 @@ The following layout is the recommended structure for a project using
     │           └── conf.py
     ├── packaging/
     │   └── windows/                ← Windows packaging files (default location)
-    │       ├── myapp.iss
+    │       ├── myapp.iss           ← Inno Setup script (pyinstaller/pyruntime modes)
     │       ├── myapp_commandline.bat
     │       ├── myapp_powershell.ps1
+    │       ├── setup_pyruntime.ps1 ← runtime setup script (pyruntime mode)
     │       └── myapp.ico
     ├── examples/                   ← example files (optional, bundled if present)
     └── tests/
+
+In ``wheel_only`` mode the ``packaging/windows/`` directory and its
+contents are not required.
 
 Source layout (``src/`` layout)
 ---------------------------------
@@ -101,7 +108,7 @@ Examples directory
 ------------------
 
 If an ``examples/`` directory exists in the project root,
-``scaldys-builder build windows installer`` copies its contents to
+``scaldys-builder build windows`` copies its contents to
 ``dist/portable/examples/`` so the examples are included in the Windows
 installer.  This directory is entirely optional.
 
@@ -109,7 +116,7 @@ Build output layout
 ===================
 
 ``scaldys-builder`` writes all output under two top-level directories in the
-project root.  Both are safe to delete (use ``build windows clean``).
+project root.  Both are safe to delete (use ``build clean``).
 
 ``build/`` — intermediate artefacts
 --------------------------------------
@@ -117,76 +124,89 @@ project root.  Both are safe to delete (use ``build windows clean``).
 .. code-block:: text
 
     build/
-        compiled/               ← staged source tree for Cython + PyInstaller
+        compiled/               ← staged source tree for Cython
         <name>/                 ← one directory per docs/ subdirectory
             html/               ← multi-page HTML
             singlehtml/         ← single-page HTML
-        pyinstaller/            ← PyInstaller work directory
-
-For example, with ``docs/manual/`` and ``docs/developer_guide/``:
-
-.. code-block:: text
-
-    build/
-        compiled/
-        manual/
-            html/
-            singlehtml/
-        developer_guide/
-            html/
-            singlehtml/
-        pyinstaller/
+        pyinstaller/            ← PyInstaller work directory (pyinstaller mode only)
 
 ``dist/`` — final artefacts
 ------------------------------
+
+The contents of ``dist/`` depend on the active ``deployment_mode``.
+
+**Mode 1: ``pyinstaller``**
 
 .. code-block:: text
 
     dist/
         portable/
             bin/                ← executable + libraries (from PyInstaller)
+                myapp.exe
+                python313.dll
+                _internal/
+            bin/
+                myapp_commandline.bat
+                myapp_powershell.ps1
             documentation/
-                <name>/         ← one directory per entry in public_doc_dirs
-            examples/           ← example files (copied in, if examples/ exists)
-            myapp_commandline.bat
-            myapp_powershell.ps1
+                <name>/         ← one per entry in public_doc_dirs
+            examples/           ← example files (if examples/ exists)
+        wheels/
+            myapp-1.2.3-cp313-cp313-win_amd64.whl
         documentation/
-            <name>/             ← standalone docs copy, one per entry in public_doc_dirs
+            <name>/             ← standalone docs copy, one per public_doc_dirs
         installer/
-            MyApp-Setup-1.2.3.exe   ← Windows installer (from Inno Setup)
+            setup.exe           ← Windows installer (from Inno Setup)
 
-For example, with ``public_doc_dirs = ["manual"]``:
+**Mode 2: ``pyruntime``**
 
 .. code-block:: text
 
     dist/
         portable/
             bin/
+                myapp_commandline.bat
+                myapp_powershell.ps1
+                setup_pyruntime.ps1
+                uv.exe
+                .python-version
+            wheels/
+                myapp-1.2.3-cp313-cp313-win_amd64.whl
             documentation/
-                manual/         ← copied from build/manual/html/
+                <name>/
             examples/
-            myapp_commandline.bat
-            myapp_powershell.ps1
+        wheels/
+            myapp-1.2.3-cp313-cp313-win_amd64.whl
         documentation/
-            manual/             ← standalone copy from build/manual/html/
+            <name>/
+        pyruntime/              ← pre-built venv (offline mode only, bundle_pyruntime=true)
         installer/
-            MyApp-Setup-1.2.3.exe
+            setup.exe
+
+**Mode 3: ``wheel_only``**
+
+.. code-block:: text
+
+    dist/
+        wheels/
+            myapp-1.2.3-cp313-cp313-win_amd64.whl
 
 Relationship between stages
 ============================
 
-The three build stages consume each other's output:
+The build steps consume each other's output:
 
 .. code-block:: text
 
-    [docs]  →  build/<name>/html/   (for each docs/ subdirectory)
-                          ↓
-    [exe]   →  dist/portable/bin/
-                          ↓
-    [installer]  →  copies build/<name>/html/ (for each public_doc_dirs entry)
-                        + launchers + examples into dist/portable/
-                     runs ISCC.exe → dist/installer/MyApp-Setup-x.y.z.exe
+    [build docs]  →  build/<name>/html/   (for each docs/ subdirectory)
+                              ↓
+    [build windows]  →  Cython compilation → build/compiled/
+                     →  wheel → dist/wheels/
+                     →  Mode 1: PyInstaller → dist/portable/bin/
+                     →  Mode 1/2: stages launchers, docs, examples into dist/portable/
+                     →  Mode 1/2: Inno Setup → dist/installer/setup.exe
 
-Running stages out of order is possible but the later stages depend on
-earlier output.  Use ``build windows all`` to run them in the correct
-sequence automatically.
+Running ``build all`` executes documentation and Windows distribution in
+the correct sequence automatically.  Use ``build windows`` when the
+documentation is already built and you only need to refresh the Windows
+distribution artefacts.

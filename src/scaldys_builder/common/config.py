@@ -16,6 +16,7 @@ Example ``builder.toml``::
 
     [windows]
     script_dir = "packaging/windows"
+    deployment_mode = "pyinstaller"  # or "pyruntime"
 
     [docs]
     public_doc_dirs = ["manual"]
@@ -57,13 +58,33 @@ class WindowsConfig:
         Directory (relative to project root) containing Windows packaging files:
         the Inno Setup script (``.iss``), launcher scripts (``.bat``, ``.ps1``),
         and application icon (``.ico``).  Defaults to ``"packaging/windows"``.
+    deployment_mode : str
+        Controls how the application is packaged for end-user distribution.
+
+        ``"pyinstaller"`` (default) — the application is bundled into a
+        standalone executable using PyInstaller.  No Python runtime is deployed
+        alongside it.  A binary wheel is still built and placed in
+        ``dist/wheels/`` for users who manage their own virtual environments.
+
+        ``"pyruntime"`` — PyInstaller is skipped entirely.  Instead a binary
+        wheel is built and the Inno Setup installer deploys a managed Python
+        virtual environment (``PythonRuntime``) into the installation directory.
+        The launcher scripts activate that environment rather than calling a
+        frozen executable.  Use this mode when the application needs to
+        coexist with tools such as Quarto that require a real Python interpreter.
+
+        ``"wheel_only"`` — Neither PyInstaller nor Inno Setup is used.  A
+        binary wheel is built and placed in ``dist/wheels/``.  No installer is
+        produced.  Use this mode when end users install the application into
+        their own Python environment via ``pip``/``uv pip install``.
     bundle_pyruntime : bool
-        When ``True``, the packager uses the bundled ``uv.exe`` to pre-build a
-        ``PythonRuntime`` virtual environment (Python 3.12 + Jupyter + PyYAML)
-        at ``dist/pyruntime/`` and passes its path to Inno Setup via the
-        ``/DPythonRuntimeDir`` preprocessor define.  The resulting
-        ``setup.exe`` is an *offline* installer — no internet connection is
-        needed at install time.
+        Only meaningful when ``deployment_mode = "pyruntime"``.
+
+        When ``True``, the packager uses the bundled ``uv.exe`` to pre-build the
+        ``PythonRuntime`` virtual environment at ``dist/pyruntime/`` and passes
+        its path to Inno Setup via the ``/DPythonRuntimeDir`` preprocessor
+        define.  The resulting ``setup.exe`` is an *offline* installer — no
+        internet connection is needed at install time.
 
         When ``False`` (default), ``uv.exe`` is still bundled in ``bin/`` but
         the environment is created *online* by ``setup_pyruntime.ps1``
@@ -71,6 +92,7 @@ class WindowsConfig:
     """
 
     script_dir: str = "packaging/windows"
+    deployment_mode: str = "pyinstaller"
     bundle_pyruntime: bool = False
 
 
@@ -136,6 +158,13 @@ def load_config(project_path: Path) -> BuildConfig:
     windows_data = data.get("windows", {})
     docs_data = data.get("docs", {})
 
+    deployment_mode = windows_data.get("deployment_mode", "pyinstaller")
+    if deployment_mode not in ("pyinstaller", "pyruntime", "wheel_only"):
+        raise RuntimeError(
+            f"{config_file}: [windows] deployment_mode must be "
+            f"'pyinstaller', 'pyruntime', or 'wheel_only', got '{deployment_mode}'"
+        )
+
     return BuildConfig(
         cython=CythonConfig(
             compiled_modules=cython_data.get("compiled_modules", []),
@@ -143,6 +172,7 @@ def load_config(project_path: Path) -> BuildConfig:
         ),
         windows=WindowsConfig(
             script_dir=windows_data.get("script_dir", "packaging/windows"),
+            deployment_mode=deployment_mode,
             bundle_pyruntime=windows_data.get("bundle_pyruntime", False),
         ),
         docs=DocsConfig(

@@ -95,6 +95,7 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
         self.src_compiled_dir_path = self.build_dir_path.joinpath("compiled")
         self.examples_dir_path = self.project_path.joinpath("examples")
         self.dist_exe_dir_path = self.dist_dir_path.joinpath("portable")
+        self.dist_wheels_dir_path = self.dist_dir_path.joinpath("wheels")
         self.dist_setup_dir_path = self.dist_dir_path.joinpath("installer")
 
     def pre_flight_checks(
@@ -151,7 +152,7 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
         Parameters
         ----------
         require_exe : bool, default False
-            Check that the PyInstaller entry point exists
+            Check that the package entry point exists
             (``{source_root}/{package}/__main__.py``).
         require_installer : bool, default False
             Check that the Inno Setup script and launcher scripts exist in the
@@ -180,7 +181,7 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
             main_py = pkg_dir / "__main__.py"
             if not main_py.exists():
                 issues.append(
-                    f"PyInstaller entry point not found: "
+                    f"Package entry point not found: "
                     f"'{self.config.cython.source_root}/{self.project_package_name}/__main__.py'"
                 )
 
@@ -242,7 +243,7 @@ class Compiler:
         Stage source files and optionally compile selected modules with Cython.
 
         If ``builder.toml`` declares no ``compiled_modules``, the Cython step
-        is skipped and all source files are staged as-is for PyInstaller.
+        is skipped and all source files are staged as-is.
 
         Raises
         ------
@@ -392,10 +393,13 @@ class Compiler:
         can discover the package (which is at the root of the staging tree,
         not under ``src/``), then runs ``uv build --wheel``.  The resulting
         ``.whl`` file — containing the compiled ``.pyd`` extensions but no
-        Python source files — is written to ``dist/portable/bin/wheels/``
-        so that Inno Setup includes it in the installer and
-        ``setup_pyruntime.ps1`` can install it into the PythonRuntime via
-        ``uv pip install --find-links``.
+        Python source files — is written to ``dist/wheels/``.
+
+        In ``pyinstaller`` mode this wheel is available for users who manage
+        their own virtual environments.  In ``pyruntime`` mode the packager
+        additionally stages it into ``dist/portable/wheels/`` so that Inno
+        Setup includes it in the installer and ``setup_pyruntime.ps1`` can
+        install it into the PythonRuntime via ``uv pip install --find-links``.
 
         Raises
         ------
@@ -407,7 +411,7 @@ class Compiler:
             raise RuntimeError("uv not found in PATH. Cannot build the distribution wheel.")
 
         compiled_path = self.env.src_compiled_dir_path
-        wheels_dir = self.env.dist_exe_dir_path / "bin" / "wheels"
+        wheels_dir = self.env.dist_wheels_dir_path
         wheels_dir.mkdir(parents=True, exist_ok=True)
 
         # Place pyproject.toml alongside the compiled package so that the build
@@ -450,9 +454,13 @@ class Compiler:
     def build(self) -> None:
         """
         Execute the compilation and bundling pipeline.
+
+        In ``pyinstaller`` mode: Cython → PyInstaller → wheel.
+        In ``pyruntime`` mode: Cython → wheel only (no PyInstaller).
         """
         self.run_cython()
-        self.run_pyinstaller()
+        if self.env.config.windows.deployment_mode == "pyinstaller":
+            self.run_pyinstaller()
         self._build_wheel()
 
 
@@ -489,42 +497,70 @@ class Packager:
         Copy Windows helpers and docs.
 
         Includes batch scripts, PowerShell scripts, and help files.
+        In ``pyruntime`` mode also stages the PythonRuntime setup files and
+        copies the built wheel into ``dist/portable/wheels/`` so that Inno
+        Setup can include it in the installer.
         """
         logger.info("[bold]Copying extra files for Windows...[/bold]")
+        is_pyruntime = self.env.config.windows.deployment_mode == "pyruntime"
+
         self.env.dist_exe_dir_path.joinpath("logs").mkdir(parents=True, exist_ok=True)
         bin_dir = self.env.dist_exe_dir_path.joinpath("bin")
         bin_dir.mkdir(parents=True, exist_ok=True)
 
+        # Launcher scripts are always included; their content differs per mode.
         for script in [
             f"{self.env.project_name}_commandline.bat",
             f"{self.env.project_name}_powershell.ps1",
-            "setup_pyruntime.ps1",
         ]:
             script_path = self.env.script_dir_path.joinpath(script)
             if script_path.exists():
                 safe_copy(script_path, bin_dir.joinpath(script))
 
-        # Copy .python-version so setup_pyruntime.ps1 can read the required
-        # Python version without any hardcoded value in the packaging scripts.
-        if self.env.python_version_file_path.exists():
-            safe_copy(self.env.python_version_file_path, bin_dir / ".python-version")
-            logger.info("  Copied .python-version")
-        else:
-            logger.warning(
-                "  .python-version not found; setup_pyruntime.ps1 will not be able to determine the Python version."
-            )
+        if is_pyruntime:
+            # setup_pyruntime.ps1 and its dependencies are only needed in
+            # pyruntime mode where the installer creates a managed Python venv.
+            setup_script = self.env.script_dir_path.joinpath("setup_pyruntime.ps1")
+            if setup_script.exists():
+                safe_copy(setup_script, bin_dir / "setup_pyruntime.ps1")
 
-        # Bundle uv.exe so that the online PythonRuntime setup script can run
-        # without requiring uv to be installed on the end-user's machine.
-        uv_path = shutil.which("uv")
-        if uv_path:
-            safe_copy(Path(uv_path), bin_dir / "uv.exe")
-            logger.info(f"  Copied uv.exe from '{uv_path}'")
-        else:
-            logger.warning(
-                "  uv not found in PATH. The PythonRuntime online setup will require "
-                "uv to be installed on the end-user's machine."
-            )
+            # Copy .python-version so setup_pyruntime.ps1 can determine the
+            # required Python version without any hardcoded value.
+            if self.env.python_version_file_path.exists():
+                safe_copy(self.env.python_version_file_path, bin_dir / ".python-version")
+                logger.info("  Copied .python-version")
+            else:
+                logger.warning(
+                    "  .python-version not found; setup_pyruntime.ps1 will not be able "
+                    "to determine the Python version."
+                )
+
+            # Bundle uv.exe so that the online PythonRuntime setup can run
+            # without requiring uv to be installed on the end-user's machine.
+            uv_path = shutil.which("uv")
+            if uv_path:
+                safe_copy(Path(uv_path), bin_dir / "uv.exe")
+                logger.info(f"  Copied uv.exe from '{uv_path}'")
+            else:
+                logger.warning(
+                    "  uv not found in PATH. The PythonRuntime online setup will require "
+                    "uv to be installed on the end-user's machine."
+                )
+
+            # Stage the built wheel into dist/portable/wheels/ so that the ISS
+            # script can bundle it in the installer.  The wheel is always built
+            # first by Compiler._build_wheel() into dist/wheels/.
+            src_wheels = self.env.dist_wheels_dir_path
+            dest_wheels = self.env.dist_exe_dir_path / "wheels"
+            if src_wheels.is_dir():
+                safe_empty_dir(dest_wheels)
+                safe_copytree(src_wheels, dest_wheels, dirs_exist_ok=True)
+                logger.info(f"  Staged wheels into '{dest_wheels}'")
+            else:
+                logger.warning(
+                    "  dist/wheels/ not found; the installer will not contain the "
+                    "package wheel.  Ensure the compiler step ran successfully."
+                )
 
         for dir_name in self.env.config.docs.public_doc_dirs:
             help_src = self.env.build_dir_path.joinpath(dir_name, "html")
@@ -584,15 +620,19 @@ class Packager:
             str(iss_file),
         ]
 
-        # Offline mode: if a pre-built PythonRuntime environment exists in the
-        # dist directory, tell Inno Setup where to find it so it can include
-        # it as an optional component without an internet download at install time.
-        pyruntime_dir = self.env.dist_dir_path / "pyruntime"
-        if pyruntime_dir.is_dir():
-            cmd.append(f"/DPythonRuntimeDir={pyruntime_dir}")
-            logger.info(f"  Offline mode: PythonRuntime bundled from '{pyruntime_dir}'")
-        else:
-            logger.info("  Online mode: PythonRuntime will be downloaded at install time")
+        if self.env.config.windows.deployment_mode == "pyruntime":
+            # Tell the ISS script which deployment mode is active.
+            cmd.append("/DPyruntimeMode=1")
+
+            # Offline mode: if a pre-built PythonRuntime environment exists,
+            # tell Inno Setup where to find it so it can be bundled into the
+            # installer without an internet download at install time.
+            pyruntime_dir = self.env.dist_dir_path / "pyruntime"
+            if pyruntime_dir.is_dir():
+                cmd.append(f"/DPythonRuntimeDir={pyruntime_dir}")
+                logger.info(f"  Offline mode: PythonRuntime bundled from '{pyruntime_dir}'")
+            else:
+                logger.info("  Online mode: PythonRuntime will be downloaded at install time")
 
         self.env.run_command(cmd, "Error running Inno Setup", cwd=self.env.project_path)
 
@@ -643,7 +683,7 @@ class Packager:
         )
 
         python_exe = pyruntime_dir / "Scripts" / "python.exe"
-        wheels_dir = self.env.dist_exe_dir_path / "bin" / "wheels"
+        wheels_dir = self.env.dist_wheels_dir_path
         logger.info("  [3/3] Installing softspin (with dependencies) and pyyaml ...")
         self.env.run_command(
             [
@@ -669,7 +709,13 @@ class Packager:
         Includes preparing examples, copying Windows-specific files, optionally
         pre-building the PythonRuntime environment (offline installer), and
         running Inno Setup.
+
+        In ``wheel_only`` mode the entire packaging step is skipped — no
+        installer is produced.
         """
+        if self.env.config.windows.deployment_mode == "wheel_only":
+            logger.info("  Packaging step skipped (wheel_only mode produces no installer).")
+            return
         self.prepare_examples()
         self.prepare_windows_files()
         if self.env.config.windows.bundle_pyruntime:
@@ -713,7 +759,6 @@ class WindowsBuilder(BaseBuilder):
     def _is_in_onedrive(self) -> bool:
         """Check if the project is located within a OneDrive-synchronized folder."""
         project_path = self.env.project_path.resolve()
-        # Iterate through environment variables to find OneDrive roots
         for key, value in os.environ.items():
             if "onedrive" in key.lower() and value:
                 try:
@@ -724,6 +769,46 @@ class WindowsBuilder(BaseBuilder):
                     continue
         return False
 
+    def _run_steps(
+        self,
+        steps: list[tuple[str, Any]],
+        title: str,
+        console: Optional[Any] = None,
+    ) -> None:
+        """
+        Execute a list of named build steps with a Rich progress bar.
+
+        Parameters
+        ----------
+        steps : list of (description, callable)
+            Each tuple is a human-readable step description and the callable
+            to invoke for that step.
+        title : str
+            Title shown on the overall progress bar task.
+        console : Console, optional
+            A rich console instance for synchronized output.
+        """
+        from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
+
+        if console is None:
+            from rich.console import Console
+
+            console = Console()
+
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+            TimeElapsedColumn(),
+            console=console,
+        ) as progress:
+            total_task = progress.add_task(f"[green]{title}", total=len(steps))
+            for description, step_func in steps:
+                progress.update(total_task, description=f"[cyan]{description}...")
+                step_func()
+                progress.advance(total_task)
+
     def clean(self) -> None:
         """
         Clean out files generated by previous builds.
@@ -732,7 +817,6 @@ class WindowsBuilder(BaseBuilder):
         """
         target_dirs = [self.env.build_dir_path, self.env.dist_dir_path]
 
-        # Show OneDrive warning only if we are in OneDrive AND at least one directory exists to clean
         if self._is_in_onedrive() and any(p.exists() for p in target_dirs):
             logger.info(
                 "[yellow]OneDrive detected: active synchronization may cause the cleaning process to take several minutes. "
@@ -746,61 +830,110 @@ class WindowsBuilder(BaseBuilder):
         self.doc_builder.build()
 
     def build_exe(self) -> None:
-        """Generate the standalone executable using the compiler."""
+        """
+        Run the compilation and bundling step.
+
+        What this produces depends on ``deployment_mode``:
+
+        - ``pyinstaller``  — Cython → PyInstaller executable → wheel
+        - ``pyruntime``    — Cython → wheel (no PyInstaller)
+        - ``wheel_only``   — Cython → wheel (no PyInstaller)
+        """
         self.compiler.build()
 
     def build_installer(self) -> None:
-        """Generate the setup installer using the packager."""
+        """
+        Run the packaging and installer step.
+
+        What this produces depends on ``deployment_mode``:
+
+        - ``pyinstaller`` / ``pyruntime`` — assembles ``dist/portable/`` and
+          produces ``dist/installer/setup.exe`` via Inno Setup.
+        - ``wheel_only`` — no-op; logs a message and returns immediately.
+        """
         self.packager.build()
 
-    def main(self, console: Optional[Any] = None) -> None:
+    def _distribution_steps(
+        self, require_sphinx: bool = False
+    ) -> list[tuple[str, Any]]:
         """
-        Run the complete end-to-end Windows build workflow.
+        Return the ordered list of steps for the Windows distribution build,
+        adapted to the current ``deployment_mode``.
+
+        Parameters
+        ----------
+        require_sphinx : bool, default False
+            When ``True``, the pre-flight check also verifies that
+            ``sphinx-build`` is available.  Pass ``True`` from ``main()``
+            when documentation is included in the build.
+
+        Used by both ``build_distribution()`` and ``main()``.
+        """
+        mode = self.env.config.windows.deployment_mode
+        is_pyruntime = mode == "pyruntime"
+        is_wheel_only = mode == "wheel_only"
+        dist_label = "Building executable" if mode == "pyinstaller" else "Building distribution"
+
+        steps: list[tuple[str, Any]] = [
+            (
+                "Checking project compliance",
+                lambda: self.env.check_compliance(
+                    require_exe=True,
+                    require_installer=not is_wheel_only,
+                ),
+            ),
+            (
+                "Pre-flight checks",
+                lambda: self.env.pre_flight_checks(
+                    require_sphinx=require_sphinx,
+                    require_pyinstaller=not (is_pyruntime or is_wheel_only),
+                    require_innosetup=not is_wheel_only,
+                ),
+            ),
+            ("Cleaning build directories", self.clean),
+            (dist_label, self.build_exe),
+        ]
+        if not is_wheel_only:
+            steps.append(("Building installer", self.build_installer))
+        return steps
+
+    def build_distribution(self, console: Optional[Any] = None) -> None:
+        """
+        Build the Windows distribution artifact without building documentation.
+
+        Runs compliance checks, pre-flight checks, cleans previous artefacts,
+        then compiles and packages according to ``deployment_mode``.  For the
+        full workflow including documentation see ``main()``.
 
         Parameters
         ----------
         console : Console, optional
             A rich console instance for synchronized output.
         """
-        from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
-
-        if console is None:
-            from rich.console import Console
-
-            console = Console()
-
-        steps = [
-            (
-                "Checking project compliance",
-                lambda: self.env.check_compliance(require_exe=True, require_installer=True),
-            ),
-            (
-                "Pre-flight checks",
-                lambda: self.env.pre_flight_checks(
-                    require_sphinx=self._any_sphinx_docs(),
-                    require_pyinstaller=True,
-                    require_innosetup=True,
-                ),
-            ),
-            ("Cleaning build directories", self.clean),
-            ("Building documentation", self.build_docs),
-            ("Building executable", self.build_exe),
-            ("Building installer", self.build_installer),
-        ]
-
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            BarColumn(),
-            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-            TimeElapsedColumn(),
+        steps = self._distribution_steps()
+        self._run_steps(
+            steps,
+            f"Building {self.env.project_name} (Windows)...",
             console=console,
-        ) as progress:
-            total_task = progress.add_task(
-                f"[green]Building {self.env.project_name}...", total=len(steps)
-            )
-            for description, step_func in steps:
-                progress.update(total_task, description=f"[cyan]{description}...")
-                step_func()
-                progress.advance(total_task)
-        logger.info("Windows build completed successfully!")
+        )
+        logger.info("Windows distribution build completed successfully!")
+
+    def main(self, console: Optional[Any] = None) -> None:
+        """
+        Run the complete end-to-end build workflow (documentation + distribution).
+
+        Parameters
+        ----------
+        console : Console, optional
+            A rich console instance for synchronized output.
+        """
+        has_sphinx = self._any_sphinx_docs()
+        steps = self._distribution_steps(require_sphinx=has_sphinx)
+        # Insert the documentation step right after clean (index 3).
+        steps.insert(3, ("Building documentation", self.build_docs))
+        self._run_steps(
+            steps,
+            f"Building {self.env.project_name}...",
+            console=console,
+        )
+        logger.info("Build completed successfully!")

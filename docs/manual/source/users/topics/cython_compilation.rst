@@ -18,8 +18,8 @@ When to use Cython compilation
 
 Cython compilation is entirely optional.  If ``compiled_modules`` is empty
 (the default), ``scaldys-builder`` stages the Python source tree as-is for
-PyInstaller.  Enable it only for modules where the trade-offs are worth the
-added complexity:
+the subsequent distribution step.  Enable it only for modules where the
+trade-offs are worth the added complexity:
 
 - Modules that are on hot paths and have been profiled as bottlenecks.
 - Modules that contain proprietary algorithms you do not wish to ship as
@@ -56,7 +56,8 @@ write it in an ``import`` statement.
 How it works
 ============
 
-The compilation runs as part of ``scaldys-builder build windows exe``.
+The compilation runs as part of ``scaldys-builder build windows`` (and
+``build all``), before PyInstaller bundling or wheel assembly.
 Internally it proceeds in three phases:
 
 Phase 1 — Source staging

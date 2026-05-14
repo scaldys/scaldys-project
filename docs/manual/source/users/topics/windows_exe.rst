@@ -1,123 +1,94 @@
 .. _windows_exe:
 
-*******************************
-PyInstaller Executable Bundling
-*******************************
+***************************
+Windows Distribution Modes
+***************************
 
-``scaldys-builder build windows exe`` uses PyInstaller to package your Python
-project into a self-contained Windows application directory.  No Python
-installation is required on the end-user's machine.
+``scaldys-builder`` supports three deployment modes for distributing a Python
+application to Windows users.  The active mode is controlled by
+``deployment_mode`` in ``builder.toml``.
 
-Requirements
-============
+.. list-table::
+   :header-rows: 1
+   :widths: 20 40 40
 
-Install the ``[windows]`` extra::
+   * - Mode
+     - What it builds
+     - When to use
+   * - ``pyinstaller`` (default)
+     - PyInstaller exe + Inno Setup installer
+     - Most applications; no Python needed on end-user machine
+   * - ``pyruntime``
+     - Binary wheel + Inno Setup installer with a managed Python runtime
+     - Apps that must coexist with Quarto, Jupyter, or another Python
+       environment
+   * - ``wheel_only``
+     - Binary wheel only, no installer
+     - Packages distributed via ``pip`` or ``uv``
 
-    uv add --dev "scaldys-builder[windows]"
+Set the mode in ``builder.toml``:
 
-This installs ``PyInstaller``.
+.. code-block:: toml
 
-How it works
-============
+    [windows]
+    deployment_mode = "pyinstaller"   # or "pyruntime" or "wheel_only"
 
-The bundling step follows the Cython compilation step (see
-:ref:`cython_compilation`).  If Cython compilation is disabled, PyInstaller
-bundles directly from the original source tree.
+All modes share the Cython compilation step and produce a binary distribution
+wheel.  What differs is how the application is launched on the end-user's
+machine.
 
-PyInstaller is called programmatically with a fixed set of options that have
-been tuned for Windows distribution:
 
-One-directory bundle (``--onedir``)
------------------------------------
+Shared steps (all modes)
+========================
 
-PyInstaller is run in *one-directory* mode: it produces a folder containing
-the executable and all required libraries rather than a single merged
-``exe``.  This avoids the slow startup time of a one-file build and makes
-antivirus software less likely to flag the executable during extraction.
-
-.. code-block:: text
-
-    dist/portable/
-        bin/
-            myapp.exe           ← launcher executable
-            python313.dll
-            _internal/         ← all imported packages and DLLs
-
-Console mode
-------------
-
-The executable is built as a *console application* (``--console``) so that
-``stdout`` / ``stderr`` output from your application is visible in a terminal
-or can be redirected.  If your application is a pure GUI application that
-should suppress the console window, this would need to be changed in a
-future configuration option.
-
-UPX disabled
-------------
-
-UPX compression is explicitly disabled (``--noupx``).  UPX-compressed
-binaries are frequently flagged as suspicious by antivirus software because
-compression is a technique also used by malware packers.  Skipping UPX
-produces larger executables but avoids false positives.
-
-Module collection
------------------
-
-PyInstaller is instructed to ``--collect-submodules`` for your top-level
-package.  This ensures that dynamically-imported submodules (e.g. plugins
-loaded via ``importlib``) are included in the bundle even if PyInstaller's
-static analysis does not detect the imports.
-
-Hook file handling
+Cython compilation
 ------------------
 
-PyInstaller uses *hook files* (``hook-<package>.py``) to describe how to
-bundle packages with special requirements.  ``scaldys-builder`` renames any
-hook file in your packaging directory from
-``hook-<project_name>.py`` to ``hook-<package_name>.py`` so that PyInstaller
-discovers it correctly regardless of naming conventions in your project.
+If ``[cython] compiled_modules`` is non-empty in ``builder.toml``,
+``scaldys-builder`` first stages a copy of the source tree into
+``build/compiled/``, compiles the specified modules to ``.pyd`` extension
+files with Cython, and removes the corresponding ``.py`` files so the
+compiled extensions are used instead.  See :ref:`cython_compilation` for
+full details.
 
-Icon support
-------------
+Distribution wheel
+------------------
 
-If an ``<project_name>.ico`` file is found in the packaging directory
-(``[windows] script_dir``), it is passed to PyInstaller via ``--icon`` and
-embedded in the executable.
+After the Cython step (or immediately, if Cython is disabled),
+``scaldys-builder`` builds a ``.pyd``-only distribution wheel from
+``build/compiled/``.  This wheel contains compiled ``.pyd`` extension
+modules only — no Python source files — which protects proprietary algorithm
+details while still making the full package importable in a Python
+environment.
 
-
-Output location
-===============
+The wheel is placed in ``dist/wheels/``:
 
 .. code-block:: text
 
     dist/
-        portable/
-            bin/
-                myapp.exe
-                python313.dll
-                ...
-                wheels/
-                    myapp-1.2.3-cp313-cp313-win_amd64.whl   ← distribution wheel
+        wheels/
+            myapp-1.2.3-cp313-cp313-win_amd64.whl
 
-The ``build windows installer`` step copies launcher scripts and
-documentation into ``dist/portable/`` before creating the final installer.
-
-Distribution wheel
-==================
-
-After PyInstaller completes, ``scaldys-builder`` automatically builds a
-``.pyd``-only distribution wheel from the compiled staging area
-(``build/compiled/``).  This wheel contains compiled ``.pyd`` extension
-modules only — no Python source files — which protects proprietary algorithm
-details while still making the full package importable in a Python environment.
-
-The wheel is placed in ``dist/portable/bin/wheels/`` where Inno Setup
-can bundle it into the installer and the PythonRuntime setup script
-(``setup_pyruntime.ps1``) can install it via
+In ``pyruntime`` mode the wheel is also staged into
+``dist/portable/wheels/`` so that Inno Setup can bundle it into the
+installer and ``setup_pyruntime.ps1`` can install it via
 ``uv pip install --find-links <wheels_dir>``.
 
+.. note::
+
+   The wheel build requires ``uv`` to be available on ``PATH``.  ``uv`` is
+   already used throughout the rest of the build pipeline, so no additional
+   installation is needed.
+
+.. note::
+
+   The wheel build is only meaningful when Cython compilation is enabled
+   (``[cython] compiled_modules`` is non-empty).  If no modules are compiled,
+   the resulting wheel is equivalent to a regular source wheel with no
+   source-protection benefit.
+
 How the wheel is built
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 1. A copy of the project's ``pyproject.toml`` is written into
    ``build/compiled/`` so that setuptools can discover the package.
@@ -129,63 +100,204 @@ How the wheel is built
      compiled extensions in the wheel.
 
 3. ``uv build --wheel`` is invoked from ``build/compiled/`` and the resulting
-   ``.whl`` file is moved to ``dist/portable/bin/wheels/``.
+   ``.whl`` file is moved to ``dist/wheels/``.
 
-.. note::
 
-   The wheel build requires ``uv`` to be available on ``PATH``.  ``uv`` is
-   already used throughout the rest of the build pipeline, so no additional
-   installation is needed.  If ``uv`` is not found, the step raises an error
-   and the build fails.
+Mode 1: ``pyinstaller``
+========================
 
-.. note::
+``PyInstaller`` bundles the project into a self-contained one-directory
+executable.  No Python installation is required on the end-user's machine.
 
-   The wheel build is only meaningful when Cython compilation is enabled
-   (``[cython] compiled_modules`` is non-empty in ``builder.toml``).  If no
-   modules are compiled, the staged ``build/compiled/`` tree contains plain
-   Python source and the resulting wheel is equivalent to a regular sdist wheel
-   with no source-protection benefit.
+Requirements
+------------
 
-Build directories
-=================
+Install the ``[windows]`` extra::
 
-PyInstaller's intermediate working files are written to
-``build/pyinstaller/`` and are separate from the final output.  The
-``build windows clean`` command removes this directory along with all other
-build artefacts.
+    uv add --dev "scaldys-builder[windows]"
+
+This installs ``PyInstaller``.
+
+How it works
+------------
+
+PyInstaller is called programmatically after the Cython step with a fixed
+set of options tuned for Windows distribution.
+
+**One-directory bundle (``--onedir``)**
+    PyInstaller runs in *one-directory* mode: it produces a folder
+    containing the executable and all required libraries rather than a
+    single merged ``exe``.  This avoids the slow startup time of a one-file
+    build and makes antivirus software less likely to flag the executable
+    during extraction.
+
+**Console mode**
+    The executable is built as a *console application* (``--console``) so
+    that ``stdout`` / ``stderr`` output is visible in a terminal or can be
+    redirected.
+
+**UPX disabled**
+    UPX compression is explicitly disabled (``--noupx``).  UPX-compressed
+    binaries are frequently flagged by antivirus software because compression
+    is a technique also used by malware packers.
+
+**Module collection**
+    PyInstaller is instructed to ``--collect-submodules`` for the top-level
+    package, ensuring dynamically-imported submodules are included.
+
+**Hook file handling**
+    ``scaldys-builder`` renames any hook file in the packaging directory
+    from ``hook-<project_name>.py`` to ``hook-<package_name>.py`` so that
+    PyInstaller discovers it correctly regardless of naming conventions.
+
+**Icon support**
+    If ``<project_name>.ico`` is found in ``[windows] script_dir``, it is
+    passed to PyInstaller via ``--icon`` and embedded in the executable.
+
+Output
+------
 
 .. code-block:: text
 
-    build/
-        pyinstaller/    ← PyInstaller work directory (intermediate)
+    dist/
+        portable/
+            bin/
+                myapp.exe
+                python313.dll
+                _internal/         ← all imported packages and DLLs
+        wheels/
+            myapp-1.2.3-cp313-cp313-win_amd64.whl
+        installer/
+            setup.exe              ← built by the subsequent Inno Setup step
 
-Common issues
-=============
+The ``build windows`` command then copies launcher scripts and documentation
+into ``dist/portable/`` before invoking Inno Setup.
 
-Missing modules at runtime
---------------------------
-
-PyInstaller analyses import statements statically.  Dynamic imports
-(``__import__(name)``, ``importlib.import_module(name)`` with a variable
-``name``) are not detected automatically.  Use the
-``--collect-submodules`` flag (which ``scaldys-builder`` already passes for
-your top-level package) or add hidden imports to your hook file:
-
-.. code-block:: python
-
-    # hook-myapp.py
-    hiddenimports = ["myapp.plugins.pdf", "myapp.plugins.csv"]
-
-Antivirus false positives
--------------------------
-
-Some antivirus products flag PyInstaller executables.  ``scaldys-builder``
-already disables UPX to reduce the likelihood of this.  If false positives
-persist, consider signing the executable with a code-signing certificate.
-
-Large bundle size
+Build directories
 -----------------
 
-PyInstaller includes every imported package.  Audit your dependencies and
-remove unused ones.  The ``--exclude-module`` option can be added to a hook
-file to exclude known-unnecessary packages (e.g. ``tkinter``, ``unittest``).
+PyInstaller's intermediate working files are written to
+``build/pyinstaller/``.  The ``build clean`` command removes this directory
+along with all other build artefacts.
+
+Common issues
+-------------
+
+**Missing modules at runtime**
+    PyInstaller analyses imports statically.  Dynamic imports are not
+    detected automatically.  Use ``--collect-submodules`` (already passed by
+    ``scaldys-builder``) or add hidden imports to your hook file:
+
+    .. code-block:: python
+
+        # hook-myapp.py
+        hiddenimports = ["myapp.plugins.pdf", "myapp.plugins.csv"]
+
+**Antivirus false positives**
+    ``scaldys-builder`` already disables UPX to reduce the likelihood of
+    this.  If false positives persist, consider signing the executable with
+    a code-signing certificate.
+
+**Large bundle size**
+    PyInstaller includes every imported package.  Audit your dependencies
+    and remove unused ones.  The ``--exclude-module`` option can be added
+    to a hook file to exclude known-unnecessary packages (e.g. ``tkinter``,
+    ``unittest``).
+
+
+Mode 2: ``pyruntime``
+======================
+
+Instead of a frozen executable, the application is installed into a
+``uv``-managed Python virtual environment (``PythonRuntime``) on the
+end-user's machine.  The launcher scripts activate that environment.
+
+Use this mode when your application must coexist with Quarto, Jupyter, or
+another tool that requires a real Python interpreter.  PyInstaller is not
+used in this mode.
+
+Requirements
+------------
+
+- ``.python-version`` at the project root (single source of truth for the
+  Python version).
+- ``uv.exe`` available on ``PATH`` at build time (it is bundled into the
+  installer for end users).
+- Inno Setup installed on the build machine.
+
+How it works
+------------
+
+1. Cython compilation (if configured) + binary wheel build (see above).
+2. ``setup_pyruntime.ps1``, ``uv.exe``, and ``.python-version`` are staged
+   into ``dist/portable/bin/``.
+3. The binary wheel is staged into ``dist/portable/wheels/`` so the
+   installer and setup script can find it.
+4. Launcher scripts, documentation, and examples are staged into
+   ``dist/portable/``.
+5. Inno Setup is invoked with ``/DPyruntimeMode=1``.
+
+At install time, the Inno Setup script optionally runs
+``setup_pyruntime.ps1`` with elevated privileges to create the
+``PythonRuntime`` virtual environment inside the installation directory.
+
+Online and offline installer sub-modes
+---------------------------------------
+
+``pyruntime`` mode supports two sub-modes for how the Python runtime is
+delivered.  See :ref:`windows_installer` — *Online and offline installer
+modes* for full details.
+
+Output
+------
+
+.. code-block:: text
+
+    dist/
+        portable/
+            bin/
+                setup_pyruntime.ps1
+                uv.exe
+                .python-version
+                myapp_commandline.bat   ← copied from script_dir
+                myapp_powershell.ps1
+            wheels/
+                myapp-1.2.3-cp313-cp313-win_amd64.whl
+            documentation/
+                <name>/
+        wheels/
+            myapp-1.2.3-cp313-cp313-win_amd64.whl
+        installer/
+            setup.exe
+
+
+Mode 3: ``wheel_only``
+=======================
+
+Builds only the binary distribution wheel.  No installer and no launcher
+scripts are produced.  Use this for packages distributed via ``pip`` or
+``uv``.
+
+Requirements
+------------
+
+No external tools beyond ``uv`` (already part of the build pipeline).
+PyInstaller and Inno Setup are not required.  The Inno Setup script
+(``.iss``) and launcher files (``.bat``, ``.ps1``) do not need to exist in
+the packaging directory.
+
+How it works
+------------
+
+1. Cython compilation (if configured).
+2. Binary wheel built and placed in ``dist/wheels/``.
+3. Build finishes — no installer step.
+
+Output
+------
+
+.. code-block:: text
+
+    dist/
+        wheels/
+            myapp-1.2.3-cp313-cp313-win_amd64.whl

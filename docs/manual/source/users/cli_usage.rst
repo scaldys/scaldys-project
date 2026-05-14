@@ -29,12 +29,10 @@ Command tree
     scaldys-builder
     ├── check
     └── build
-        └── windows
-            ├── docs
-            ├── exe
-            ├── installer
-            ├── all
-            └── clean
+        ├── all
+        ├── docs
+        ├── windows
+        └── clean
 
 ----
 
@@ -50,11 +48,15 @@ without running any build step.
 
 **What it does**
 
-Runs the full compliance check (rules 1–8) and reports any issues found.
+Runs the full compliance check and reports any issues found.
 Exits with code ``0`` if the project is compliant, or code ``1`` if any
 requirement is not met.  This is identical to the automatic check that runs
-at the start of ``exe``, ``installer``, and ``all``, but without triggering
+at the start of ``build windows`` and ``build all``, but without triggering
 a build.
+
+The rules that are evaluated depend on the ``deployment_mode`` setting in
+``builder.toml``.  In ``wheel_only`` mode the Inno Setup script and launcher
+files are not required.
 
 Use this command to verify a freshly cloned project, or to diagnose issues
 after a compliance failure during a build.
@@ -77,14 +79,57 @@ For the complete list of rules and what each one requires, see
 
 ----
 
-``build windows docs``
------------------------
+``build all``
+--------------
+
+Run the complete end-to-end build workflow: documentation and Windows
+distribution.
+
+.. code-block:: bash
+
+    scaldys-builder build all [OPTIONS]
+
+**What it does**
+
+Runs compliance and pre-flight checks, then executes the following steps in
+sequence, with a Rich progress bar tracking overall progress:
+
+1. **Documentation** — builds every Sphinx unit under ``docs/``.
+2. **Cython compilation** (if ``compiled_modules`` is non-empty) — compiles
+   selected modules to ``.pyd`` extension files.
+3. **Windows distribution** — mode-dependent (see ``build windows`` below).
+4. **Installer** (``pyinstaller`` and ``pyruntime`` modes only) — runs Inno
+   Setup to produce a setup ``.exe``.
+
+Any stage failure stops the build and reports the error.
+
+Also performs a OneDrive synchronisation check at startup: if OneDrive is
+actively syncing files in the project tree, a warning is displayed because
+open file handles can cause intermittent failures during file operations.
+
+**Options**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Option
+     - Description
+   * - ``--verbose``, ``-v``
+     - Enable verbose (DEBUG-level) logging.
+   * - ``--help``
+     - Show command help and exit.
+
+----
+
+``build docs``
+---------------
 
 Build the Sphinx documentation for the project.
 
 .. code-block:: bash
 
-    scaldys-builder build windows docs [OPTIONS]
+    scaldys-builder build docs [OPTIONS]
 
 **What it does**
 
@@ -125,36 +170,51 @@ Install it via the ``[docs]`` extra.
 
 ----
 
-``build windows exe``
-----------------------
+``build windows``
+------------------
 
-Compile optional Cython modules and bundle the project into a standalone
-Windows executable using PyInstaller.
+Build the Windows distribution for the project, without rebuilding
+documentation.
 
 .. code-block:: bash
 
-    scaldys-builder build windows exe [OPTIONS]
+    scaldys-builder build windows [OPTIONS]
 
 **What it does**
 
-1. **Cython step** (only if ``compiled_modules`` is non-empty in
-   ``builder.toml``): stages source files to ``build/compiled/``, compiles
-   the specified modules to ``.pyd`` extension files, and removes the
-   corresponding ``.py`` files so PyInstaller picks up the native extensions.
-2. **PyInstaller step**: bundles the staged source tree into a
-   one-directory executable.
+Reads ``deployment_mode`` from ``builder.toml`` (default: ``"pyinstaller"``)
+and runs the corresponding distribution pipeline:
 
-**Output location**
+``pyinstaller`` mode
+    1. Cython compilation (if ``compiled_modules`` is non-empty).
+    2. PyInstaller bundles the application into ``dist/portable/bin/``.
+    3. Binary wheel built and placed in ``dist/wheels/``.
+    4. Launcher scripts, documentation (from ``build/``), and examples are
+       staged into ``dist/portable/``.
+    5. Inno Setup produces a setup ``.exe`` in ``dist/installer/``.
 
-.. code-block:: text
+``pyruntime`` mode
+    1. Cython compilation (if ``compiled_modules`` is non-empty).
+    2. Binary wheel built and placed in ``dist/wheels/``.
+    3. Launcher scripts, documentation, examples, ``setup_pyruntime.ps1``,
+       ``uv.exe``, and the wheel are staged into ``dist/portable/``.
+    4. Optionally, a PythonRuntime venv is pre-built (``bundle_pyruntime =
+       true``).
+    5. Inno Setup produces a setup ``.exe`` in ``dist/installer/``.
 
-    dist/portable/bin/   ← executable + all supporting libraries
+``wheel_only`` mode
+    1. Cython compilation (if ``compiled_modules`` is non-empty).
+    2. Binary wheel built and placed in ``dist/wheels/``.
+    No installer is created.
 
-**Compliance check**: Before running, verifies that the source package
-directory and ``__main__.py`` entry point exist.  See :ref:`compliance_checking`.
+For full details on each mode see :ref:`windows_exe`.
 
-**Pre-flight requirement**: PyInstaller must be installed.
-Install it via the ``[windows]`` extra.
+**Pre-flight requirements**
+
+- ``pyinstaller`` and ``pyruntime`` modes: Inno Setup (``ISCC.exe``) must be
+  installed.
+- ``pyinstaller`` mode: PyInstaller must be installed (via the ``[windows]``
+  extra).
 
 **Options**
 
@@ -171,97 +231,14 @@ Install it via the ``[windows]`` extra.
 
 ----
 
-``build windows installer``
-----------------------------
-
-Prepare the final distribution directory and create a Windows installer using
-Inno Setup.
-
-.. code-block:: bash
-
-    scaldys-builder build windows installer [OPTIONS]
-
-**What it does**
-
-1. Copies launcher scripts (``.bat``, ``.ps1``) and the HTML documentation
-   for each directory listed in ``[docs] public_doc_dirs`` (``builder.toml``) from
-   ``build/<name>/html/`` into ``dist/portable/documentation/<name>/`` and
-   ``dist/documentation/<name>/``.
-2. Copies any example files from ``examples/`` (if the directory exists).
-3. Runs ``ISCC.exe`` with the ``.iss`` script found in
-   ``[windows] script_dir``, injecting the project version automatically.
-
-**Output location**
-
-.. code-block:: text
-
-    dist/installer/     ← Windows installer executable
-
-**Compliance check**: Before running, verifies that the Windows packaging
-directory, ``.iss`` script, and launcher scripts exist.  See
-:ref:`compliance_checking`.
-
-**Note**: If Inno Setup is not found, this step is skipped with a warning
-rather than failing the build.
-
-**Options**
-
-.. list-table::
-   :header-rows: 1
-   :widths: 30 70
-
-   * - Option
-     - Description
-   * - ``--verbose``, ``-v``
-     - Enable verbose (DEBUG-level) logging.
-   * - ``--help``
-     - Show command help and exit.
-
-----
-
-``build windows all``
-----------------------
-
-Run the complete end-to-end Windows build workflow.
-
-.. code-block:: bash
-
-    scaldys-builder build windows all [OPTIONS]
-
-**What it does**
-
-Runs the full compliance check (all rules) and pre-flight checks first, then
-executes ``docs`` → ``exe`` → ``installer`` in sequence, with a Rich progress
-bar tracking the overall workflow.  Any stage failure stops the build and
-reports the error.
-
-Also performs an OneDrive synchronisation check at startup: if OneDrive is
-actively syncing files in the project tree, a warning is displayed because
-open file handles can cause intermittent failures during file operations.
-
-**Options**
-
-.. list-table::
-   :header-rows: 1
-   :widths: 30 70
-
-   * - Option
-     - Description
-   * - ``--verbose``, ``-v``
-     - Enable verbose (DEBUG-level) logging.
-   * - ``--help``
-     - Show command help and exit.
-
-----
-
-``build windows clean``
-------------------------
+``build clean``
+----------------
 
 Remove all intermediate and final build artefacts.
 
 .. code-block:: bash
 
-    scaldys-builder build windows clean [OPTIONS]
+    scaldys-builder build clean [OPTIONS]
 
 **What it does**
 

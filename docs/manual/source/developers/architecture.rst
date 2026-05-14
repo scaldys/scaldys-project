@@ -75,13 +75,13 @@ For the Windows platform the composition looks like this:
 Execution Flow
 --------------
 
-Tracing what happens when ``scaldys-builder build windows all`` is run:
+Tracing what happens when ``scaldys-builder build all`` is run:
 
 1. **Module load** — ``__main__.py`` is the Typer CLI entry point.  At import
    time, ``_find_project_root()`` walks up from ``cwd`` until it finds a
    ``pyproject.toml`` file and stores the result in ``PROJECT_ROOT``.
 
-2. **Builder instantiation** — the ``windows_all`` command function calls
+2. **Builder instantiation** — the ``build_all`` command function calls
    ``WindowsBuilder(PROJECT_ROOT, verbose=verbose)``.  The constructor chain:
 
    a. ``WindowsBuilder.__init__`` creates a ``WindowsBuildEnvironment``.
@@ -96,25 +96,29 @@ Tracing what happens when ``scaldys-builder build windows all`` is run:
       ``DocumentationBuilder(env)``, ``Compiler(env)``, ``Packager(env)``.
 
 3. **Pipeline execution** — ``builder.main(console=console)`` assembles the
-   ``steps`` list and drives a Rich progress bar through each entry in order:
+   ``steps`` list (via ``_distribution_steps(require_sphinx=True)``) and
+   drives a Rich progress bar through each entry in order.  The step list is
+   mode-dependent:
 
    .. code-block:: python
 
        steps = [
-           ("Pre-flight checks",          lambda: self.env.pre_flight_checks(...)),
-           ("Cleaning build directories", self.clean),
-           ("Building documentation",     self.build_docs),
-           ("Building executable",        self.build_exe),
-           ("Building installer",         self.build_installer),
+           ("Checking project compliance", ...),
+           ("Pre-flight checks",           lambda: self.env.pre_flight_checks(...)),
+           ("Cleaning build directories",  self.clean),
+           ("Building documentation",      self.build_docs),
+           ("Building distribution",       self.build_exe),     # Cython + wheel (+ PyInstaller in Mode 1)
+           # ("Building installer", self.build_installer),      # omitted in wheel_only mode
        ]
 
    Any exception raised by a step aborts the pipeline and surfaces the error
    via the Rich console.
 
-4. **Individual commands** — ``build windows docs``, ``build windows exe``,
-   and ``build windows installer`` each instantiate ``WindowsBuilder``,
-   call ``env.pre_flight_checks()`` with the specific tool flags they need,
-   and invoke a single step method directly, bypassing the full pipeline.
+4. **Individual commands** — ``build docs`` and ``build windows`` each
+   instantiate ``WindowsBuilder``, call ``env.pre_flight_checks()`` with
+   the specific tool flags they need, and invoke the appropriate step methods
+   directly, bypassing the full pipeline.  ``build clean`` calls
+   ``builder.clean()`` directly.
 
 
 Configuration Loading
@@ -130,8 +134,13 @@ result is stored as ``self.config``.
                                               ├── cython: CythonConfig
                                               │       compiled_modules: list[str]
                                               │       source_root: str
+                                              ├── docs: DocsConfig
+                                              │       public_doc_dirs: list[str]
+                                              │       internal_doc_dirs: list[str]
                                               └── windows: WindowsConfig
                                                       script_dir: str
+                                                      deployment_mode: str
+                                                      bundle_pyruntime: bool
 
 If ``builder.toml`` is absent ``load_config()`` returns ``BuildConfig()``
 immediately, applying all dataclass defaults.  If the file is present,

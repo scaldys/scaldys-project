@@ -4,7 +4,7 @@
 Documentation Building
 ***********************
 
-``scaldys-builder build windows docs`` builds every documentation unit found
+``scaldys-builder build docs`` builds every documentation unit found
 under the ``docs/`` directory of your project.  Each immediate subdirectory
 of ``docs/`` is treated as an independent unit — there is no fixed set of
 names and no limit on how many units a project can have.

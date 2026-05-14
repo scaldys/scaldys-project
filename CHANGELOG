@@ -8,6 +8,7 @@
     Docs       for any documentation changes
 
 
+
 [0.6.0] - 2026-05-14
 ---------------------
 
@@ -37,6 +38,10 @@
       distributed to end users).  Updated in ``config.py``, ``docs.py``,
       ``windows/builder.py``, all tests, ``builder.toml``, and the full
       user manual.
+
+**Docs**:
+    - User manual synchronised with the codebase changes introduced in 0.4.0–0.6.0.
+      All affected pages updated in one pass
 
 
 [0.5.0] - 2026-05-10
@@ -130,6 +135,108 @@
       *Overview*, *Quick Start*, and *Windows Installer* pages updated to
       reflect the new paths and behaviour.
 
+
+
+[0.4.0] - 2026-05-14
+---------------------
+
+**Added**:
+    - Three Windows deployment modes, controlled by ``deployment_mode`` in
+      ``builder.toml`` (``[windows]`` section):
+
+      - ``"pyinstaller"`` (default) — existing behaviour: PyInstaller bundles
+        the application into a self-contained executable directory; Inno Setup
+        produces a ``setup.exe``.
+
+      - ``"pyruntime"`` — PyInstaller is not used.  A managed Python virtual
+        environment (``PythonRuntime``) is deployed alongside the application
+        via Inno Setup.  Intended for applications that must coexist with
+        Quarto, Jupyter, or another tool that requires a real Python
+        interpreter.  ``setup_pyruntime.ps1``, ``uv.exe``, and
+        ``.python-version`` are staged into ``dist/portable/bin/`` so the
+        installer can set up the runtime at install time.
+
+      - ``"wheel_only"`` — builds a binary distribution wheel only; no
+        installer is created.  The Inno Setup script and launcher files are
+        not required.  Use for packages distributed via ``pip`` or ``uv``.
+
+    - ``dist/wheels/`` — unified top-level output directory for the binary
+      distribution wheel in all three modes.  In ``pyruntime`` mode the wheel
+      is additionally staged to ``dist/portable/wheels/`` so Inno Setup can
+      bundle it into the installer.
+
+    - ``WindowsBuilder.build_distribution()`` — new method that runs the
+      Windows distribution pipeline without the documentation step.  Used by
+      the new ``build windows`` CLI command.
+
+    - ``WindowsBuilder._distribution_steps()`` — internal helper that returns
+      the mode-dependent step list, shared by ``main()`` and
+      ``build_distribution()``.
+
+    - ``WindowsBuilder._run_steps()`` — internal helper that drives the Rich
+      progress bar for a given step list; avoids duplicating the
+      progress-bar loop between ``main()`` and ``build_distribution()``.
+
+**Changed**:
+    - CLI redesigned — the ``build windows`` sub-group and its five commands
+      (``exe``, ``installer``, ``all``, ``docs``, ``clean``) are replaced by
+      four flat commands directly under ``build``:
+
+      - ``build all`` — documentation + full Windows distribution pipeline
+        (replaces ``build windows all``)
+      - ``build docs`` — Sphinx documentation only
+        (replaces ``build windows docs``)
+      - ``build windows`` — Windows distribution only, no docs rebuild
+        (replaces the separate ``build windows exe`` + ``build windows installer``
+        pair; behaviour is mode-dependent)
+      - ``build clean`` — delete ``build/`` and ``dist/``
+        (replaces ``build windows clean``)
+
+    - Compliance checking is now mode-dependent.  Rules 5–8 (packaging
+      directory, ``.iss`` script, launcher scripts) are only enforced when
+      ``deployment_mode`` is not ``"wheel_only"``.  Rule 9
+      (``.python-version``) is only enforced in ``"pyruntime"`` mode.
+
+    - ``Compiler.build()`` — PyInstaller is only invoked when
+      ``deployment_mode == "pyinstaller"``.
+
+    - ``Compiler._build_wheel()`` — wheel output path changed from
+      ``dist/portable/bin/wheels/`` to ``dist/wheels/`` (all modes).
+
+    - ``Packager.prepare_windows_files()`` — ``setup_pyruntime.ps1``,
+      ``.python-version``, and ``uv.exe`` are staged only in ``pyruntime``
+      mode; wheel staging to ``dist/portable/wheels/`` is likewise restricted
+      to ``pyruntime`` mode.
+
+    - ``Packager.run_innosetup()`` — passes ``/DPyruntimeMode=1`` and
+      optionally ``/DPythonRuntimeDir`` only in ``pyruntime`` mode.
+
+    - ``Packager.build()`` — returns early with an informational log message
+      in ``wheel_only`` mode (no installer step).
+
+    - ``WindowsBuildEnvironment`` — new ``dist_wheels_dir_path`` attribute
+      (``dist/wheels/``).
+
+    - Pre-flight checks and compliance checks are skipped for irrelevant tools
+      depending on the active mode (e.g. PyInstaller not checked in
+      ``pyruntime`` or ``wheel_only`` mode; Inno Setup not checked in
+      ``wheel_only`` mode).
+
+    - User manual updated throughout: new *Windows Distribution Modes* guide
+      (replaces *PyInstaller Executable Bundling*), updated *Windows Installer
+      Creation*, *CLI Reference*, *Configuration*, *Project Compliance*,
+      *Project Layout*, *Overview*, *Quick Start*, and
+      ``builder.toml — Full Reference`` pages.
+
+    - ``builder.toml`` reference updated with the new ``deployment_mode`` key
+      and revised ``bundle_pyruntime`` documentation (now explicitly scoped to
+      ``pyruntime`` mode).
+
+**Docs**:
+    - ``architecture.rst`` updated: execution flow section revised for the
+      new CLI structure and mode-aware step list; ``BuildConfig`` dataclass
+      diagram extended with ``DocsConfig``, ``deployment_mode``, and
+      ``bundle_pyruntime``.
 
 
 [0.3.0] - 2026-05-07

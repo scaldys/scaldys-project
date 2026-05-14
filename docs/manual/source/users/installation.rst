@@ -102,16 +102,16 @@ available on ``PATH`` (or in their standard installation locations):
      - Required for
      - Notes
    * - Sphinx (``sphinx-build``)
-     - ``build windows docs``
+     - ``build docs``, ``build all``
      - Installed via the ``[docs]`` extra
    * - PyInstaller (``pyinstaller``)
-     - ``build windows exe``
+     - ``build windows``, ``build all`` — ``pyinstaller`` mode only
      - Installed via the ``[windows]`` extra
    * - Inno Setup (``ISCC.exe``)
-     - ``build windows installer``
+     - ``build windows``, ``build all`` — ``pyinstaller`` and ``pyruntime`` modes
      - Download from `jrsoftware.org <https://jrsoftware.org/isinfo.php>`_;
        must be installed to the default ``%ProgramFiles%`` location or be on
        ``PATH``
 
-The ``build windows all`` command performs pre-flight checks before starting
+The ``build all`` command performs pre-flight checks before starting
 and reports clearly which tools are missing.

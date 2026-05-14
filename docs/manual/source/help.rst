@@ -12,8 +12,8 @@ usage and options::
 
     scaldys-builder --help
     scaldys-builder build --help
+    scaldys-builder build all --help
     scaldys-builder build windows --help
-    scaldys-builder build windows all --help
 
 Verbose output
 ==============
@@ -22,7 +22,7 @@ If a build step fails or behaves unexpectedly, re-run the command with
 ``--verbose`` / ``-v`` to enable debug-level logging.  This prints every
 subprocess invocation, file operation, and tool discovery step::
 
-    scaldys-builder build windows all --verbose
+    scaldys-builder build all --verbose
 
 The extra output often identifies the root cause directly (missing tool,
 wrong path, locked file, etc.).

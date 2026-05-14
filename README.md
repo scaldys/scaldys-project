@@ -1,10 +1,13 @@
 # scaldys-builder
 
 `scaldys-builder` automates the complete Windows distribution pipeline for
-Python projects. A single command takes your source code and produces a
-polished Windows installer — handling Sphinx documentation, optional Cython
-compilation, PyInstaller bundling, and Inno Setup packaging in one
-end-to-end workflow.
+Python projects. A single command takes your source code through Sphinx
+documentation, optional Cython compilation, and — depending on the chosen
+deployment mode — one of three distribution strategies:
+
+- **pyinstaller** (default) — PyInstaller exe + Inno Setup installer
+- **pyruntime** — binary wheel + Inno Setup installer with a managed Python runtime (for apps that coexist with Quarto/Jupyter)
+- **wheel_only** — binary wheel only, no installer (for pip-installable apps)
 
 If you are starting a new project, [scaldys-template](https://github.com/scaldys/scaldys-template)
 provides a ready-to-use project scaffold with `scaldys-builder` already integrated:

@@ -32,7 +32,7 @@ When issues are found:
 
     INFO  Checking project compliance...
     ERROR Project compliance check failed — 2 issue(s) must be resolved before building:
-    ERROR   ✗ PyInstaller entry point not found: 'src/myapp/__main__.py'
+    ERROR   ✗ Entry point not found: 'src/myapp/__main__.py'
     ERROR   ✗ Required packaging file not found: 'packaging/windows/myapp.iss'
     ERROR For details on each requirement, see "Project Compliance" in the
           documentation (In-Depth Guides → Project Compliance).
@@ -40,13 +40,13 @@ When issues are found:
 Compliance rules
 ================
 
-The table below lists every rule that is evaluated.  Rules are only checked
-when they are relevant to the requested build step — for example, the
-``__main__.py`` rule is not evaluated when running ``build windows installer``.
+The table below lists every rule that is evaluated.  Which rules are checked
+depends on the ``deployment_mode`` in ``builder.toml`` and the build command
+being run.
 
 .. list-table::
    :header-rows: 1
-   :widths: 5 45 15 35
+   :widths: 5 45 20 30
 
    * - #
      - Rule
@@ -71,42 +71,49 @@ when they are relevant to the requested build step — for example, the
      - All build commands
      - :ref:`project_layout` — *Source layout (src/ layout)*
    * - 4
-     - ``{source_root}/{package}/__main__.py`` must exist.  PyInstaller uses
-       this file as the application entry point when bundling the executable.
-     - ``exe``, ``all``
+     - ``{source_root}/{package}/__main__.py`` must exist.  This file is
+       used as the application entry point by PyInstaller (``pyinstaller``
+       mode) and by the installed console script in all modes.
+     - All build commands
      - :ref:`windows_exe`
    * - 5
      - The Windows packaging directory (``packaging/windows/`` by default,
        or the value of ``[windows] script_dir`` in ``builder.toml``) must
        exist.
-     - ``installer``, ``all``
+     - ``build windows``, ``build all`` — *not* ``wheel_only`` mode
      - :ref:`project_layout` — *Windows packaging layout*,
        :ref:`configuration`
    * - 6
      - ``{package}.iss`` must exist in the packaging directory.  This is the
        Inno Setup script that defines the installer contents and metadata.
-     - ``installer``, ``all``
+     - ``build windows``, ``build all`` — *not* ``wheel_only`` mode
      - :ref:`windows_installer`
    * - 7
      - ``{package}_commandline.bat`` must exist in the packaging directory.
        This launcher script is copied into the distribution and lets users
        start the application from a Command Prompt.
-     - ``installer``, ``all``
+     - ``build windows``, ``build all`` — *not* ``wheel_only`` mode
      - :ref:`windows_installer`
    * - 8
      - ``{package}_powershell.ps1`` must exist in the packaging directory.
        This launcher script is copied into the distribution and lets users
        start the application from PowerShell.
-     - ``installer``, ``all``
+     - ``build windows``, ``build all`` — *not* ``wheel_only`` mode
      - :ref:`windows_installer`
    * - 9
      - ``.python-version`` must exist at the project root.  It is the single
-       source of truth for the Python version used by the build pipeline, the
-       distribution wheel build, and the PythonRuntime setup script.  Create
-       the file with the target version string on a single line (e.g.
-       ``3.13``).
-     - All commands
+       source of truth for the Python version used by the PythonRuntime
+       setup script and the offline venv build.  Create the file with the
+       target version string on a single line (e.g. ``3.13``).
+     - ``build windows``, ``build all`` — ``pyruntime`` mode only
      - :ref:`windows_installer` — *Online and offline installer modes*
+
+.. note::
+
+   Rules 5–9 are only evaluated when the ``deployment_mode`` in
+   ``builder.toml`` requires them.  In ``wheel_only`` mode rules 5–9 are
+   skipped entirely because no installer is created.  Rule 9 is only
+   evaluated in ``pyruntime`` mode.
 
 .. note::
 

@@ -74,7 +74,7 @@ For narrative explanations of each section see :ref:`configuration`.
     # [docs] — Documentation build settings
     # ══════════════════════════════════════════════════════════════════════════
     #
-    # Controls which documentation units are processed by `build windows docs`,
+    # Controls which documentation units are processed by `build docs`,
     # which of those are distributed alongside the Windows application, and
     # which require a sphinx-apidoc pre-pass to auto-generate API reference
     # stubs.
@@ -92,7 +92,7 @@ For narrative explanations of each section see :ref:`configuration`.
     #
     # A list of subdirectory names under docs/ whose built HTML output is
     # copied into the distribution artefacts after a successful
-    # `build windows installer` (or `build windows all`) run.  These are the
+    # `build windows` (or `build all`) run.  These are the
     # documentation units destined for end users of the program.
     #
     # For each name listed, the builder copies:
@@ -141,14 +141,17 @@ For narrative explanations of each section see :ref:`configuration`.
     # Controls the Windows distribution pipeline: where the packaging files
     # live and whether the installer targets offline or online deployment.
     #
-    # This section is consumed by `build windows installer` and
-    # `build windows all`.  It expects the following files to exist inside
+    # This section is consumed by `build windows` and `build all`.
+    # In pyinstaller and pyruntime modes, the following files must exist inside
     # script_dir, named after the project (hyphens replaced by underscores):
     #
     #   {project_name}.iss                 Inno Setup script       (required)
     #   {project_name}_commandline.bat     command-line launcher   (required)
     #   {project_name}_powershell.ps1      PowerShell launcher     (required)
+    #   setup_pyruntime.ps1                runtime setup script    (required in pyruntime mode)
     #   {project_name}.ico                 application icon        (optional)
+    #
+    # In wheel_only mode none of the above files are required.
     #
     # If the [windows] section is omitted entirely, all defaults below apply.
 
@@ -158,20 +161,47 @@ For narrative explanations of each section see :ref:`configuration`.
     #
     # Directory (relative to the project root) containing the Windows packaging
     # files listed above.  The builder reads launcher scripts from here, copies
-    # them into the PyInstaller distribution tree, and passes the .iss script
-    # to Inno Setup's ISCC compiler.
+    # them into the distribution tree, and passes the .iss script to Inno
+    # Setup's ISCC compiler.
     #
     # Default: "packaging/windows"
     script_dir = "packaging/windows"
 
+    # deployment_mode
+    #
+    # Controls how the application is packaged for Windows users.
+    # Three values are supported:
+    #
+    # "pyinstaller" (default)
+    #   PyInstaller bundles the application into a self-contained executable
+    #   directory (dist/portable/bin/).  Inno Setup wraps it into a setup .exe.
+    #   No Python installation is required on the end-user's machine.
+    #
+    # "pyruntime"
+    #   PyInstaller is NOT used.  The installer deploys a managed Python virtual
+    #   environment (PythonRuntime) into the installation directory.  Launcher
+    #   scripts activate that environment rather than calling a frozen executable.
+    #   Use this mode when the application must coexist with tools such as Quarto
+    #   or Jupyter that require a real Python interpreter.
+    #   Requires .python-version at the project root.
+    #
+    # "wheel_only"
+    #   Builds only a binary distribution wheel.  No Windows installer is
+    #   created.  Use this for packages distributed via pip or uv rather than a
+    #   setup .exe.  The .iss script and launcher files are not required.
+    #
+    # Default: "pyinstaller"
+    deployment_mode = "pyinstaller"
+
     # bundle_pyruntime
     #
-    # Selects between online and offline installer modes.
+    # Only meaningful when deployment_mode = "pyruntime".
+    # Selects between online and offline installer sub-modes.
     #
     # false (default) — ONLINE mode
-    #   uv.exe is embedded in the bin/ directory of the installation.  During
-    #   the installation wizard, setup_pyruntime.ps1 uses uv to download and
-    #   create the PythonRuntime virtual environment on the end-user's machine.
+    #   uv.exe is staged in the bin/ directory of the distribution.  During
+    #   installation, setup_pyruntime.ps1 uses uv to download and create the
+    #   PythonRuntime virtual environment on the end-user's machine.
     #   The resulting setup.exe is significantly smaller.
     #
     # true            — OFFLINE mode

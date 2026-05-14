@@ -8,27 +8,42 @@ What scaldys-builder does for you
 =================================
 
 You write Python.  ``scaldys-builder`` takes care of turning that code into
-something you can hand to a Windows user who has never installed Python.
+something you can hand to a Windows user.
 
 Running a single command from your project root::
 
-    scaldys-builder build windows all
+    scaldys-builder build all
 
 produces, in order:
 
-1. **HTML documentation** — every documentation unit under ``docs/`` built to
-   HTML, with configured units bundled into the installer for offline use.
-2. **A standalone executable** — your application bundled by PyInstaller
-   into a folder that runs on any Windows machine without a Python
-   installation.  Optionally, selected modules are first compiled to native
+1. **HTML documentation** — every documentation unit under ``docs/`` built
+   to HTML, with configured units bundled into the installer for offline use.
+
+2. **A Windows distribution** — the exact form depends on the
+   ``deployment_mode`` you choose in ``builder.toml``:
+
+   - **pyinstaller** (default): PyInstaller bundles the application into a
+     self-contained directory that runs on any Windows machine without a
+     Python installation.
+   - **pyruntime**: a managed Python virtual environment is deployed
+     alongside the application.  Use this when your app must coexist with
+     Quarto, Jupyter, or another tool that requires a real Python interpreter.
+   - **wheel_only**: only a binary distribution wheel is produced.  Use this
+     for packages distributed via ``pip`` or ``uv``.
+
+   In all modes, a ``.pyd``-only distribution wheel is built from compiled
+   sources.  Optionally, selected modules are first compiled to native
    ``.pyd`` extensions with Cython for performance or to avoid shipping
-   plain source.
-3. **A Windows installer** — an Inno Setup ``.exe`` that installs the
-   executable, the documentation, launcher scripts, and example files; adds
-   Start Menu and Desktop shortcuts; and handles uninstallation cleanly.
+   plain source code.
+
+3. **A Windows installer** (``pyinstaller`` and ``pyruntime`` modes) — an
+   Inno Setup ``.exe`` that installs the application, the documentation,
+   launcher scripts, and example files; adds Start Menu and Desktop
+   shortcuts; and handles uninstallation cleanly.
 
 The end result is a ``dist/installer/`` folder containing a single
-``MyApp-Setup-x.y.z.exe`` that you can ship directly to users.
+``setup.exe`` that you can ship directly to users, and a ``dist/wheels/``
+folder with the distribution wheel.
 
 The build pipeline at a glance
 ==============================
@@ -47,19 +62,24 @@ The build pipeline at a glance
     │  src/       │ ───────────────▶│ build/compiled/             │
     │  myapp/     │                  └───────────────┬─────────────┘
     └─────────────┘                                  │
-                                                     │ PyInstaller
+                                                     │ Mode 1: PyInstaller
+                                                     │ Mode 2: wheel + uv venv
+                                                     │ Mode 3: wheel only
                                                      ▼
-                                       ┌──────────────────────────┐
-                                       │ dist/portable/bin/    │
-                                       │   myapp.exe              │
-                                       └─────────────┬────────────┘
-                                                     │
-    ┌──────────────────┐  Inno Setup                 │
+                                       ┌──────────────────────────────┐
+                                       │ dist/wheels/                 │
+                                       │   myapp-1.2.3-...win_amd64.whl │
+                                       └──────────────────────────────┘
+                                       ┌──────────────────────────────┐
+                                       │ dist/portable/  (Mode 1 & 2) │
+                                       │   bin/  ...  documentation/  │
+                                       └──────────────┬───────────────┘
+    ┌──────────────────┐  Inno Setup  (Mode 1 & 2)   │
     │ packaging/       │ ────────────────────────────▶
     │ windows/         │
     │   myapp.iss      │               ┌────────────────────────────┐
-    └──────────────────┘               │ dist/installer/                │
-                                       │   MyApp-Setup-x.y.z.exe    │
+    └──────────────────┘               │ dist/installer/            │
+                                       │   setup.exe                │
                                        └────────────────────────────┘
 
 Getting started quickly with scaldys-template
@@ -72,9 +92,10 @@ workflows, …) from scratch takes time.  `scaldys-template
 template that already has everything wired together:
 
 - A ``src``-layout Python package with a Typer-based CLI entry point
-- ``builder.toml`` pre-configured with an example Cython module
-- ``packaging/windows/`` with a complete ``.iss`` script, launcher scripts,
-  and an application icon
+- ``builder.toml`` pre-configured with an example Cython module and
+  ``deployment_mode = "pyinstaller"``
+- ``packaging/windows/`` with a complete ``.iss`` script, auto-detecting
+  launcher scripts, and an application icon
 - ``docs/manual/`` with a working Sphinx project (freely renameable)
 - ``pyproject.toml`` declaring ``scaldys-builder[cython,windows,docs]`` as a
   dev dependency
