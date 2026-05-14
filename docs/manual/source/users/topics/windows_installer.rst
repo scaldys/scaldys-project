@@ -110,7 +110,8 @@ The installer step performs the following actions in sequence:
 
 2. **Copy documentation** — for each directory listed in ``[docs] dist_dirs``
    in ``builder.toml``, the HTML output (from ``build/<name>/html/``) is
-   copied to ``dist/portable/documentation/<name>/``.
+   copied to both ``dist/portable/documentation/<name>/`` (bundled with the
+   portable package) and ``dist/documentation/<name>/`` (standalone docs only).
 
 3. **Copy examples** (optional) — if an ``examples/`` directory exists in
    the project root, it is copied to ``dist/portable/examples/``.

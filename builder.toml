@@ -86,6 +86,7 @@ source_root = "src"
 #
 # For each name listed, the builder copies:
 #   build/<name>/html/  →  dist/portable/documentation/<name>/
+#   build/<name>/html/  →  dist/documentation/<name>/
 #
 # That tree is then picked up by the Inno Setup script and bundled inside
 # the Windows setup.exe, making the documentation available to end-users

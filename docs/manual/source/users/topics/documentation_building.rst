@@ -139,10 +139,15 @@ packager should copy into the distribution:
     [docs]
     dist_dirs = ["manual"]
 
-Each listed name is copied from ``build/<name>/html/`` into
-``dist/portable/documentation/<name>/``.  If a name is absent from
-``dist_dirs``, its built output is never included in the distribution but is
-still produced during the ``docs`` step.
+Each listed name is copied from ``build/<name>/html/`` into two locations:
+
+- ``dist/portable/documentation/<name>/`` — bundled inside the portable package
+  (and subsequently picked up by the installer).
+- ``dist/documentation/<name>/`` — a standalone documentation-only copy,
+  useful when you only want the docs without the full portable package.
+
+If a name is absent from ``dist_dirs``, its built output is never included in
+the distribution but is still produced during the ``docs`` step.
 
 An empty (or absent) ``dist_dirs`` means no documentation is distributed —
 useful when all doc units are for internal/developer use only.
@@ -172,3 +177,4 @@ With ``dist_dirs = ["manual"]`` in ``builder.toml``, the distribution
 contains::
 
     dist/portable/documentation/manual/   ← copied from build/manual/html/
+    dist/documentation/manual/            ← standalone docs-only copy

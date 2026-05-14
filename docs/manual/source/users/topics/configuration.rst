@@ -95,9 +95,10 @@ Controls which documentation units are distributed and which require a
    * - ``dist_dirs``
      - ``[]``
      - List of subdirectory names under ``docs/`` whose built HTML output
-       (``build/<name>/html/``) is copied into the distribution artefacts
-       (``dist/portable/documentation/<name>/``).  An empty list means
-       no documentation is distributed.
+       (``build/<name>/html/``) is copied into the distribution artefacts:
+       ``dist/portable/documentation/<name>/`` (alongside the portable package)
+       and ``dist/documentation/<name>/`` (standalone documentation copy).
+       An empty list means no documentation is distributed.
    * - ``apidoc_dirs``
      - ``[]``
      - List of subdirectory names that require a ``sphinx-apidoc`` pre-pass

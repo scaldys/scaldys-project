@@ -96,11 +96,14 @@ For narrative explanations of each section see :ref:`configuration`.
     #
     # For each name listed, the builder copies:
     #   build/<name>/html/  →  dist/portable/documentation/<name>/
+    #   build/<name>/html/  →  dist/documentation/<name>/
     #
-    # That tree is then picked up by the Inno Setup script and bundled inside
+    # The first tree is picked up by the Inno Setup script and bundled inside
     # the Windows setup.exe, making the documentation available to end-users
-    # offline after installation.  An empty list builds all documentation units
-    # but ships none of them with the installer.
+    # offline after installation.  The second tree provides a standalone
+    # documentation-only copy that can be distributed independently of the
+    # portable package.  An empty list builds all documentation units but
+    # ships none of them with the installer.
     #
     # Example:
     #   dist_dirs = ["manual"]

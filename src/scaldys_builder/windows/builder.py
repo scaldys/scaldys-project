@@ -533,15 +533,19 @@ class Packager:
                     f"Built HTML for dist_dir '{dir_name}' not found at '{help_src}'. Skipping."
                 )
                 continue
-            dist_doc = self.env.dist_exe_dir_path.joinpath("documentation", dir_name)
-            safe_empty_dir(dist_doc)
-            safe_copytree(help_src, dist_doc, dirs_exist_ok=True)
-            for f in ["_sources", "objects.inv", ".buildinfo"]:
-                p = dist_doc.joinpath(f)
-                if p.is_dir():
-                    safe_rmtree(p)
-                elif p.exists():
-                    safe_unlink(p)
+            for dest_root in [
+                self.env.dist_exe_dir_path.joinpath("documentation"),
+                self.env.dist_dir_path.joinpath("documentation"),
+            ]:
+                dist_doc = dest_root.joinpath(dir_name)
+                safe_empty_dir(dist_doc)
+                safe_copytree(help_src, dist_doc, dirs_exist_ok=True)
+                for f in ["_sources", "objects.inv", ".buildinfo"]:
+                    p = dist_doc.joinpath(f)
+                    if p.is_dir():
+                        safe_rmtree(p)
+                    elif p.exists():
+                        safe_unlink(p)
 
     def run_innosetup(self) -> None:
         """

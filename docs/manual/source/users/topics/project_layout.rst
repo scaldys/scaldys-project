@@ -150,6 +150,8 @@ For example, with ``docs/manual/`` and ``docs/developer_guide/``:
             examples/           ← example files (copied in, if examples/ exists)
             myapp_commandline.bat
             myapp_powershell.ps1
+        documentation/
+            <name>/             ← standalone docs copy, one per entry in dist_dirs
         installer/
             MyApp-Setup-1.2.3.exe   ← Windows installer (from Inno Setup)
 
@@ -165,6 +167,8 @@ For example, with ``dist_dirs = ["manual"]``:
             examples/
             myapp_commandline.bat
             myapp_powershell.ps1
+        documentation/
+            manual/             ← standalone copy from build/manual/html/
         installer/
             MyApp-Setup-1.2.3.exe
 
