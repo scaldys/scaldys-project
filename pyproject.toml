@@ -1,6 +1,6 @@
 [project]
 name = "scaldys-builder"
-version = "0.5.0"
+version = "0.5.1"
 authors = [
   { name="Scaldys", email="scaldys@scaldys.net" },
 ]
@@ -34,7 +34,7 @@ docs = [
 ]
 
 [project.scripts]
-scaldys-builder = "scaldys_builder.builder:app"
+scaldys-builder = "scaldys_builder.__main__:app"
 
 [build-system]
 requires = ["setuptools"]

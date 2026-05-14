@@ -137,7 +137,7 @@ without touching existing Windows code.  You need four things:
                steps = [...]  # Same pattern as WindowsBuilder.main()
                ...
 
-3. **Wire up CLI commands** in ``builder.py``
+3. **Wire up CLI commands** in ``__main__.py``
    Add a new ``Typer`` sub-app following the existing pattern::
 
        from scaldys_builder.linux.builder import LinuxBuilder

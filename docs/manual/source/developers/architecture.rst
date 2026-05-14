@@ -18,7 +18,7 @@ The module layout mirrors this split:
 .. code-block:: text
 
     src/scaldys_builder/
-    ├── builder.py              # CLI entry-point (Typer app)
+    ├── __main__.py             # CLI entry-point (Typer app)
     ├── common/
     │   ├── base.py             # BaseBuildEnvironment, BaseBuilder
     │   ├── compile_runner.py   # Cython/setuptools build script (run as subprocess)
@@ -77,7 +77,7 @@ Execution Flow
 
 Tracing what happens when ``scaldys-builder build windows all`` is run:
 
-1. **Module load** — ``builder.py`` is the Typer CLI entry point.  At import
+1. **Module load** — ``__main__.py`` is the Typer CLI entry point.  At import
    time, ``_find_project_root()`` walks up from ``cwd`` until it finds a
    ``pyproject.toml`` file and stores the result in ``PROJECT_ROOT``.
 

@@ -8,6 +8,21 @@
     Docs       for any documentation changes
 
 
+[0.5.1] - (unreleased)
+---------------------
+
+**Changed**:
+    - ``builder.py`` renamed to ``__main__.py``, making ``scaldys-builder``
+      consistent with the project layout it enforces on consuming projects.
+      The module is now also runnable as ``python -m scaldys_builder``.
+      The ``pyproject.toml`` entry point updated accordingly
+      (``scaldys_builder.__main__:app``).
+
+    - Developer manual updated to reflect the rename in the module layout
+      diagram and execution-flow description (``architecture.rst``) and in
+      the new-platform-builder guide (``extension_points.rst``).
+
+
 [0.5.0] - 2026-05-10
 ---------------------
 
@@ -168,9 +183,6 @@
       all third-party tools used by ``scaldys-builder``
     - ``licenses/README.md`` index listing each tool's license type, upstream
       URL, and link to the corresponding local license file
-
-**Changed**:
-    - Project version bumped to 0.2.0 in ``pyproject.toml``
 
 
 [0.1.1] - 2025-xx-xx
