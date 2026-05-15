@@ -139,12 +139,20 @@ the packager should copy into the distribution:
     [docs]
     public_doc_dirs = ["manual"]
 
-Each listed name is copied from ``build/<name>/html/`` into two locations:
+The exact output locations depend on ``deployment_mode``:
 
-- ``dist/portable/documentation/<name>/`` — bundled inside the portable package
-  (and subsequently picked up by the installer).
-- ``dist/documentation/<name>/`` — a standalone documentation-only copy,
-  useful when you only want the docs without the full portable package.
+``pyinstaller`` / ``pyruntime`` mode
+    Each listed name is copied from ``build/<name>/html/`` into two locations:
+
+    - ``dist/portable/documentation/<name>/`` — bundled inside the portable
+      package and picked up by the Inno Setup installer.
+    - ``dist/documentation/<name>/`` — a standalone documentation-only copy.
+
+``wheel_only`` mode
+    Each listed name is copied from ``build/<name>/html/`` into one location:
+
+    - ``dist/documentation/<name>/`` — no installer or portable package is
+      produced in this mode, so only the standalone copy is created.
 
 If a name is absent from ``public_doc_dirs``, its built output is never
 included in the distribution but is still produced during the ``docs`` step.
@@ -174,7 +182,13 @@ Given an example project with two documentation units — ``manual`` and
      - Developer / API guide, single-page HTML
 
 With ``public_doc_dirs = ["manual"]`` in ``builder.toml``, the distribution
-contains::
+contains:
 
-    dist/portable/documentation/manual/   ← copied from build/manual/html/
+In ``pyinstaller`` / ``pyruntime`` mode::
+
+    dist/portable/documentation/manual/   ← bundled in the portable package
+    dist/documentation/manual/            ← standalone docs-only copy
+
+In ``wheel_only`` mode::
+
     dist/documentation/manual/            ← standalone docs-only copy

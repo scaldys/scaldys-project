@@ -98,8 +98,12 @@ sequence, with a Rich progress bar tracking overall progress:
 2. **Cython compilation** (if ``compiled_modules`` is non-empty) — compiles
    selected modules to ``.pyd`` extension files.
 3. **Windows distribution** — mode-dependent (see ``build windows`` below).
-4. **Installer** (``pyinstaller`` and ``pyruntime`` modes only) — runs Inno
-   Setup to produce a setup ``.exe``.
+4. **Packaging** — mode-dependent:
+
+   - ``pyinstaller`` / ``pyruntime`` — stages artefacts and runs Inno Setup
+     to produce a setup ``.exe`` in ``dist/installer/``.
+   - ``wheel_only`` — copies each ``public_doc_dirs`` entry from
+     ``build/<name>/html/`` to ``dist/documentation/<name>/``.
 
 Any stage failure stops the build and reports the error.
 

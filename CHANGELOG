@@ -9,6 +9,23 @@
 
 
 
+[0.6.1] - 2026-05-15
+---------------------
+
+**Fixed**:
+    - ``build all`` in ``wheel_only`` mode now distributes built documentation
+      to ``dist/documentation/`` as documented in ``builder.toml``.
+      Previously, the entire packaging step was skipped in this mode, so
+      Sphinx built the docs to ``build/<name>/html/`` but they were never
+      copied to ``dist/``.
+
+      A new ``Packager._distribute_docs()`` method handles this: it copies
+      each ``public_doc_dirs`` entry from ``build/<name>/html/`` to
+      ``dist/documentation/<name>/``.  A *Distributing documentation* step
+      now appears in the ``build all`` progress bar for ``wheel_only`` mode
+      (previously absent).
+
+
 [0.6.0] - 2026-05-14
 ---------------------
 
