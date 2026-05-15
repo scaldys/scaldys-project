@@ -702,6 +702,33 @@ class Packager:
 
         logger.info(f"  PythonRuntime environment ready at '{pyruntime_dir}'")
 
+    def _distribute_docs(self) -> None:
+        """
+        Copy public documentation HTML output to ``dist/documentation/``.
+
+        Used in ``wheel_only`` mode where no installer is produced but
+        built docs still need to land in the distribution directory.
+        Entries in ``public_doc_dirs`` that have not yet been built are
+        skipped with a warning.
+        """
+        for dir_name in self.env.config.docs.public_doc_dirs:
+            help_src = self.env.build_dir_path.joinpath(dir_name, "html")
+            if not help_src.is_dir():
+                logger.warning(
+                    f"Built HTML for public_doc_dir '{dir_name}' not found at '{help_src}'. Skipping."
+                )
+                continue
+            dist_doc = self.env.dist_dir_path.joinpath("documentation", dir_name)
+            safe_empty_dir(dist_doc)
+            safe_copytree(help_src, dist_doc, dirs_exist_ok=True)
+            for f in ["_sources", "objects.inv", ".buildinfo"]:
+                p = dist_doc.joinpath(f)
+                if p.is_dir():
+                    safe_rmtree(p)
+                elif p.exists():
+                    safe_unlink(p)
+            logger.info(f"  Distributed documentation '{dir_name}' → '{dist_doc}'")
+
     def build(self) -> None:
         """
         Orchestrate the final packaging process.
@@ -710,11 +737,11 @@ class Packager:
         pre-building the PythonRuntime environment (offline installer), and
         running Inno Setup.
 
-        In ``wheel_only`` mode the entire packaging step is skipped — no
-        installer is produced.
+        In ``wheel_only`` mode no installer is produced, but any configured
+        ``public_doc_dirs`` are still copied to ``dist/documentation/``.
         """
         if self.env.config.windows.deployment_mode == "wheel_only":
-            logger.info("  Packaging step skipped (wheel_only mode produces no installer).")
+            self._distribute_docs()
             return
         self.prepare_examples()
         self.prepare_windows_files()
@@ -893,7 +920,9 @@ class WindowsBuilder(BaseBuilder):
             ("Cleaning build directories", self.clean),
             (dist_label, self.build_exe),
         ]
-        if not is_wheel_only:
+        if is_wheel_only:
+            steps.append(("Distributing documentation", self.build_installer))
+        else:
             steps.append(("Building installer", self.build_installer))
         return steps
 

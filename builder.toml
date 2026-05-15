@@ -95,14 +95,14 @@ source_root = "src"
 # but ships none of them with the installer.
 #
 # Example:
-#   public_doc_dirs = ["manual"]
+#   public_doc_dirs = ["user_guide"]
 #
 # Default: [] — no documentation is distributed with the installer.
 #
 # Not applicable to scaldys-builder: this project is distributed via PyPI,
 # not as a Windows end-user installer, so no docs are ever bundled into
 # dist artefacts.
-# public_doc_dirs = []
+public_doc_dirs = ["manual"]
 
 # internal_doc_dirs
 #
@@ -149,11 +149,11 @@ internal_doc_dirs = []
 #   {project_name}.ico                 application icon       (optional)
 #   setup_pyruntime.ps1                runtime setup script   (required for pyruntime mode)
 #
-# NOT APPLICABLE to scaldys-builder: this project is a developer tool
-# installed via pip/uv, not distributed as a Windows end-user installer.
-# The [windows] section header and all its keys are therefore commented out.
-#
-# [windows]
+# scaldys-builder is a developer tool installed via pip/uv, not distributed
+# as a Windows end-user installer.  No .iss or launcher scripts are needed.
+# deployment_mode = "wheel_only" below disables those compliance requirements.
+
+[windows]
 
 # script_dir
 #
@@ -235,7 +235,7 @@ internal_doc_dirs = []
 #
 # Default: "pyinstaller"
 #
-# deployment_mode = "pyinstaller"
+deployment_mode = "wheel_only"
 
 # bundle_pyruntime
 #
