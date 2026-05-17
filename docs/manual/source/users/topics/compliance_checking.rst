@@ -107,13 +107,24 @@ being run.
        target version string on a single line (e.g. ``3.13``).
      - ``build windows``, ``build all`` — ``pyruntime`` mode only
      - :ref:`windows_installer` — *Online and offline installer modes*
+   * - 10
+     - The project package must be installed in the active virtual
+       environment (a dist-info entry discoverable by
+       ``importlib.metadata`` must exist).  This is required so that the
+       PyInstaller hook can call ``copy_metadata()`` to bundle the package's
+       dist-info into the frozen executable, making
+       ``importlib.metadata.version()`` work at runtime.  If the check
+       fails, run ``uv sync`` (or ``pip install -e .``) and retry.
+     - ``build windows``, ``build all``, ``check`` — ``pyinstaller`` mode only
+     - :ref:`windows_exe` — *Mode 1: pyinstaller*
 
 .. note::
 
-   Rules 5–9 are only evaluated when the ``deployment_mode`` in
+   Rules 5–10 are only evaluated when the ``deployment_mode`` in
    ``builder.toml`` requires them.  In ``wheel_only`` mode rules 5–9 are
    skipped entirely because no installer is created.  Rule 9 is only
-   evaluated in ``pyruntime`` mode.
+   evaluated in ``pyruntime`` mode.  Rule 10 is only evaluated in
+   ``pyinstaller`` mode.
 
 .. note::
 

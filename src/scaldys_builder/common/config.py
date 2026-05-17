@@ -64,7 +64,7 @@ class WindowsConfig:
         ``"pyinstaller"`` (default) — the application is bundled into a
         standalone executable using PyInstaller.  No Python runtime is deployed
         alongside it.  A binary wheel is still built and placed in
-        ``dist/wheels/`` for users who manage their own virtual environments.
+        ``dist/`` for users who manage their own virtual environments.
 
         ``"pyruntime"`` — PyInstaller is skipped entirely.  Instead a binary
         wheel is built and the Inno Setup installer deploys a managed Python
@@ -74,14 +74,14 @@ class WindowsConfig:
         coexist with tools such as Quarto that require a real Python interpreter.
 
         ``"wheel_only"`` — Neither PyInstaller nor Inno Setup is used.  A
-        binary wheel is built and placed in ``dist/wheels/``.  No installer is
+        binary wheel is built and placed in ``dist/``.  No installer is
         produced.  Use this mode when end users install the application into
         their own Python environment via ``pip``/``uv pip install``.
     bundle_pyruntime : bool
         Only meaningful when ``deployment_mode = "pyruntime"``.
 
         When ``True``, the packager uses the bundled ``uv.exe`` to pre-build the
-        ``PythonRuntime`` virtual environment at ``dist/pyruntime/`` and passes
+        ``PythonRuntime`` virtual environment at ``artifacts/pyruntime/`` and passes
         its path to Inno Setup via the ``/DPythonRuntimeDir`` preprocessor
         define.  The resulting ``setup.exe`` is an *offline* installer — no
         internet connection is needed at install time.

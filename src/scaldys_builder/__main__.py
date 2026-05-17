@@ -7,7 +7,7 @@ consuming project (the directory that contains ``pyproject.toml``)::
     scaldys-builder build all       # full build: docs + Windows distribution
     scaldys-builder build docs      # documentation only
     scaldys-builder build windows   # Windows distribution only (mode-dependent)
-    scaldys-builder build clean     # remove build/ and dist/
+    scaldys-builder build clean     # remove build/, dist/ and artifacts/
     scaldys-builder check           # verify project compliance
 
 The Windows distribution step is controlled by ``deployment_mode`` in
@@ -90,7 +90,7 @@ def build_windows(
 def build_clean(
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output."),
 ) -> None:
-    """Remove build/ and dist/ directories."""
+    """Remove build/, dist/ and artifacts/ directories."""
     builder = WindowsBuilder(PROJECT_ROOT, verbose=verbose)
     builder.clean()
 

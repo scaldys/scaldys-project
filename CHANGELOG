@@ -9,6 +9,71 @@
 
 
 
+[0.7.0] - 2026-05-17
+---------------------
+
+**Changed**:
+    - Build output split into two top-level directories with distinct purposes:
+
+      - ``dist/`` — PyPI-conventional directory for the distributable wheel.
+        The ``dist/wheels/`` subdirectory is eliminated; the wheel is now
+        written directly into ``dist/``, matching the convention expected by
+        ``twine upload dist/*`` and ``uv publish``.
+
+      - ``artifacts/`` — new top-level directory for all other build outputs
+        that are not published to PyPI.  Replaces the previous use of ``dist/``
+        for non-wheel artefacts.
+
+      Previous ``dist/`` paths and their ``artifacts/`` replacements:
+
+      +----------------------------------+-----------------------------------------+
+      | Old path                         | New path                                |
+      +==================================+=========================================+
+      | ``dist/wheels/<name>.whl``       | ``dist/<name>.whl``                     |
+      +----------------------------------+-----------------------------------------+
+      | ``dist/portable/``               | ``artifacts/portable/``                 |
+      +----------------------------------+-----------------------------------------+
+      | ``dist/installer/``              | ``artifacts/installer/``                |
+      +----------------------------------+-----------------------------------------+
+      | ``dist/documentation/``          | ``artifacts/documentation/``            |
+      +----------------------------------+-----------------------------------------+
+      | ``dist/pyruntime/``              | ``artifacts/pyruntime/``                |
+      +----------------------------------+-----------------------------------------+
+
+      .. note::
+         **Breaking change for consuming projects.**  Any Inno Setup ``.iss``
+         script that references ``dist\portable\``, ``dist\installer\``, or
+         ``dist\documentation\`` must be updated to reference
+         ``artifacts\portable\``, ``artifacts\installer\``, and
+         ``artifacts\documentation\`` respectively.
+
+    - ``build clean`` now removes ``artifacts/`` in addition to ``build/`` and
+      ``dist/``.  The OneDrive slow-sync warning is updated to mention all three
+      directories.
+
+    - ``builder.toml`` deployment-mode documentation updated to reflect the new
+      directory layout.
+
+**Added**:
+    - Pre-build compliance check for package installation in ``pyinstaller`` mode.
+      ``check_compliance()`` now verifies that the project package is installed
+      in the active virtual environment (i.e. a dist-info entry is present and
+      discoverable by ``importlib.metadata``).
+
+      A missing dist-info previously caused ``copy_metadata()`` in the
+      PyInstaller hook to raise a ``StopIteration`` deep inside PyInstaller,
+      producing a cryptic traceback with no indication of the fix.  The check
+      now catches this condition before the build starts and reports:
+
+      .. code-block:: text
+
+         ✗ Package 'my-app' is not installed in the active virtual environment
+           (no dist-info found). Run 'uv sync' (or 'pip install -e .') and retry.
+
+      This most commonly occurs after renaming the project (changing ``name``
+      in ``pyproject.toml``) without reinstalling.
+
+
 [0.6.1] - 2026-05-15
 ---------------------
 

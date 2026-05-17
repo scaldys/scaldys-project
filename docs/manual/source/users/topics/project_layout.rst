@@ -109,14 +109,14 @@ Examples directory
 
 If an ``examples/`` directory exists in the project root,
 ``scaldys-builder build windows`` copies its contents to
-``dist/portable/examples/`` so the examples are included in the Windows
+``artifacts/portable/examples/`` so the examples are included in the Windows
 installer.  This directory is entirely optional.
 
 Build output layout
 ===================
 
-``scaldys-builder`` writes all output under two top-level directories in the
-project root.  Both are safe to delete (use ``build clean``).
+``scaldys-builder`` writes all output under three top-level directories in the
+project root.  All three are safe to delete (use ``build clean``).
 
 ``build/`` — intermediate artefacts
 --------------------------------------
@@ -130,29 +130,38 @@ project root.  Both are safe to delete (use ``build clean``).
             singlehtml/         ← single-page HTML
         pyinstaller/            ← PyInstaller work directory (pyinstaller mode only)
 
-``dist/`` — final artefacts
-------------------------------
+``dist/`` — distribution wheel
+--------------------------------
 
-The contents of ``dist/`` depend on the active ``deployment_mode``.
+``dist/`` contains only the ``.whl`` file, following the PyPI convention
+(``twine upload dist/*``, ``uv publish``).
+
+.. code-block:: text
+
+    dist/
+        myapp-1.2.3-cp313-cp313-win_amd64.whl
+
+``artifacts/`` — all other build outputs
+------------------------------------------
+
+``artifacts/`` holds every non-wheel output.  Its contents depend on the
+active ``deployment_mode``.
 
 **Mode 1: ``pyinstaller``**
 
 .. code-block:: text
 
-    dist/
+    artifacts/
         portable/
             bin/                ← executable + libraries (from PyInstaller)
                 myapp.exe
                 python313.dll
                 _internal/
-            bin/
                 myapp_commandline.bat
                 myapp_powershell.ps1
             documentation/
                 <name>/         ← one per entry in public_doc_dirs
             examples/           ← example files (if examples/ exists)
-        wheels/
-            myapp-1.2.3-cp313-cp313-win_amd64.whl
         documentation/
             <name>/             ← standalone docs copy, one per public_doc_dirs
         installer/
@@ -162,7 +171,7 @@ The contents of ``dist/`` depend on the active ``deployment_mode``.
 
 .. code-block:: text
 
-    dist/
+    artifacts/
         portable/
             bin/
                 myapp_commandline.bat
@@ -175,8 +184,6 @@ The contents of ``dist/`` depend on the active ``deployment_mode``.
             documentation/
                 <name>/
             examples/
-        wheels/
-            myapp-1.2.3-cp313-cp313-win_amd64.whl
         documentation/
             <name>/
         pyruntime/              ← pre-built venv (offline mode only, bundle_pyruntime=true)
@@ -187,9 +194,9 @@ The contents of ``dist/`` depend on the active ``deployment_mode``.
 
 .. code-block:: text
 
-    dist/
-        wheels/
-            myapp-1.2.3-cp313-cp313-win_amd64.whl
+    artifacts/
+        documentation/
+            <name>/             ← only present if public_doc_dirs is non-empty
 
 Relationship between stages
 ============================
@@ -201,10 +208,10 @@ The build steps consume each other's output:
     [build docs]  →  build/<name>/html/   (for each docs/ subdirectory)
                               ↓
     [build windows]  →  Cython compilation → build/compiled/
-                     →  wheel → dist/wheels/
-                     →  Mode 1: PyInstaller → dist/portable/bin/
-                     →  Mode 1/2: stages launchers, docs, examples into dist/portable/
-                     →  Mode 1/2: Inno Setup → dist/installer/setup.exe
+                     →  wheel → dist/
+                     →  Mode 1: PyInstaller → artifacts/portable/bin/
+                     →  Mode 1/2: stages launchers, docs, examples into artifacts/portable/
+                     →  Mode 1/2: Inno Setup → artifacts/installer/setup.exe
 
 Running ``build all`` executes documentation and Windows distribution in
 the correct sequence automatically.  Use ``build windows`` when the

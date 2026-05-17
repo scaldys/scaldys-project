@@ -109,11 +109,13 @@ A Rich progress bar tracks each stage. Output artefacts land in:
 
 .. code-block:: text
 
-    build/           ← intermediate artefacts
+    build/                ← intermediate artefacts
     dist/
-        wheels/          ← distribution wheel (.whl)
-        portable/        ← staged distribution tree (pyinstaller/pyruntime modes)
-        installer/       ← generated Windows installer (pyinstaller/pyruntime modes)
+        myapp-1.2.3-...whl    ← distribution wheel
+    artifacts/
+        portable/             ← staged distribution tree (pyinstaller/pyruntime modes)
+        installer/            ← generated Windows installer (pyinstaller/pyruntime modes)
+        documentation/        ← standalone docs copy (if public_doc_dirs is set)
 
 Step 5 — Run individual stages
 --------------------------------
@@ -128,7 +130,7 @@ You can run each stage independently:
     # Build Windows distribution only (mode-dependent, no docs rebuild)
     scaldys-builder build windows
 
-    # Remove build/ and dist/ directories
+    # Remove build/, dist/ and artifacts/ directories
     scaldys-builder build clean
 
 All commands accept ``--verbose`` / ``-v`` for detailed debug output::

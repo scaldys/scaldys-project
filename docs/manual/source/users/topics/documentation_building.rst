@@ -144,14 +144,14 @@ The exact output locations depend on ``deployment_mode``:
 ``pyinstaller`` / ``pyruntime`` mode
     Each listed name is copied from ``build/<name>/html/`` into two locations:
 
-    - ``dist/portable/documentation/<name>/`` — bundled inside the portable
+    - ``artifacts/portable/documentation/<name>/`` — bundled inside the portable
       package and picked up by the Inno Setup installer.
-    - ``dist/documentation/<name>/`` — a standalone documentation-only copy.
+    - ``artifacts/documentation/<name>/`` — a standalone documentation-only copy.
 
 ``wheel_only`` mode
     Each listed name is copied from ``build/<name>/html/`` into one location:
 
-    - ``dist/documentation/<name>/`` — no installer or portable package is
+    - ``artifacts/documentation/<name>/`` — no installer or portable package is
       produced in this mode, so only the standalone copy is created.
 
 If a name is absent from ``public_doc_dirs``, its built output is never
@@ -186,9 +186,9 @@ contains:
 
 In ``pyinstaller`` / ``pyruntime`` mode::
 
-    dist/portable/documentation/manual/   ← bundled in the portable package
-    dist/documentation/manual/            ← standalone docs-only copy
+    artifacts/portable/documentation/manual/   ← bundled in the portable package
+    artifacts/documentation/manual/            ← standalone docs-only copy
 
 In ``wheel_only`` mode::
 
-    dist/documentation/manual/            ← standalone docs-only copy
+    artifacts/documentation/manual/            ← standalone docs-only copy

@@ -61,16 +61,15 @@ modules only — no Python source files — which protects proprietary algorithm
 details while still making the full package importable in a Python
 environment.
 
-The wheel is placed in ``dist/wheels/``:
+The wheel is placed directly in ``dist/``:
 
 .. code-block:: text
 
     dist/
-        wheels/
-            myapp-1.2.3-cp313-cp313-win_amd64.whl
+        myapp-1.2.3-cp313-cp313-win_amd64.whl
 
 In ``pyruntime`` mode the wheel is also staged into
-``dist/portable/wheels/`` so that Inno Setup can bundle it into the
+``artifacts/portable/wheels/`` so that Inno Setup can bundle it into the
 installer and ``setup_pyruntime.ps1`` can install it via
 ``uv pip install --find-links <wheels_dir>``.
 
@@ -100,7 +99,7 @@ How the wheel is built
      compiled extensions in the wheel.
 
 3. ``uv build --wheel`` is invoked from ``build/compiled/`` and the resulting
-   ``.whl`` file is moved to ``dist/wheels/``.
+   ``.whl`` file is written to ``dist/``.
 
 
 Mode 1: ``pyinstaller``
@@ -146,9 +145,11 @@ set of options tuned for Windows distribution.
     package, ensuring dynamically-imported submodules are included.
 
 **Hook file handling**
-    ``scaldys-builder`` renames any hook file in the packaging directory
-    from ``hook-<project_name>.py`` to ``hook-<package_name>.py`` so that
-    PyInstaller discovers it correctly regardless of naming conventions.
+    If an ``extra_hooks/`` directory exists in the compiled source tree and
+    contains a file named ``hook_package.py``, ``scaldys-builder`` renames it
+    to ``hook-<package_name>.py`` so that PyInstaller discovers it correctly.
+    Use this generic name in your source tree to keep hook files reusable
+    across projects.
 
 **Icon support**
     If ``<project_name>.ico`` is found in ``[windows] script_dir``, it is
@@ -160,18 +161,18 @@ Output
 .. code-block:: text
 
     dist/
+        myapp-1.2.3-cp313-cp313-win_amd64.whl
+    artifacts/
         portable/
             bin/
                 myapp.exe
                 python313.dll
                 _internal/         ← all imported packages and DLLs
-        wheels/
-            myapp-1.2.3-cp313-cp313-win_amd64.whl
         installer/
             setup.exe              ← built by the subsequent Inno Setup step
 
 The ``build windows`` command then copies launcher scripts and documentation
-into ``dist/portable/`` before invoking Inno Setup.
+into ``artifacts/portable/`` before invoking Inno Setup.
 
 Build directories
 -----------------
@@ -230,11 +231,11 @@ How it works
 
 1. Cython compilation (if configured) + binary wheel build (see above).
 2. ``setup_pyruntime.ps1``, ``uv.exe``, and ``.python-version`` are staged
-   into ``dist/portable/bin/``.
-3. The binary wheel is staged into ``dist/portable/wheels/`` so the
+   into ``artifacts/portable/bin/``.
+3. The binary wheel is staged into ``artifacts/portable/wheels/`` so the
    installer and setup script can find it.
 4. Launcher scripts, documentation, and examples are staged into
-   ``dist/portable/``.
+   ``artifacts/portable/``.
 5. Inno Setup is invoked with ``/DPyruntimeMode=1``.
 
 At install time, the Inno Setup script optionally runs
@@ -254,6 +255,8 @@ Output
 .. code-block:: text
 
     dist/
+        myapp-1.2.3-cp313-cp313-win_amd64.whl
+    artifacts/
         portable/
             bin/
                 setup_pyruntime.ps1
@@ -265,8 +268,6 @@ Output
                 myapp-1.2.3-cp313-cp313-win_amd64.whl
             documentation/
                 <name>/
-        wheels/
-            myapp-1.2.3-cp313-cp313-win_amd64.whl
         installer/
             setup.exe
 
@@ -290,7 +291,7 @@ How it works
 ------------
 
 1. Cython compilation (if configured).
-2. Binary wheel built and placed in ``dist/wheels/``.
+2. Binary wheel built and placed in ``dist/``.
 3. Build finishes — no installer step.
 
 Output
@@ -299,5 +300,7 @@ Output
 .. code-block:: text
 
     dist/
-        wheels/
-            myapp-1.2.3-cp313-cp313-win_amd64.whl
+        myapp-1.2.3-cp313-cp313-win_amd64.whl
+    artifacts/
+        documentation/
+            <name>/             ← only present if public_doc_dirs is non-empty

@@ -41,8 +41,8 @@ produces, in order:
    launcher scripts, and example files; adds Start Menu and Desktop
    shortcuts; and handles uninstallation cleanly.
 
-The end result is a ``dist/installer/`` folder containing a single
-``setup.exe`` that you can ship directly to users, and a ``dist/wheels/``
+The end result is an ``artifacts/installer/`` folder containing a single
+``setup.exe`` that you can ship directly to users, and a ``dist/``
 folder with the distribution wheel.
 
 The build pipeline at a glance
@@ -67,18 +67,18 @@ The build pipeline at a glance
                                                      │ Mode 3: wheel only
                                                      ▼
                                        ┌──────────────────────────────┐
-                                       │ dist/wheels/                 │
+                                       │ dist/                        │
                                        │   myapp-1.2.3-...win_amd64.whl │
                                        └──────────────────────────────┘
                                        ┌──────────────────────────────┐
-                                       │ dist/portable/  (Mode 1 & 2) │
+                                       │ artifacts/portable/ (Mode 1&2)│
                                        │   bin/  ...  documentation/  │
                                        └──────────────┬───────────────┘
     ┌──────────────────┐  Inno Setup  (Mode 1 & 2)   │
     │ packaging/       │ ────────────────────────────▶
     │ windows/         │
     │   myapp.iss      │               ┌────────────────────────────┐
-    └──────────────────┘               │ dist/installer/            │
+    └──────────────────┘               │ artifacts/installer/       │
                                        │   setup.exe                │
                                        └────────────────────────────┘
 

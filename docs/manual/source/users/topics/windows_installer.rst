@@ -58,7 +58,7 @@ preprocessor conditionals:
     AppName=My Application
     AppVersion={#MyAppVersion}
     DefaultDirName={autopf}\MyApp
-    OutputDir=..\..\dist\installer
+    OutputDir=..\..\artifacts\installer
     OutputBaseFilename=setup
 
     [Tasks]
@@ -68,7 +68,7 @@ preprocessor conditionals:
     #endif
 
     [Files]
-    Source: "..\..\dist\portable\*"; DestDir: "{app}"; Flags: createallsubdirs recursesubdirs ignoreversion
+    Source: "..\..\artifacts\portable\*"; DestDir: "{app}"; Flags: createallsubdirs recursesubdirs ignoreversion
 
     #ifdef PyruntimeMode
       #ifdef PythonRuntimeDir
@@ -85,14 +85,14 @@ preprocessor conditionals:
 .. tip::
 
    Use relative paths in the ``.iss`` script relative to the script's own
-   location (``packaging/windows/``).  The paths ``..\..\dist\portable\*``
-   and ``..\..\dist\installer`` navigate from the packaging directory to
-   the project root's ``dist/`` output.
+   location (``packaging/windows/``).  The paths ``..\..\artifacts\portable\*``
+   and ``..\..\artifacts\installer`` navigate from the packaging directory to
+   the project root's ``artifacts/`` output directory.
 
 Launcher scripts
 ----------------
 
-Launcher scripts are copied into ``dist/portable/bin/`` so they are included
+Launcher scripts are copied into ``artifacts/portable/bin/`` so they are included
 in the installer.  They must auto-detect the deployment mode at run time,
 since a single ``.iss`` supports both ``pyinstaller`` and ``pyruntime``
 modes.
@@ -156,26 +156,26 @@ The installer step performs the following actions in sequence, depending on
 the active ``deployment_mode``:
 
 1. **Copy launcher scripts** — ``.bat`` and ``.ps1`` files from
-   ``[windows] script_dir`` are copied to ``dist/portable/bin/``.
+   ``[windows] script_dir`` are copied to ``artifacts/portable/bin/``.
 
 2. **Copy documentation** — for each directory listed in ``[docs] public_doc_dirs``
    in ``builder.toml``, the HTML output (from ``build/<name>/html/``) is
-   copied to both ``dist/portable/documentation/<name>/`` (bundled with
-   the portable package) and ``dist/documentation/<name>/`` (standalone
+   copied to both ``artifacts/portable/documentation/<name>/`` (bundled with
+   the portable package) and ``artifacts/documentation/<name>/`` (standalone
    docs only).
 
 3. **Copy examples** (optional) — if an ``examples/`` directory exists in
-   the project root, it is copied to ``dist/portable/examples/``.
+   the project root, it is copied to ``artifacts/portable/examples/``.
 
 4. **Stage PythonRuntime files** (``pyruntime`` mode only) — copies
    ``setup_pyruntime.ps1``, ``uv.exe``, and ``.python-version`` into
-   ``dist/portable/bin/``, and stages the binary wheel into
-   ``dist/portable/wheels/``.
+   ``artifacts/portable/bin/``, and stages the binary wheel into
+   ``artifacts/portable/wheels/``.
 
 5. **Build PythonRuntime** (``pyruntime`` mode, offline sub-mode only) — if
    ``[windows] bundle_pyruntime = true`` is set in ``builder.toml``,
    ``scaldys-builder`` pre-builds a ``uv``-managed Python virtual environment
-   at ``dist/pyruntime/`` containing all runtime dependencies.  See
+   at ``artifacts/pyruntime/`` containing all runtime dependencies.  See
    `Online and offline installer modes`_ below.
 
 6. **Run Inno Setup** — ``ISCC.exe`` is invoked with the ``.iss`` script,
@@ -188,7 +188,7 @@ the active ``deployment_mode``:
        ISCC.exe /DMyAppVersion=1.2.3 /DPyruntimeMode=1 packaging\windows\myapp.iss
 
        # pyruntime mode, offline:
-       ISCC.exe /DMyAppVersion=1.2.3 /DPyruntimeMode=1 /DPythonRuntimeDir=..\..\dist\pyruntime packaging\windows\myapp.iss
+       ISCC.exe /DMyAppVersion=1.2.3 /DPyruntimeMode=1 /DPythonRuntimeDir=..\..\artifacts\pyruntime packaging\windows\myapp.iss
 
 Online and offline installer modes
 ===================================
@@ -223,9 +223,9 @@ They control how the Python runtime environment is delivered to end users.
     1. Reads the required Python version from ``.python-version`` at the
        project root.
     2. Installs that Python version via ``uv python install``.
-    3. Creates a virtual environment at ``dist/pyruntime/`` and installs
+    3. Creates a virtual environment at ``artifacts/pyruntime/`` and installs
        ``jupyter``, ``pyyaml``, and the project's binary wheel
-       (from ``dist/wheels/``) into it.
+       (from ``dist/``) into it.
     4. Passes ``/DPythonRuntimeDir=<path>`` to Inno Setup so the script
        can bundle the pre-built environment.
 
@@ -254,7 +254,7 @@ Output location
 
 .. code-block:: text
 
-    dist/
+    artifacts/
         installer/
             setup.exe   ← Windows installer (from Inno Setup)
 

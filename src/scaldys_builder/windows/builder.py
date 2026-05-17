@@ -94,9 +94,9 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
 
         self.src_compiled_dir_path = self.build_dir_path.joinpath("compiled")
         self.examples_dir_path = self.project_path.joinpath("examples")
-        self.dist_exe_dir_path = self.dist_dir_path.joinpath("portable")
-        self.dist_wheels_dir_path = self.dist_dir_path.joinpath("wheels")
-        self.dist_setup_dir_path = self.dist_dir_path.joinpath("installer")
+        self.dist_exe_dir_path = self.artifacts_dir_path.joinpath("portable")
+        self.dist_wheels_dir_path = self.dist_dir_path
+        self.dist_setup_dir_path = self.artifacts_dir_path.joinpath("installer")
 
     def pre_flight_checks(
         self,
@@ -145,9 +145,10 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
         """
         Verify that the target project has the required structure for scaldys-builder.
 
-        Checks project-level files and layout — not tool availability (use
-        ``pre_flight_checks`` for that).  All issues are collected and reported
-        together so the user can fix everything in one pass.
+        Checks project-level files, layout, and environment — not tool
+        availability (use ``pre_flight_checks`` for that).  All issues are
+        collected and reported together so the user can fix everything in one
+        pass.
 
         Parameters
         ----------
@@ -192,6 +193,22 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
                 ".python-version not found in project root. "
                 "Create it with the target Python version (e.g. '3.13')."
             )
+
+        # In pyinstaller mode the hook calls copy_metadata() to bundle dist-info
+        # into the frozen executable so that importlib.metadata.version() works at
+        # runtime.  copy_metadata() requires the package to be installed in the
+        # active virtual environment.  A missing dist-info produces a cryptic
+        # StopIteration deep inside PyInstaller; catch it here instead.
+        if self.config.windows.deployment_mode == "pyinstaller":
+            import importlib.metadata as _meta
+            try:
+                _meta.distribution(self.project_name)
+            except _meta.PackageNotFoundError:
+                issues.append(
+                    f"Package '{self.project_name}' is not installed in the active virtual "
+                    f"environment (no dist-info found). Run 'uv sync' (or 'pip install -e .') "
+                    f"and retry."
+                )
 
         if require_installer:
             if not self.script_dir_path.is_dir():
@@ -393,11 +410,11 @@ class Compiler:
         can discover the package (which is at the root of the staging tree,
         not under ``src/``), then runs ``uv build --wheel``.  The resulting
         ``.whl`` file — containing the compiled ``.pyd`` extensions but no
-        Python source files — is written to ``dist/wheels/``.
+        Python source files — is written to ``dist/``.
 
         In ``pyinstaller`` mode this wheel is available for users who manage
         their own virtual environments.  In ``pyruntime`` mode the packager
-        additionally stages it into ``dist/portable/wheels/`` so that Inno
+        additionally stages it into ``artifacts/portable/wheels/`` so that Inno
         Setup includes it in the installer and ``setup_pyruntime.ps1`` can
         install it into the PythonRuntime via ``uv pip install --find-links``.
 
@@ -558,7 +575,7 @@ class Packager:
                 logger.info(f"  Staged wheels into '{dest_wheels}'")
             else:
                 logger.warning(
-                    "  dist/wheels/ not found; the installer will not contain the "
+                    "  dist/ not found; the installer will not contain the "
                     "package wheel.  Ensure the compiler step ran successfully."
                 )
 
@@ -571,7 +588,7 @@ class Packager:
                 continue
             for dest_root in [
                 self.env.dist_exe_dir_path.joinpath("documentation"),
-                self.env.dist_dir_path.joinpath("documentation"),
+                self.env.artifacts_dir_path.joinpath("documentation"),
             ]:
                 dist_doc = dest_root.joinpath(dir_name)
                 safe_empty_dir(dist_doc)
@@ -627,7 +644,7 @@ class Packager:
             # Offline mode: if a pre-built PythonRuntime environment exists,
             # tell Inno Setup where to find it so it can be bundled into the
             # installer without an internet download at install time.
-            pyruntime_dir = self.env.dist_dir_path / "pyruntime"
+            pyruntime_dir = self.env.artifacts_dir_path / "pyruntime"
             if pyruntime_dir.is_dir():
                 cmd.append(f"/DPythonRuntimeDir={pyruntime_dir}")
                 logger.info(f"  Offline mode: PythonRuntime bundled from '{pyruntime_dir}'")
@@ -665,7 +682,7 @@ class Packager:
             )
 
         python_version = self.env.python_version_file_path.read_text().strip()
-        pyruntime_dir = self.env.dist_dir_path / "pyruntime"
+        pyruntime_dir = self.env.artifacts_dir_path / "pyruntime"
         safe_empty_dir(pyruntime_dir)
 
         logger.info("[bold]Pre-building PythonRuntime environment (offline installer)...[/bold]")
@@ -704,10 +721,10 @@ class Packager:
 
     def _distribute_docs(self) -> None:
         """
-        Copy public documentation HTML output to ``dist/documentation/``.
+        Copy public documentation HTML output to ``artifacts/documentation/``.
 
         Used in ``wheel_only`` mode where no installer is produced but
-        built docs still need to land in the distribution directory.
+        built docs still need to land in the artifacts directory.
         Entries in ``public_doc_dirs`` that have not yet been built are
         skipped with a warning.
         """
@@ -718,7 +735,7 @@ class Packager:
                     f"Built HTML for public_doc_dir '{dir_name}' not found at '{help_src}'. Skipping."
                 )
                 continue
-            dist_doc = self.env.dist_dir_path.joinpath("documentation", dir_name)
+            dist_doc = self.env.artifacts_dir_path.joinpath("documentation", dir_name)
             safe_empty_dir(dist_doc)
             safe_copytree(help_src, dist_doc, dirs_exist_ok=True)
             for f in ["_sources", "objects.inv", ".buildinfo"]:
@@ -842,12 +859,12 @@ class WindowsBuilder(BaseBuilder):
 
         Specially handles OneDrive environments to avoid sync conflicts.
         """
-        target_dirs = [self.env.build_dir_path, self.env.dist_dir_path]
+        target_dirs = [self.env.build_dir_path, self.env.dist_dir_path, self.env.artifacts_dir_path]
 
         if self._is_in_onedrive() and any(p.exists() for p in target_dirs):
             logger.info(
                 "[yellow]OneDrive detected: active synchronization may cause the cleaning process to take several minutes. "
-                "If it becomes excessively slow, you can manually delete the 'build' and 'dist' directories via File Explorer.[/yellow]"
+                "If it becomes excessively slow, you can manually delete the 'build', 'dist' and 'artifacts' directories via File Explorer.[/yellow]"
             )
 
         super().clean()
@@ -874,8 +891,8 @@ class WindowsBuilder(BaseBuilder):
 
         What this produces depends on ``deployment_mode``:
 
-        - ``pyinstaller`` / ``pyruntime`` — assembles ``dist/portable/`` and
-          produces ``dist/installer/setup.exe`` via Inno Setup.
+        - ``pyinstaller`` / ``pyruntime`` — assembles ``artifacts/portable/`` and
+          produces ``artifacts/installer/setup.exe`` via Inno Setup.
         - ``wheel_only`` — no-op; logs a message and returns immediately.
         """
         self.packager.build()

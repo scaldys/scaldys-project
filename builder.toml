@@ -86,8 +86,8 @@ source_root = "src"
 # for end users of the program.
 #
 # For each name listed, the builder copies:
-#   build/<name>/html/  →  dist/portable/documentation/<name>/
-#   build/<name>/html/  →  dist/documentation/<name>/
+#   build/<name>/html/  →  artifacts/portable/documentation/<name>/
+#   build/<name>/html/  →  artifacts/documentation/<name>/
 #
 # That tree is then picked up by the Inno Setup script and bundled inside
 # the Windows setup.exe, making the documentation available to end-users
@@ -179,11 +179,11 @@ internal_doc_dirs = []
 #
 #   Build pipeline:  Cython → PyInstaller → wheel
 #   Distribution:
-#     dist/portable/bin/         PyInstaller output (exe + _internal/)
-#     dist/portable/documentation/
-#     dist/portable/examples/
-#     dist/wheels/               binary wheel (for users with their own venv)
-#     dist/installer/setup.exe
+#     artifacts/portable/bin/         PyInstaller output (exe + _internal/)
+#     artifacts/portable/documentation/
+#     artifacts/portable/examples/
+#     dist/                      binary wheel (for users with their own venv)
+#     artifacts/installer/setup.exe
 #
 #   The .iss script receives NO /DPyruntimeMode define.
 #   PyInstaller must be installed in the build environment.
@@ -202,12 +202,12 @@ internal_doc_dirs = []
 #
 #   Build pipeline:  Cython → wheel only
 #   Distribution:
-#     dist/portable/bin/         scripts only (uv.exe, setup_pyruntime.ps1, launchers)
-#     dist/portable/wheels/      wheel staged for the installer
-#     dist/portable/documentation/
-#     dist/portable/examples/
-#     dist/wheels/               binary wheel (for users with their own venv)
-#     dist/installer/setup.exe
+#     artifacts/portable/bin/         scripts only (uv.exe, setup_pyruntime.ps1, launchers)
+#     artifacts/portable/wheels/      wheel staged for the installer
+#     artifacts/portable/documentation/
+#     artifacts/portable/examples/
+#     dist/                      binary wheel (for users with their own venv)
+#     artifacts/installer/setup.exe
 #
 #   The .iss script receives /DPyruntimeMode=1.
 #   PyInstaller is NOT required in the build environment.
@@ -226,8 +226,8 @@ internal_doc_dirs = []
 #
 #   Build pipeline:  Cython → wheel only
 #   Distribution:
-#     dist/wheels/               binary wheel
-#     dist/documentation/        (if public_doc_dirs is non-empty)
+#     dist/                      binary wheel
+#     artifacts/documentation/   (if public_doc_dirs is non-empty)
 #
 #   PyInstaller and Inno Setup are NOT required in the build environment.
 #   The bundle_pyruntime key is ignored in this mode.
@@ -251,7 +251,7 @@ deployment_mode = "wheel_only"
 #
 # true            — OFFLINE mode
 #   A complete PythonRuntime virtual environment is pre-built at
-#   dist/pyruntime/ during the build itself (using uv).  Its path is then
+#   artifacts/pyruntime/ during the build itself (using uv).  Its path is then
 #   passed to Inno Setup via the /DPythonRuntimeDir preprocessor define, and
 #   the entire environment is embedded inside setup.exe.
 #   No internet access is needed on the end-user's machine at install time,
