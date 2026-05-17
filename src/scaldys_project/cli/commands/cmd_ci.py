@@ -37,16 +37,9 @@ def ci_typecheck() -> None:
     _run(["uv", "run", "pyright", "./src"])
 
 
-@ci_app.command("build")
-def ci_build() -> None:
-    """Build the project (uv build)."""
-    _run(["uv", "build"])
-
-
 @ci_app.command("all")
 def ci_all() -> None:
     """Run all CI steps in sequence, stopping on first failure."""
     ci_lint()
     ci_format()
     ci_typecheck()
-    ci_build()

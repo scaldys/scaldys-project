@@ -22,11 +22,24 @@
           scaldys-project ci lint         # uv run ruff check .
           scaldys-project ci format       # uv run ruff format --diff .
           scaldys-project ci typecheck    # uv sync && uv run pyright ./src
-          scaldys-project ci build        # uv build
 
     - ``test`` command: runs the project test suite via pytest::
 
           scaldys-project test            # uv run pytest -v --durations=0 --cov --cov-report=xml
+
+    - ``publish`` command: uploads the binary wheel from ``dist/`` to PyPI
+      via ``uv publish``.  Refuses to publish pure-Python wheels (platform
+      tag ``none-any``) to prevent Cython source code from being exposed on
+      PyPI.  Also refuses when multiple binary wheels are found in ``dist/``
+      (stale build artifacts)::
+
+          scaldys-project publish         # upload binary wheel to PyPI
+          scaldys-project publish --test  # upload to TestPyPI instead
+
+      This command is intended for consuming projects that use Cython-compiled
+      extensions and therefore cannot rely on automated CI publishing (which
+      would produce a pure-Python source distribution).  ``scaldys-project``
+      itself continues to publish automatically via GitHub Actions.
 
 **Changed**:
     - CLI refactored from a single monolithic ``__main__.py`` into a
@@ -42,6 +55,7 @@
               ├── cmd_build.py    # build subcommands (unchanged behaviour)
               ├── cmd_check.py    # check command (unchanged behaviour)
               ├── cmd_ci.py       # new ci subcommands
+              ├── cmd_publish.py  # new publish command
               └── cmd_test.py     # new test command
 
       ``__main__.py`` is now a minimal entry point that imports ``app`` from
@@ -51,6 +65,23 @@
       A single ``Console`` instance is now shared across logging and all
       build commands (via ``cli/utils.py``) to prevent Rich live-display
       conflicts.
+
+**Removed**:
+    - ``ci build`` subcommand (``uv build``).  The command was redundant with
+      ``scaldys-project build all`` and actively misleading for binary-wheel
+      projects: running ``uv build`` locally produces a pure-Python wheel,
+      which is the wrong artifact for projects that use Cython compilation.
+      The ``ci`` group now covers only quality gates (lint, format, typecheck),
+      matching the scope of the GitHub Actions ``ci.yml`` workflow.
+
+**Docs**:
+    - *Publishing* guide in the developer manual updated with a *Why automated
+      publishing?* section that explains the design rationale: ``scaldys-project``
+      is pure-Python and open-source, so CI-built wheels are the correct and
+      complete artifact and OIDC Trusted Publishing is the most secure release
+      mechanism.  The section also contrasts with consuming projects that use
+      Cython-compiled extensions and must publish manually via
+      ``scaldys-project publish``.
 
 
 [0.10.0] - 2026-05-17

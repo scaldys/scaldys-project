@@ -25,6 +25,30 @@ tests across Ubuntu / macOS / Windows, and verifies the build.  A release
 should only be triggered once CI is green.
 
 
+Why automated publishing?
+==========================
+
+``scaldys-project`` is a pure-Python, open-source build tool.  There are no
+compiled extensions and no source-code protection concerns: the package
+is distributed intentionally as a source-transparent wheel
+(``py3-none-any``).
+
+This makes fully automated CI publishing the right choice:
+
+- ``uv build`` on a Linux runner produces the correct and complete artifact.
+- OIDC Trusted Publishing eliminates the need to store any API token as a CI
+  secret: PyPI verifies the identity of the GitHub Actions workflow directly.
+- Every release goes through the same reproducible pipeline, independent of
+  any developer's local machine state.
+
+This design is intentionally different from projects derived from the
+``scaldys-template`` template, which use Cython-compiled extensions.  Those
+projects build their binary wheels locally (``scaldys-project build all``)
+and publish manually (``scaldys-project publish``) to avoid uploading a
+pure-Python source distribution that would expose protected implementation
+code.  ``scaldys-project`` itself has no such constraint.
+
+
 Prerequisites
 =============
 
@@ -98,7 +122,7 @@ Jobs:
 - **code_quality** — ``ruff check``, ``ruff format --diff``, Prettier,
   ``pyright``
 - **test** — ``pytest --cov`` on Ubuntu, macOS, and Windows
-- **build** — ``uv build`` (verifies the package can be built)
+- **build** — ``uv build`` (verifies the package can be built cleanly)
 
 release.yml
 -----------
@@ -129,12 +153,6 @@ Runs when a ``v*`` tag is pushed::
             run: uv build --index-strategy unsafe-best-match
           - name: Publish
             run: uv publish --trusted-publishing always
-
-.. note::
-   The template ships with the ``tags:`` trigger commented out and
-   ``on: push`` active.  Make sure to uncomment the tag trigger and remove the
-   bare ``push`` trigger before the first release, otherwise every push to
-   the repository will attempt a publish.
 
 
 Step 4 — Version Bump
