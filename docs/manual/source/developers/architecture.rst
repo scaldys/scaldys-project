@@ -18,7 +18,15 @@ The module layout mirrors this split:
 .. code-block:: text
 
     src/scaldys_project/
-    ├── __main__.py             # CLI entry-point (Typer app)
+    ├── __main__.py             # minimal entry point — imports app from cli/
+    ├── cli/
+    │   ├── cli.py              # Typer app, logging setup, command wiring
+    │   ├── utils.py            # shared Console instance, find_project_root()
+    │   └── commands/
+    │       ├── cmd_build.py    # build subcommands (all, docs, windows, clean)
+    │       ├── cmd_check.py    # check command
+    │       ├── cmd_ci.py       # ci subcommands (all, lint, format, typecheck, build)
+    │       └── cmd_test.py     # test command
     ├── common/
     │   ├── base.py             # BaseBuildEnvironment, BaseBuilder
     │   ├── compile_runner.py   # Cython/setuptools build script (run as subprocess)
@@ -77,12 +85,14 @@ Execution Flow
 
 Tracing what happens when ``scaldys-project build all`` is run:
 
-1. **Module load** — ``__main__.py`` is the Typer CLI entry point.  At import
-   time, ``_find_project_root()`` walks up from ``cwd`` until it finds a
-   ``pyproject.toml`` file and stores the result in ``PROJECT_ROOT``.
+1. **Module load** — ``__main__.py`` is the minimal entry point; it imports
+   ``app`` from ``cli/cli.py``, which sets up logging and wires all command
+   modules.  When the ``build_all`` command is invoked, ``find_project_root()``
+   (from ``cli/utils.py``) walks up from ``cwd`` until it finds a
+   ``pyproject.toml`` file.
 
 2. **Builder instantiation** — the ``build_all`` command function calls
-   ``WindowsBuilder(PROJECT_ROOT, verbose=verbose)``.  The constructor chain:
+   ``WindowsBuilder(find_project_root(), verbose=verbose)``.  The constructor chain:
 
    a. ``WindowsBuilder.__init__`` creates a ``WindowsBuildEnvironment``.
    b. ``WindowsBuildEnvironment.__init__`` calls ``super().__init__()``

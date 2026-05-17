@@ -35,22 +35,39 @@ Install the pre-commit hooks so they run automatically on every commit::
 Running the Tests
 -----------------
 
-::
+Use the ``test`` command to run the full test suite the same way CI does::
 
-    uv run pytest
+    scaldys-project test
 
-With coverage::
+This is equivalent to::
+
+    uv run pytest -v --durations=0 --cov --cov-report=xml
+
+For a quicker local run with terminal coverage output::
 
     uv run pytest --cov=scaldys_project --cov-report=term-missing
 
 Linting and Type Checking
 --------------------------
 
-::
+Use the ``ci`` commands to run quality checks locally, mirroring the GitHub
+Actions pipeline exactly::
 
-    uv run ruff check src tests
-    uv run ruff format src tests
-    uv run pyright
+    scaldys-project ci all          # run every step; stops on first failure
+    scaldys-project ci lint         # ruff check only
+    scaldys-project ci format       # ruff format --diff (check, no rewrite)
+    scaldys-project ci typecheck    # pyright only
+    scaldys-project ci build        # uv build only
+
+Run these from the root of the ``scaldys-project`` repository.  If
+``scaldys-project ci all`` passes, the GitHub Actions run will too.
+
+The individual underlying commands are::
+
+    uv run ruff check .
+    uv run ruff format --diff .
+    uv sync && uv run pyright ./src
+    uv build
 
 Markdown files are formatted with `Prettier <https://prettier.io/>`_ via
 pre-commit.  To run it manually::

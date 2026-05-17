@@ -28,11 +28,18 @@ Command tree
 
     scaldys-project
     ├── check
-    └── build
+    ├── test
+    ├── build
+    │   ├── all
+    │   ├── docs
+    │   ├── windows
+    │   └── clean
+    └── ci
         ├── all
-        ├── docs
-        ├── windows
-        └── clean
+        ├── lint
+        ├── format
+        ├── typecheck
+        └── build
 
 ----
 
@@ -76,6 +83,111 @@ For the complete list of rules and what each one requires, see
      - Enable verbose (DEBUG-level) logging.
    * - ``--help``
      - Show command help and exit.
+
+----
+
+``test``
+---------
+
+Run the project test suite.
+
+.. code-block:: bash
+
+    scaldys-project test
+
+**What it does**
+
+Runs ``uv run pytest -v --durations=0 --cov --cov-report=xml`` in the current
+working directory.  Exits with the same return code as pytest (``0`` on
+success, non-zero on failure).
+
+This command has no options; pass pytest arguments directly if you need custom
+behaviour (e.g. ``uv run pytest -k my_test``).
+
+----
+
+``ci all``
+-----------
+
+Run every CI quality check in sequence, stopping on first failure.
+
+.. code-block:: bash
+
+    scaldys-project ci all
+
+**What it does**
+
+Executes the following steps in order, each mirroring the corresponding
+GitHub Actions job step:
+
+1. ``uv run ruff check .`` — lint
+2. ``uv run ruff format --diff .`` — format check (no rewrite)
+3. ``uv sync && uv run pyright ./src`` — type checking
+4. ``uv build`` — package build
+
+If any step exits with a non-zero code the sequence stops immediately and
+``scaldys-project`` exits with that code.
+
+All ``ci`` commands operate on the **current working directory**, not the
+project root discovered by ``pyproject.toml`` walk-up.  Run them from the
+root of the project you want to check.
+
+----
+
+``ci lint``
+------------
+
+Run ruff in lint mode.
+
+.. code-block:: bash
+
+    scaldys-project ci lint
+
+Executes ``uv run ruff check .`` in the current directory.  Exits with
+ruff's return code.
+
+----
+
+``ci format``
+--------------
+
+Check code formatting without rewriting files.
+
+.. code-block:: bash
+
+    scaldys-project ci format
+
+Executes ``uv run ruff format --diff .``.  Reports formatting differences
+and exits non-zero if any file would be changed.  To actually reformat,
+run ``uv run ruff format .`` directly.
+
+----
+
+``ci typecheck``
+-----------------
+
+Run pyright type checking.
+
+.. code-block:: bash
+
+    scaldys-project ci typecheck
+
+Executes ``uv sync`` followed by ``uv run pyright ./src``.  The ``uv sync``
+step ensures the virtual environment is up to date before pyright inspects
+installed stubs.
+
+----
+
+``ci build``
+-------------
+
+Build the project package.
+
+.. code-block:: bash
+
+    scaldys-project ci build
+
+Executes ``uv build``.  Produces a wheel and sdist in ``dist/``.
 
 ----
 
@@ -270,10 +382,13 @@ Global behaviour
 Project root discovery
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Every command resolves the project root at startup by walking up the
-directory tree from ``cwd`` and finding the first directory that contains a
-``pyproject.toml`` file.  You can invoke ``scaldys-project`` from any
-subdirectory of your project.
+The ``build`` and ``check`` commands resolve the project root at startup by
+walking up the directory tree from ``cwd`` until a ``pyproject.toml`` file is
+found.  You can invoke them from any subdirectory of your project.
+
+The ``ci`` and ``test`` commands operate directly on the **current working
+directory** and do not perform project root discovery.  Run them from the root
+of the project you want to check.
 
 Logging
 ^^^^^^^

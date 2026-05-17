@@ -9,6 +9,50 @@
 
 
 
+[0.11.0] - 2026-05-17
+---------------------
+
+**Added**:
+    - ``ci`` subcommand group: runs quality checks locally, mirroring the
+      GitHub Actions pipeline step-for-step.  All ``ci`` commands operate on
+      the **current working directory** (not the project root), so they work
+      for any project::
+
+          scaldys-project ci all          # run every step; stops on first failure
+          scaldys-project ci lint         # uv run ruff check .
+          scaldys-project ci format       # uv run ruff format --diff .
+          scaldys-project ci typecheck    # uv sync && uv run pyright ./src
+          scaldys-project ci build        # uv build
+
+    - ``test`` command: runs the project test suite via pytest::
+
+          scaldys-project test            # uv run pytest -v --durations=0 --cov --cov-report=xml
+
+**Changed**:
+    - CLI refactored from a single monolithic ``__main__.py`` into a
+      structured ``cli/`` package, following the same layout as
+      ``scaldys-template``.  The new layout:
+
+      .. code-block:: text
+
+          cli/
+          ├── cli.py              # Typer app, logging, command wiring
+          ├── utils.py            # shared console, find_project_root()
+          └── commands/
+              ├── cmd_build.py    # build subcommands (unchanged behaviour)
+              ├── cmd_check.py    # check command (unchanged behaviour)
+              ├── cmd_ci.py       # new ci subcommands
+              └── cmd_test.py     # new test command
+
+      ``__main__.py`` is now a minimal entry point that imports ``app`` from
+      ``cli/cli.py``.  The ``pyproject.toml`` entry point is unchanged
+      (``scaldys_project.__main__:app``).
+
+      A single ``Console`` instance is now shared across logging and all
+      build commands (via ``cli/utils.py``) to prevent Rich live-display
+      conflicts.
+
+
 [0.10.0] - 2026-05-17
 ---------------------
 
