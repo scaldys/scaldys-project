@@ -37,6 +37,7 @@ Documentation Contents
    developers/architecture
    developers/extension_points
    developers/contributing
+   developers/publishing
    developers/markdown_formatting
 
 .. toctree::

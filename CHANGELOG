@@ -9,6 +9,15 @@
 
 
 
+[0.9.1] - 2026-05-17
+---------------------
+
+**Docs**:
+    - Added *Publishing* guide to the developer manual covering PyPI Trusted
+      Publishing setup, GitHub environment configuration, workflow files,
+      version bump procedure, release triggering, and TestPyPI dry run.
+
+
 [0.9.0] - 2026-05-17
 ---------------------
 

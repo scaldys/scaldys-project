@@ -75,23 +75,13 @@ Or via the convenience wrapper::
 Versioning, Building, and Publishing
 --------------------------------------
 
-Version is declared once in ``pyproject.toml`` under ``[project] version`` and
-read at runtime via ``importlib.metadata`` in
-``src/scaldys_project/__about__.py``.  Update ``pyproject.toml`` before
-tagging a release.
+For the complete release procedure — PyPI Trusted Publishing setup, GitHub
+environment configuration, workflow files, version bump, and TestPyPI dry run
+— see :ref:`publishing`.
 
-Build a wheel and source distribution::
+Quick reference for a local build::
 
     uv build
-
-Publish to PyPI (requires a configured API token)::
-
-    uv publish
-
-To test against TestPyPI first, uncomment the ``[[tool.uv.index]]`` block in
-``pyproject.toml`` and run::
-
-    uv publish --index testpypi
 
 Testing Changes Against a Consuming Project
 --------------------------------------------
