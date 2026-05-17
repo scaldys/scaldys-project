@@ -57,6 +57,10 @@ pre-commit.  To run it manually::
 
     uv run pre-commit run prettier --all-files
 
+See :ref:`markdown_formatting_guide` for a full explanation of the
+``.prettierrc`` options, why ``rbubley/mirrors-prettier`` is used, and how
+CI enforces the same check.
+
 Building the Documentation Locally
 ------------------------------------
 
