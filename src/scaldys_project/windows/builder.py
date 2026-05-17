@@ -20,7 +20,6 @@ import logging
 import os
 import re
 import shutil
-import sys
 from pathlib import Path
 from typing import Optional, Any, Union, Iterable
 from scaldys_project.common.base import BaseBuildEnvironment, BaseBuilder

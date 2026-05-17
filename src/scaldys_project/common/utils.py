@@ -20,7 +20,7 @@ import tempfile
 import sys
 from pathlib import Path
 from subprocess import run
-from typing import Any, Callable, Iterable, Union
+from typing import Any, Callable
 
 logger = logging.getLogger(__name__)
 
