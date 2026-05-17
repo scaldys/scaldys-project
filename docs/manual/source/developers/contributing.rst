@@ -28,6 +28,10 @@ Clone the repository and create the virtual environment with `uv
 This installs the package in editable mode together with all development
 dependencies (pytest, ruff, pyright, Sphinx, etc.).
 
+Install the pre-commit hooks so they run automatically on every commit::
+
+    uv run pre-commit install
+
 Running the Tests
 -----------------
 
@@ -47,6 +51,11 @@ Linting and Type Checking
     uv run ruff check src tests
     uv run ruff format src tests
     uv run pyright
+
+Markdown files are formatted with `Prettier <https://prettier.io/>`_ via
+pre-commit.  To run it manually::
+
+    uv run pre-commit run prettier --all-files
 
 Building the Documentation Locally
 ------------------------------------

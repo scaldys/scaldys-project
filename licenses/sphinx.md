@@ -1,5 +1,4 @@
-License for Sphinx
-==================
+# License for Sphinx
 
 Unless otherwise indicated, all code in the Sphinx project is licenced under the
 two clause BSD licence below.
@@ -9,9 +8,9 @@ Copyright (c) 2007-2025 by the Sphinx team (see AUTHORS file). All rights reserv
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
-* Redistributions of source code must retain the above copyright notice, this list
+- Redistributions of source code must retain the above copyright notice, this list
   of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright notice, this
+- Redistributions in binary form must reproduce the above copyright notice, this
   list of conditions and the following disclaimer in the documentation and/or other
   materials provided with the distribution.
 
