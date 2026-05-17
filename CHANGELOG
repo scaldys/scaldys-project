@@ -9,6 +9,28 @@
 
 
 
+[0.9.0] - 2026-05-17
+---------------------
+
+**Changed**:
+    - Configuration file renamed from ``builder.toml`` to ``scaldys.toml``.
+
+      The file name now matches the project name (``scaldys-project``) rather
+      than describing the tool's original role.  No settings, sections, or
+      defaults are changed.
+
+      .. note::
+         **Breaking change for consuming projects.**  Any project that provides
+         a ``builder.toml`` file must rename it to ``scaldys.toml``.  The file
+         contents remain identical; only the filename changes.
+
+      - Documentation file ``builder_toml_reference.rst`` renamed to
+        ``scaldys_toml_reference.rst`` and its ``.. _builder_toml_reference:``
+        label updated to ``.. _scaldys_toml_reference:`` accordingly.
+      - All internal source code, tests, and documentation updated to reference
+        ``scaldys.toml`` and ``scaldys_toml_reference``.
+
+
 [0.8.0] - 2026-05-17
 ---------------------
 

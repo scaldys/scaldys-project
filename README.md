@@ -11,7 +11,7 @@ deployment mode — one of three distribution strategies:
 
 If you are starting a new project, [scaldys-template](https://github.com/scaldys/scaldys-template)
 provides a ready-to-use project scaffold with `scaldys-project` already integrated:
-packaging scripts, Sphinx documentation, CI/CD workflows, and a working `builder.toml`.
+packaging scripts, Sphinx documentation, CI/CD workflows, and a working `scaldys.toml`.
 
 For a full guide on using and integrating `scaldys-project` in your project,
 see the [user documentation](https://github.com/scaldys/scaldys-project).

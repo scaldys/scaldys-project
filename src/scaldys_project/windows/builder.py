@@ -88,7 +88,7 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
         )
 
         # Windows packaging files (.iss, .bat, .ps1, .ico) live in the directory
-        # specified by builder.toml [windows] script_dir (default: packaging/windows).
+        # specified by scaldys.toml [windows] script_dir (default: packaging/windows).
         self.script_dir_path = (self.project_path / self.config.windows.script_dir).resolve()
         self.win32_icon_file_path = self.script_dir_path.joinpath(f"{self.project_name}.ico")
 
@@ -201,6 +201,7 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
         # StopIteration deep inside PyInstaller; catch it here instead.
         if self.config.windows.deployment_mode == "pyinstaller":
             import importlib.metadata as _meta
+
             try:
                 _meta.distribution(self.project_name)
             except _meta.PackageNotFoundError:
@@ -259,7 +260,7 @@ class Compiler:
         """
         Stage source files and optionally compile selected modules with Cython.
 
-        If ``builder.toml`` declares no ``compiled_modules``, the Cython step
+        If ``scaldys.toml`` declares no ``compiled_modules``, the Cython step
         is skipped and all source files are staged as-is.
 
         Raises
@@ -276,7 +277,7 @@ class Compiler:
 
         compiled_py_files: set[str] = set()
 
-        # 2. Run Cython compilation if modules are declared in builder.toml
+        # 2. Run Cython compilation if modules are declared in scaldys.toml
         if self.env.config.cython.compiled_modules:
             logger.info("  Compiling modules with Cython...")
             # -P disables adding cwd to sys.path (security/reproducibility).
@@ -678,7 +679,7 @@ class Packager:
             raise RuntimeError(
                 "uv not found in PATH. Cannot pre-build the PythonRuntime environment. "
                 "Install uv (https://docs.astral.sh/uv/) and retry, or set "
-                "bundle_pyruntime = false in builder.toml to use the online installer."
+                "bundle_pyruntime = false in scaldys.toml to use the online installer."
             )
 
         python_version = self.env.python_version_file_path.read_text().strip()
@@ -897,9 +898,7 @@ class WindowsBuilder(BaseBuilder):
         """
         self.packager.build()
 
-    def _distribution_steps(
-        self, require_sphinx: bool = False
-    ) -> list[tuple[str, Any]]:
+    def _distribution_steps(self, require_sphinx: bool = False) -> list[tuple[str, Any]]:
         """
         Return the ordered list of steps for the Windows distribution build,
         adapted to the current ``deployment_mode``.

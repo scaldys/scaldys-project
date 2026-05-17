@@ -14,7 +14,7 @@ troubleshoot an issue.
 
    project_layout
    configuration
-   builder_toml_reference
+   scaldys_toml_reference
    compliance_checking
    documentation_building
    cython_compilation
@@ -29,11 +29,11 @@ Guide summaries
     output is written.
 
 :ref:`configuration`
-    Full reference for every ``builder.toml`` setting, with defaults and
+    Full reference for every ``scaldys.toml`` setting, with defaults and
     examples.
 
-:ref:`builder_toml_reference`
-    A single, fully-annotated ``builder.toml`` block listing every available
+:ref:`scaldys_toml_reference`
+    A single, fully-annotated ``scaldys.toml`` block listing every available
     option with inline comments — ready to copy into a new project.
 
 :ref:`compliance_checking`

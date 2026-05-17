@@ -5,9 +5,9 @@ Invoked as a module by the build system::
 
     python -P -m scaldys_project.common.compile_runner build_ext --build-lib <path>
 
-Reads the list of modules to compile from ``builder.toml`` in the current
+Reads the list of modules to compile from ``scaldys.toml`` in the current
 working directory (the consuming project's root).  If no modules are configured
-or ``builder.toml`` is absent, exits immediately without error — fully
+or ``scaldys.toml`` is absent, exits immediately without error — fully
 supporting pure-Python projects that have no Cython compilation step.
 
 The ``--compiler=msvc`` flag is passed by the build system on Windows because
@@ -32,7 +32,7 @@ class BinaryDistribution(Distribution):
 
 def _load_cython_config() -> tuple[list[str], str]:
     """
-    Read ``compiled_modules`` and ``source_root`` from ``builder.toml`` in cwd.
+    Read ``compiled_modules`` and ``source_root`` from ``scaldys.toml`` in cwd.
 
     Returns
     -------
@@ -41,7 +41,7 @@ def _load_cython_config() -> tuple[list[str], str]:
     source_root : str
         Source directory relative to project root.  Defaults to ``"src"``.
     """
-    config_file = Path.cwd() / "builder.toml"
+    config_file = Path.cwd() / "scaldys.toml"
     if not config_file.exists():
         return [], "src"
     with open(config_file, "rb") as f:

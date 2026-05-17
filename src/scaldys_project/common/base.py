@@ -49,7 +49,7 @@ class BaseBuildEnvironment:
         self.project_package_name: str = _meta["name"].replace("-", "_")
         self.version: str = _meta["version"]
 
-        # Load project-specific build configuration from builder.toml (defaults if absent).
+        # Load project-specific build configuration from scaldys.toml (defaults if absent).
         self.config: BuildConfig = load_config(self.project_path)
 
         self.python_exe_path = Path(sys.executable)

@@ -5,18 +5,18 @@ Configuration
 *************
 
 ``scaldys-project`` reads project-specific build settings from a
-``builder.toml`` file in the project root.  Every setting has a default, so
+``scaldys.toml`` file in the project root.  Every setting has a default, so
 the file is entirely optional — pure-Python projects with packaging files in
 the default location require no configuration at all.
 
 File location
 =============
 
-Place ``builder.toml`` alongside ``pyproject.toml`` in your project root::
+Place ``scaldys.toml`` alongside ``pyproject.toml`` in your project root::
 
     my-project/
         pyproject.toml
-        builder.toml        ← optional
+        scaldys.toml        ← optional
         src/
         packaging/windows/
 
@@ -207,12 +207,12 @@ Annotated reference file
 ========================
 
 For a single copy-paste-ready block that lists every option with inline
-comments, see :ref:`builder_toml_reference`.
+comments, see :ref:`scaldys_toml_reference`.
 
 Defaults summary
 ================
 
-If ``builder.toml`` is absent, or a section / key is missing, the following
+If ``scaldys.toml`` is absent, or a section / key is missing, the following
 defaults apply:
 
 .. list-table::

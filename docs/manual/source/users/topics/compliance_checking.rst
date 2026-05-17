@@ -41,7 +41,7 @@ Compliance rules
 ================
 
 The table below lists every rule that is evaluated.  Which rules are checked
-depends on the ``deployment_mode`` in ``builder.toml`` and the build command
+depends on the ``deployment_mode`` in ``scaldys.toml`` and the build command
 being run.
 
 .. list-table::
@@ -59,7 +59,7 @@ being run.
      - :ref:`project_layout` — *Project name and version*
    * - 2
      - The source root directory (``src/`` by default, or the value of
-       ``[cython] source_root`` in ``builder.toml``) must exist.
+       ``[cython] source_root`` in ``scaldys.toml``) must exist.
      - All build commands
      - :ref:`project_layout` — *Source layout (src/ layout)*,
        :ref:`configuration`
@@ -78,7 +78,7 @@ being run.
      - :ref:`windows_exe`
    * - 5
      - The Windows packaging directory (``packaging/windows/`` by default,
-       or the value of ``[windows] script_dir`` in ``builder.toml``) must
+       or the value of ``[windows] script_dir`` in ``scaldys.toml``) must
        exist.
      - ``build windows``, ``build all`` — *not* ``wheel_only`` mode
      - :ref:`project_layout` — *Windows packaging layout*,
@@ -121,7 +121,7 @@ being run.
 .. note::
 
    Rules 5–10 are only evaluated when the ``deployment_mode`` in
-   ``builder.toml`` requires them.  In ``wheel_only`` mode rules 5–9 are
+   ``scaldys.toml`` requires them.  In ``wheel_only`` mode rules 5–9 are
    skipped entirely because no installer is created.  Rule 9 is only
    evaluated in ``pyruntime`` mode.  Rule 10 is only evaluated in
    ``pyinstaller`` mode.

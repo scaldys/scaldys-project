@@ -1,12 +1,12 @@
 """
 Build configuration loader for scaldys-project.
 
-Reads project-specific build settings from ``builder.toml`` in the project root.
+Reads project-specific build settings from ``scaldys.toml`` in the project root.
 If the file is absent, or a section is missing, all settings fall back to defaults —
 so pure-Python projects with no Cython compilation and standard packaging layouts
 require no configuration file at all.
 
-Example ``builder.toml``::
+Example ``scaldys.toml``::
 
     [cython]
     compiled_modules = [
@@ -122,7 +122,7 @@ class BuildConfig:
     """
     Complete build configuration for a consuming project.
 
-    Populated from ``builder.toml``; any missing section uses its defaults.
+    Populated from ``scaldys.toml``; any missing section uses its defaults.
     """
 
     cython: CythonConfig = field(default_factory=CythonConfig)
@@ -132,19 +132,19 @@ class BuildConfig:
 
 def load_config(project_path: Path) -> BuildConfig:
     """
-    Load build configuration from ``builder.toml``.
+    Load build configuration from ``scaldys.toml``.
 
     Parameters
     ----------
     project_path : Path
-        Root directory of the consuming project (where ``builder.toml`` lives).
+        Root directory of the consuming project (where ``scaldys.toml`` lives).
 
     Returns
     -------
     BuildConfig
         Fully populated configuration.  Missing sections fall back to defaults.
     """
-    config_file = project_path / "builder.toml"
+    config_file = project_path / "scaldys.toml"
     if not config_file.exists():
         return BuildConfig()
 

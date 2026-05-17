@@ -11,7 +11,7 @@ consuming project (the directory that contains ``pyproject.toml``)::
     scaldys-project check           # verify project compliance
 
 The Windows distribution step is controlled by ``deployment_mode`` in
-``builder.toml``:
+``scaldys.toml``:
 
     pyinstaller  (default) — PyInstaller exe + Inno Setup installer
     pyruntime              — binary wheel + Inno Setup installer with PythonRuntime
@@ -81,7 +81,7 @@ def build_docs(
 def build_windows(
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output."),
 ) -> None:
-    """Build Windows distribution artifact (behaviour depends on deployment_mode in builder.toml)."""
+    """Build Windows distribution artifact (behaviour depends on deployment_mode in scaldys.toml)."""
     builder = WindowsBuilder(PROJECT_ROOT, verbose=verbose)
     builder.build_distribution(console=console)
 
