@@ -1,7 +1,7 @@
 # Licenses
 
-This directory holds license and credit information for works `scaldys-project` is
-derived from or distributes.
+This directory holds license and credit information for works `scaldys-project`
+is derived from or distributes.
 
 The license file for the `scaldys-project` package itself is placed in the root
 directory of this repository as LICENSE.

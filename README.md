@@ -6,15 +6,18 @@ documentation, optional Cython compilation, and — depending on the chosen
 deployment mode — one of three distribution strategies:
 
 - **pyinstaller** (default) — PyInstaller exe + Inno Setup installer
-- **pyruntime** — binary wheel + Inno Setup installer with a managed Python runtime (for apps that coexist with Quarto/Jupyter)
+- **pyruntime** — binary wheel + Inno Setup installer with a managed Python
+  runtime (for apps that coexist with Quarto/Jupyter)
 - **wheel_only** — binary wheel only, no installer (for pip-installable apps)
 
-If you are starting a new project, [scaldys-template](https://github.com/scaldys/scaldys-template)
-provides a ready-to-use project scaffold with `scaldys-project` already integrated:
-packaging scripts, Sphinx documentation, CI/CD workflows, and a working `scaldys.toml`.
+If you are starting a new project,
+[scaldys-template](https://github.com/scaldys/scaldys-template) provides a
+ready-to-use project scaffold with `scaldys-project` already integrated:
+packaging scripts, Sphinx documentation, CI/CD workflows, and a working
+`scaldys.toml`.
 
-For a full guide on using and integrating `scaldys-project` in your project,
-see the [user documentation](https://github.com/scaldys/scaldys-project).
+For a full guide on using and integrating `scaldys-project` in your project, see
+the [user documentation](https://github.com/scaldys/scaldys-project).
 
 ---
 
@@ -44,5 +47,5 @@ The manual's Developers section covers everything else a contributor needs:
 - [Extension Points](docs/manual/source/developers/extension_points.rst) —
   design conventions and how to add Cython modules, build steps, or a new
   platform builder
-- [Contributing](docs/manual/source/developers/contributing.rst) — linting,
-  type checking, building docs, versioning, and publishing
+- [Contributing](docs/manual/source/developers/contributing.rst) — linting, type
+  checking, building docs, versioning, and publishing
