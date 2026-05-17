@@ -4,7 +4,7 @@
 Windows Distribution Modes
 ***************************
 
-``scaldys-builder`` supports three deployment modes for distributing a Python
+``scaldys-project`` supports three deployment modes for distributing a Python
 application to Windows users.  The active mode is controlled by
 ``deployment_mode`` in ``builder.toml``.
 
@@ -45,7 +45,7 @@ Cython compilation
 ------------------
 
 If ``[cython] compiled_modules`` is non-empty in ``builder.toml``,
-``scaldys-builder`` first stages a copy of the source tree into
+``scaldys-project`` first stages a copy of the source tree into
 ``build/compiled/``, compiles the specified modules to ``.pyd`` extension
 files with Cython, and removes the corresponding ``.py`` files so the
 compiled extensions are used instead.  See :ref:`cython_compilation` for
@@ -55,7 +55,7 @@ Distribution wheel
 ------------------
 
 After the Cython step (or immediately, if Cython is disabled),
-``scaldys-builder`` builds a ``.pyd``-only distribution wheel from
+``scaldys-project`` builds a ``.pyd``-only distribution wheel from
 ``build/compiled/``.  This wheel contains compiled ``.pyd`` extension
 modules only — no Python source files — which protects proprietary algorithm
 details while still making the full package importable in a Python
@@ -113,7 +113,7 @@ Requirements
 
 Install the ``[windows]`` extra::
 
-    uv add --dev "scaldys-builder[windows]"
+    uv add --dev "scaldys-project[windows]"
 
 This installs ``PyInstaller``.
 
@@ -146,7 +146,7 @@ set of options tuned for Windows distribution.
 
 **Hook file handling**
     If an ``extra_hooks/`` directory exists in the compiled source tree and
-    contains a file named ``hook_package.py``, ``scaldys-builder`` renames it
+    contains a file named ``hook_package.py``, ``scaldys-project`` renames it
     to ``hook-<package_name>.py`` so that PyInstaller discovers it correctly.
     Use this generic name in your source tree to keep hook files reusable
     across projects.
@@ -187,7 +187,7 @@ Common issues
 **Missing modules at runtime**
     PyInstaller analyses imports statically.  Dynamic imports are not
     detected automatically.  Use ``--collect-submodules`` (already passed by
-    ``scaldys-builder``) or add hidden imports to your hook file:
+    ``scaldys-project``) or add hidden imports to your hook file:
 
     .. code-block:: python
 
@@ -195,7 +195,7 @@ Common issues
         hiddenimports = ["myapp.plugins.pdf", "myapp.plugins.csv"]
 
 **Antivirus false positives**
-    ``scaldys-builder`` already disables UPX to reduce the likelihood of
+    ``scaldys-project`` already disables UPX to reduce the likelihood of
     this.  If false positives persist, consider signing the executable with
     a code-signing certificate.
 

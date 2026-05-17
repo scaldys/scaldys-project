@@ -1,14 +1,14 @@
 """
-Main entry point for the scaldys-builder build system.
+Main entry point for the scaldys-project build system.
 
 Provides a unified CLI for building projects.  Run from the root of the
 consuming project (the directory that contains ``pyproject.toml``)::
 
-    scaldys-builder build all       # full build: docs + Windows distribution
-    scaldys-builder build docs      # documentation only
-    scaldys-builder build windows   # Windows distribution only (mode-dependent)
-    scaldys-builder build clean     # remove build/, dist/ and artifacts/
-    scaldys-builder check           # verify project compliance
+    scaldys-project build all       # full build: docs + Windows distribution
+    scaldys-project build docs      # documentation only
+    scaldys-project build windows   # Windows distribution only (mode-dependent)
+    scaldys-project build clean     # remove build/, dist/ and artifacts/
+    scaldys-project check           # verify project compliance
 
 The Windows distribution step is controlled by ``deployment_mode`` in
 ``builder.toml``:
@@ -24,7 +24,7 @@ import typer
 from rich.console import Console
 from rich.logging import RichHandler
 
-from scaldys_builder.windows.builder import WindowsBuilder
+from scaldys_project.windows.builder import WindowsBuilder
 
 
 def _find_project_root() -> Path:
@@ -99,7 +99,7 @@ def build_clean(
 def check(
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output."),
 ) -> None:
-    """Check that the current project is compliant with scaldys-builder requirements."""
+    """Check that the current project is compliant with scaldys-project requirements."""
     try:
         builder = WindowsBuilder(PROJECT_ROOT, verbose=verbose)
     except (FileNotFoundError, KeyError) as exc:

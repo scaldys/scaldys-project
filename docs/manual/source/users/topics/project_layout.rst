@@ -5,14 +5,14 @@ Project Layout
 **************
 
 This page describes the directory structure your project must follow for
-``scaldys-builder`` to work correctly, and documents where all build output
-is written.  For how ``scaldys-builder`` locates the project root at runtime,
+``scaldys-project`` to work correctly, and documents where all build output
+is written.  For how ``scaldys-project`` locates the project root at runtime,
 see :ref:`cli_usage`.
 
 Project name and version
 ========================
 
-``scaldys-builder`` reads the project name and version from
+``scaldys-project`` reads the project name and version from
 ``pyproject.toml``::
 
     [project]
@@ -32,13 +32,13 @@ Recommended directory layout
 ==============================
 
 The following layout is the recommended structure for a project using
-``scaldys-builder``:
+``scaldys-project``:
 
 .. code-block:: text
 
     my-project/
     ├── pyproject.toml              ← project metadata (required)
-    ├── builder.toml                ← scaldys-builder config (optional)
+    ├── builder.toml                ← scaldys-project config (optional)
     ├── .python-version             ← Python version pin (required for pyruntime mode)
     ├── src/
     │   └── myapp/                  ← Python source packages
@@ -72,7 +72,7 @@ contents are not required.
 Source layout (``src/`` layout)
 ---------------------------------
 
-``scaldys-builder`` defaults to ``source_root = "src"`` (configurable in
+``scaldys-project`` defaults to ``source_root = "src"`` (configurable in
 ``builder.toml``).  If your project uses a flat layout (packages directly at
 the project root), set::
 
@@ -84,7 +84,7 @@ Documentation layout
 
 Every immediate subdirectory of ``docs/`` is treated as an independent
 documentation unit.  The subdirectory names are freely choosable — there
-are no fixed or required names.  ``scaldys-builder`` auto-detects the engine
+are no fixed or required names.  ``scaldys-project`` auto-detects the engine
 used by each unit from its contents (see :ref:`documentation_building`).
 
 Configure which units are included in the distribution and which need a
@@ -108,14 +108,14 @@ Examples directory
 ------------------
 
 If an ``examples/`` directory exists in the project root,
-``scaldys-builder build windows`` copies its contents to
+``scaldys-project build windows`` copies its contents to
 ``artifacts/portable/examples/`` so the examples are included in the Windows
 installer.  This directory is entirely optional.
 
 Build output layout
 ===================
 
-``scaldys-builder`` writes all output under three top-level directories in the
+``scaldys-project`` writes all output under three top-level directories in the
 project root.  All three are safe to delete (use ``build clean``).
 
 ``build/`` — intermediate artefacts

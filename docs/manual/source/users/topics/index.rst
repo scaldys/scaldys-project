@@ -5,7 +5,7 @@ In-Depth Guides
 ****************
 
 These guides provide detailed explanations of each component and concept in
-``scaldys-builder``.  Use them when you need to go beyond the quickstart —
+``scaldys-project``.  Use them when you need to go beyond the quickstart —
 to understand exactly what a build step does, tune its behaviour, or
 troubleshoot an issue.
 
@@ -41,7 +41,7 @@ Guide summaries
     with a description of each requirement and links to the relevant guides.
 
 :ref:`documentation_building`
-    How ``scaldys-builder`` drives Sphinx to produce the user guide and
+    How ``scaldys-project`` drives Sphinx to produce the user guide and
     developer API guide.
 
 :ref:`cython_compilation`

@@ -4,15 +4,15 @@ Quick Start
 ===========
 
 This guide walks you through setting up an existing Python project to use
-``scaldys-builder`` and running your first complete Windows build.
+``scaldys-project`` and running your first complete Windows build.
 
-It assumes ``scaldys-builder`` is already installed in your project — if not,
+It assumes ``scaldys-project`` is already installed in your project — if not,
 see :ref:`installation` first.
 
 Prerequisites
 -------------
 
-- ``scaldys-builder`` installed as a dev dependency (see :ref:`installation`)
+- ``scaldys-project`` installed as a dev dependency (see :ref:`installation`)
 - A Python project with a ``pyproject.toml`` at its root
 - Windows (required for the build steps)
 - Inno Setup installed (``pyinstaller`` and ``pyruntime`` modes only) — download
@@ -68,7 +68,7 @@ Step 3 — Prepare your Sphinx documentation
 
 Create a subdirectory under ``docs/`` for each documentation unit.  The name
 is freely choosable — ``manual``, ``help``, ``guide``, or anything else.
-``scaldys-builder`` detects the engine automatically: a directory containing
+``scaldys-project`` detects the engine automatically: a directory containing
 ``source/conf.py`` is treated as a Sphinx project.
 
 If you do not already have a Sphinx project, create one from your project root
@@ -93,9 +93,9 @@ Step 4 — Run the full build
 
 From anywhere inside your project tree, run::
 
-    scaldys-builder build all
+    scaldys-project build all
 
-``scaldys-builder`` walks up the directory tree to find ``pyproject.toml``
+``scaldys-project`` walks up the directory tree to find ``pyproject.toml``
 automatically — you do not need to ``cd`` to the project root first.
 
 The command runs the following stages in order:
@@ -125,17 +125,17 @@ You can run each stage independently:
 .. code-block:: bash
 
     # Build documentation only
-    scaldys-builder build docs
+    scaldys-project build docs
 
     # Build Windows distribution only (mode-dependent, no docs rebuild)
-    scaldys-builder build windows
+    scaldys-project build windows
 
     # Remove build/, dist/ and artifacts/ directories
-    scaldys-builder build clean
+    scaldys-project build clean
 
 All commands accept ``--verbose`` / ``-v`` for detailed debug output::
 
-    scaldys-builder build all --verbose
+    scaldys-project build all --verbose
 
 Next steps
 ----------

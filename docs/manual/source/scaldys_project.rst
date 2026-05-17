@@ -7,13 +7,13 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   scaldys_builder.common
-   scaldys_builder.windows
+   scaldys_project.common
+   scaldys_project.windows
 
 Module contents
 ---------------
 
-.. automodule:: scaldys_builder
+.. automodule:: scaldys_project
    :members:
    :show-inheritance:
    :undoc-members:

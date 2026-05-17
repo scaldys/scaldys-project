@@ -4,7 +4,7 @@
 Documentation Building
 ***********************
 
-``scaldys-builder build docs`` builds every documentation unit found
+``scaldys-project build docs`` builds every documentation unit found
 under the ``docs/`` directory of your project.  Each immediate subdirectory
 of ``docs/`` is treated as an independent unit — there is no fixed set of
 names and no limit on how many units a project can have.
@@ -14,14 +14,14 @@ Requirements
 
 Install the ``[docs]`` extra::
 
-    uv add --dev "scaldys-builder[docs]"
+    uv add --dev "scaldys-project[docs]"
 
 This installs Sphinx and the ``sphinx-rtd-theme``.
 
 Engine auto-detection
 =====================
 
-``scaldys-builder`` inspects each ``docs/<name>/`` subdirectory to determine
+``scaldys-project`` inspects each ``docs/<name>/`` subdirectory to determine
 which documentation engine to use:
 
 .. list-table::
@@ -77,7 +77,7 @@ Sphinx configuration tips
 --------------------------
 
 The ``conf.py`` at ``docs/<name>/source/conf.py`` is standard Sphinx.
-A minimal configuration that works well with ``scaldys-builder``:
+A minimal configuration that works well with ``scaldys-project``:
 
 .. code-block:: python
 
@@ -92,7 +92,7 @@ A minimal configuration that works well with ``scaldys-builder``:
 
     html_theme = "sphinx_rtd_theme"
 
-``scaldys-builder`` does not override any ``conf.py`` settings.
+``scaldys-project`` does not override any ``conf.py`` settings.
 
 API documentation (sphinx-apidoc)
 ===================================

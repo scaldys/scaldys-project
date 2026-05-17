@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from scaldys_builder.common.utils import (
+from scaldys_project.common.utils import (
     safe_copy,
     safe_empty_dir,
     safe_rename,

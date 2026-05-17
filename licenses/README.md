@@ -1,9 +1,9 @@
 # Licenses
 
-This directory holds license and credit information for works `scaldys-builder` is
+This directory holds license and credit information for works `scaldys-project` is
 derived from or distributes.
 
-The license file for the `scaldys-builder` package itself is placed in the root
+The license file for the `scaldys-project` package itself is placed in the root
 directory of this repository as LICENSE.
 
 ## cython

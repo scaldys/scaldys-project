@@ -3,16 +3,16 @@
 CLI Reference
 =============
 
-This page is a complete reference for every ``scaldys-builder`` command and
+This page is a complete reference for every ``scaldys-project`` command and
 option.  If you have not yet set up your project, start with :ref:`quickstart`.
 
-``scaldys-builder`` is invoked from the command line. All commands auto-discover
+``scaldys-project`` is invoked from the command line. All commands auto-discover
 the project root by walking up the directory tree from the current working
 directory until a ``pyproject.toml`` file is found.
 
 Top-level usage::
 
-    scaldys-builder [OPTIONS] COMMAND [ARGS]...
+    scaldys-project [OPTIONS] COMMAND [ARGS]...
 
 Options
 -------
@@ -26,7 +26,7 @@ Command tree
 
 .. code-block:: text
 
-    scaldys-builder
+    scaldys-project
     ├── check
     └── build
         ├── all
@@ -39,12 +39,12 @@ Command tree
 ``check``
 ----------
 
-Validate that the current project meets all scaldys-builder requirements
+Validate that the current project meets all scaldys-project requirements
 without running any build step.
 
 .. code-block:: bash
 
-    scaldys-builder check [OPTIONS]
+    scaldys-project check [OPTIONS]
 
 **What it does**
 
@@ -87,7 +87,7 @@ distribution.
 
 .. code-block:: bash
 
-    scaldys-builder build all [OPTIONS]
+    scaldys-project build all [OPTIONS]
 
 **What it does**
 
@@ -133,7 +133,7 @@ Build the Sphinx documentation for the project.
 
 .. code-block:: bash
 
-    scaldys-builder build docs [OPTIONS]
+    scaldys-project build docs [OPTIONS]
 
 **What it does**
 
@@ -182,7 +182,7 @@ documentation.
 
 .. code-block:: bash
 
-    scaldys-builder build windows [OPTIONS]
+    scaldys-project build windows [OPTIONS]
 
 **What it does**
 
@@ -242,7 +242,7 @@ Remove all intermediate and final build artefacts.
 
 .. code-block:: bash
 
-    scaldys-builder build clean [OPTIONS]
+    scaldys-project build clean [OPTIONS]
 
 **What it does**
 
@@ -272,7 +272,7 @@ Project root discovery
 
 Every command resolves the project root at startup by walking up the
 directory tree from ``cwd`` and finding the first directory that contains a
-``pyproject.toml`` file.  You can invoke ``scaldys-builder`` from any
+``pyproject.toml`` file.  You can invoke ``scaldys-project`` from any
 subdirectory of your project.
 
 Logging
@@ -285,5 +285,5 @@ output, which includes all subprocess invocations and file operation details.
 Exit codes
 ^^^^^^^^^^
 
-``scaldys-builder`` exits with code ``0`` on success and non-zero on failure.
+``scaldys-project`` exits with code ``0`` on success and non-zero on failure.
 Failures are always accompanied by a descriptive error message.

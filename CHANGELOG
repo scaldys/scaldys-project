@@ -9,6 +9,28 @@
 
 
 
+[0.8.0] - 2026-05-17
+---------------------
+
+**Changed**:
+    - Project renamed from ``scaldys-builder`` to ``scaldys-project``.
+
+      - PyPI package name changed: ``scaldys-builder`` → ``scaldys-project``.
+      - Python package (import name) changed: ``scaldys_builder`` → ``scaldys_project``.
+      - CLI entry point changed: ``scaldys-builder`` → ``scaldys-project``.
+      - Source directory renamed: ``src/scaldys_builder/`` → ``src/scaldys_project/``.
+
+      All internal imports, documentation references, configuration files, and
+      lock file entries are updated accordingly.  No functional changes are
+      introduced in this release.
+
+      .. note::
+         **Breaking change.**  Any project depending on ``scaldys-builder`` must
+         update its dependency declaration (e.g. in ``pyproject.toml``) to
+         ``scaldys-project``.  Any code that imports from ``scaldys_builder``
+         must be updated to import from ``scaldys_project``.
+
+
 [0.7.0] - 2026-05-17
 ---------------------
 
@@ -103,11 +125,11 @@
       to describe the artifact type (Windows installer) rather than the
       conventional filename of the executable it contains.
 
-    - ``builder.py`` renamed to ``__main__.py``, making ``scaldys-builder``
+    - ``builder.py`` renamed to ``__main__.py``, making ``scaldys-project``
       consistent with the project layout it enforces on consuming projects.
-      The module is now also runnable as ``python -m scaldys_builder``.
+      The module is now also runnable as ``python -m scaldys_project``.
       The ``pyproject.toml`` entry point updated accordingly
-      (``scaldys_builder.__main__:app``).
+      (``scaldys_project.__main__:app``).
 
     - Developer manual updated to reflect the rename in the module layout
       diagram and execution-flow description (``architecture.rst``) and in
@@ -144,7 +166,7 @@
       (offline mode); when absent, Python is downloaded at install time via ``uv``
       (online mode).
 
-    - ``.python-version`` compliance requirement: ``scaldys-builder`` now rejects
+    - ``.python-version`` compliance requirement: ``scaldys-project`` now rejects
       a build if the target project's root does not contain a ``.python-version``
       file.  This file serves as the single source of truth for the Python version
       shared between the build pipeline, the wheel build, and the PythonRuntime
@@ -152,7 +174,7 @@
 
 **Changed**:
     - Compliance rule set extended with the ``.python-version`` check (see
-      ``scaldys-builder check`` and the *Project Compliance* guide).
+      ``scaldys-project check`` and the *Project Compliance* guide).
 
 
 [0.4.0] - 2026-05-08
@@ -183,7 +205,7 @@
         running ``sphinx-apidoc`` for a directory named ``developer_guide``.
 
     - ``DocEngine`` enum and ``_detect_engine()`` function in
-      ``scaldys_builder.common.docs``, providing a testable, reusable engine
+      ``scaldys_project.common.docs``, providing a testable, reusable engine
       detection primitive.
 
     - ``WindowsBuilder._any_sphinx_docs()`` helper: replaces the hardcoded
@@ -325,7 +347,7 @@
 ---------------------
 
 **Added**:
-    - Project compliance checking: ``scaldys-builder`` now validates the target
+    - Project compliance checking: ``scaldys-project`` now validates the target
       project's required files and structure before running any build step.  All
       issues are reported together in a single pass so they can be fixed at once.
       If any requirement is not met the tool exits cleanly with a descriptive
@@ -334,7 +356,7 @@
       Compliance is checked automatically at the start of ``build windows exe``,
       ``build windows installer``, and ``build windows all``.
 
-    - New top-level command ``scaldys-builder check``: runs the full compliance
+    - New top-level command ``scaldys-project check``: runs the full compliance
       check on the current project without triggering a build.  Useful for
       verifying a freshly cloned project or diagnosing issues.
 
@@ -359,9 +381,9 @@
 
       *Users*
 
-        - Overview — what ``scaldys-builder`` does, the build pipeline diagram,
+        - Overview — what ``scaldys-project`` does, the build pipeline diagram,
           and two clear entry paths (new project vs. existing project)
-        - Installation — adding ``scaldys-builder`` as a dev dependency with
+        - Installation — adding ``scaldys-project`` as a dev dependency with
           extras, external tool requirements, and installation verification
         - Quick Start — step-by-step project setup and first build walkthrough
         - CLI Reference — complete reference for every command and option
@@ -385,7 +407,7 @@
 
     - ``docs/manual/Makefile`` and ``make.bat`` for building the HTML manual
     - ``licenses/`` directory with license copies and credit information for
-      all third-party tools used by ``scaldys-builder``
+      all third-party tools used by ``scaldys-project``
     - ``licenses/README.md`` index listing each tool's license type, upstream
       URL, and link to the corresponding local license file
 

@@ -4,7 +4,7 @@
 Windows Installer Creation
 **************************
 
-``scaldys-builder build windows`` assembles the final distribution directory
+``scaldys-project build windows`` assembles the final distribution directory
 and — in ``pyinstaller`` and ``pyruntime`` modes — invokes Inno Setup to
 produce a polished Windows installer (``.exe``).  In ``wheel_only`` mode the
 installer step is skipped entirely.
@@ -14,7 +14,7 @@ Requirements
 
 - **Inno Setup** must be installed on the build machine (``pyinstaller`` and
   ``pyruntime`` modes only).  Download it from
-  `jrsoftware.org <https://jrsoftware.org/isinfo.php>`_.  ``scaldys-builder``
+  `jrsoftware.org <https://jrsoftware.org/isinfo.php>`_.  ``scaldys-project``
   looks for ``ISCC.exe`` in the default ``%ProgramFiles%\Inno Setup 6\``
   location or on ``PATH``.
 
@@ -42,7 +42,7 @@ In ``wheel_only`` mode, none of these files are required.
 Inno Setup script (``myapp.iss``)
 ----------------------------------
 
-Write a standard Inno Setup script.  ``scaldys-builder`` injects the project
+Write a standard Inno Setup script.  ``scaldys-project`` injects the project
 version automatically via the ``/DMyAppVersion`` define and — in
 ``pyruntime`` mode — passes ``/DPyruntimeMode=1`` and optionally
 ``/DPythonRuntimeDir=<path>``.
@@ -174,7 +174,7 @@ the active ``deployment_mode``:
 
 5. **Build PythonRuntime** (``pyruntime`` mode, offline sub-mode only) — if
    ``[windows] bundle_pyruntime = true`` is set in ``builder.toml``,
-   ``scaldys-builder`` pre-builds a ``uv``-managed Python virtual environment
+   ``scaldys-project`` pre-builds a ``uv``-managed Python virtual environment
    at ``artifacts/pyruntime/`` containing all runtime dependencies.  See
    `Online and offline installer modes`_ below.
 
@@ -218,7 +218,7 @@ They control how the Python runtime environment is delivered to end users.
         deployment_mode = "pyruntime"
         bundle_pyruntime = true
 
-    During the build, ``scaldys-builder``:
+    During the build, ``scaldys-project``:
 
     1. Reads the required Python version from ``.python-version`` at the
        project root.

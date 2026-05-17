@@ -5,7 +5,7 @@ Architecture
 ************
 
 
-``scaldys-builder`` is built around **three cooperating responsibilities**:
+``scaldys-project`` is built around **three cooperating responsibilities**:
 
 * **Environment** — discovers tools and paths, runs pre-flight checks.
 * **Builder** — orchestrates the high-level pipeline steps.
@@ -17,7 +17,7 @@ The module layout mirrors this split:
 
 .. code-block:: text
 
-    src/scaldys_builder/
+    src/scaldys_project/
     ├── __main__.py             # CLI entry-point (Typer app)
     ├── common/
     │   ├── base.py             # BaseBuildEnvironment, BaseBuilder
@@ -75,7 +75,7 @@ For the Windows platform the composition looks like this:
 Execution Flow
 --------------
 
-Tracing what happens when ``scaldys-builder build all`` is run:
+Tracing what happens when ``scaldys-project build all`` is run:
 
 1. **Module load** — ``__main__.py`` is the Typer CLI entry point.  At import
    time, ``_find_project_root()`` walks up from ``cwd`` until it finds a
@@ -159,12 +159,12 @@ Why *compile_runner.py* Runs as a Subprocess
 ``setuptools.setup()`` is designed to be called once as the main entry point
 of a script.  It reads directly from ``sys.argv``, modifies global
 ``distutils`` and ``sys.modules`` state, and is not safe to call from inside
-a long-running process.  Invoking it inside the parent ``scaldys-builder``
+a long-running process.  Invoking it inside the parent ``scaldys-project``
 process would corrupt its ``sys.argv`` and import state.
 
 Running it as a subprocess solves this cleanly::
 
-    python -P -m scaldys_builder.common.compile_runner build_ext \
+    python -P -m scaldys_project.common.compile_runner build_ext \
         --build-lib <path> --compiler=msvc
 
 The child process receives a controlled ``sys.argv``, starts with a clean

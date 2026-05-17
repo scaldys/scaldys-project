@@ -1,5 +1,5 @@
 """
-Windows build orchestration for scaldys-builder.
+Windows build orchestration for scaldys-project.
 
 Provides three focused classes that compose into a complete Windows distribution
 pipeline:
@@ -23,9 +23,9 @@ import shutil
 import sys
 from pathlib import Path
 from typing import Optional, Any, Union, Iterable
-from scaldys_builder.common.base import BaseBuildEnvironment, BaseBuilder
-from scaldys_builder.common.docs import DocumentationBuilder, DocEngine, _detect_engine
-from scaldys_builder.common.utils import (
+from scaldys_project.common.base import BaseBuildEnvironment, BaseBuilder
+from scaldys_project.common.docs import DocumentationBuilder, DocEngine, _detect_engine
+from scaldys_project.common.utils import (
     safe_empty_dir,
     safe_copy,
     safe_copytree,
@@ -143,7 +143,7 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
         require_installer: bool = False,
     ) -> None:
         """
-        Verify that the target project has the required structure for scaldys-builder.
+        Verify that the target project has the required structure for scaldys-project.
 
         Checks project-level files, layout, and environment — not tool
         availability (use ``pre_flight_checks`` for that).  All issues are
@@ -285,7 +285,7 @@ class Compiler:
                 str(self.env.python_exe_path),
                 "-P",
                 "-m",
-                "scaldys_builder.common.compile_runner",
+                "scaldys_project.common.compile_runner",
                 "build_ext",
                 "--build-lib",
                 str(compiled_path),

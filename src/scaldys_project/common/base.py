@@ -7,8 +7,8 @@ from pathlib import Path
 from subprocess import PIPE, CalledProcessError, run
 from typing import Any
 
-from scaldys_builder.common.config import load_config, BuildConfig
-from scaldys_builder.common.utils import safe_empty_dir, safe_unlink
+from scaldys_project.common.config import load_config, BuildConfig
+from scaldys_project.common.utils import safe_empty_dir, safe_unlink
 
 logger = logging.getLogger(__name__)
 

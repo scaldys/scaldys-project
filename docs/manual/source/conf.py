@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "scaldys-builder"
+project = "scaldys-project"
 copyright = "2024-2026, Scaldys"
 author = "Scaldys"
 

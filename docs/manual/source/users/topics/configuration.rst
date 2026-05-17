@@ -4,7 +4,7 @@
 Configuration
 *************
 
-``scaldys-builder`` reads project-specific build settings from a
+``scaldys-project`` reads project-specific build settings from a
 ``builder.toml`` file in the project root.  Every setting has a default, so
 the file is entirely optional — pure-Python projects with packaging files in
 the default location require no configuration at all.

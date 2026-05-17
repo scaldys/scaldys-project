@@ -3,14 +3,14 @@
 Installation
 ============
 
-This page explains how to add ``scaldys-builder`` as a development dependency
-of **your own Python project**.  ``scaldys-builder`` is a build-time tool — it
+This page explains how to add ``scaldys-project`` as a development dependency
+of **your own Python project**.  ``scaldys-project`` is a build-time tool — it
 automates your Windows distribution pipeline but is never shipped as part of
 your application.
 
 .. note::
 
-   If you are setting up a development environment for ``scaldys-builder``
+   If you are setting up a development environment for ``scaldys-project``
    itself (cloning the repo, running tests, publishing), see
    :ref:`contributing` instead.
 
@@ -26,11 +26,11 @@ Installing as a development dependency
 
 With **uv** (recommended)::
 
-    uv add --dev scaldys-builder
+    uv add --dev scaldys-project
 
 With **pip**::
 
-    pip install --index-url https://pypi.org/simple/ scaldys-builder
+    pip install --index-url https://pypi.org/simple/ scaldys-project
 
 Optional extras
 ---------------
@@ -47,44 +47,44 @@ Install the extras for the build features you need:
      - Install command
    * - ``cython``
      - Cython and setuptools for compiling Python modules to ``.pyd``
-     - ``uv add --dev "scaldys-builder[cython]"``
+     - ``uv add --dev "scaldys-project[cython]"``
    * - ``windows``
      - PyInstaller for bundling a standalone Windows executable
-     - ``uv add --dev "scaldys-builder[windows]"``
+     - ``uv add --dev "scaldys-project[windows]"``
    * - ``docs``
      - Sphinx and the RTD theme for building HTML documentation
-     - ``uv add --dev "scaldys-builder[docs]"``
+     - ``uv add --dev "scaldys-project[docs]"``
 
 To install all extras at once::
 
-    uv add --dev "scaldys-builder[cython,windows,docs]"
+    uv add --dev "scaldys-project[cython,windows,docs]"
 
 Using a local development version
 -----------------------------------
 
-If you are working on a fork or local patch of ``scaldys-builder`` and want
+If you are working on a fork or local patch of ``scaldys-project`` and want
 to test it from a consuming project before publishing, point that project
 directly at the local source tree::
 
-    uv add --dev "scaldys-builder @ path/to/scaldys-builder"
+    uv add --dev "scaldys-project @ path/to/scaldys-project"
 
-Or install in editable mode so changes to ``scaldys-builder`` are reflected
+Or install in editable mode so changes to ``scaldys-project`` are reflected
 immediately without reinstalling::
 
-    uv add --dev --editable "path/to/scaldys-builder"
+    uv add --dev --editable "path/to/scaldys-project"
 
 .. note::
 
-   If you are contributing to ``scaldys-builder`` itself (not just consuming
+   If you are contributing to ``scaldys-project`` itself (not just consuming
    it), see :ref:`contributing` for the full development setup.
 
 Verifying the installation
 ---------------------------
 
-After installation the ``scaldys-builder`` script is available in your
+After installation the ``scaldys-project`` script is available in your
 environment::
 
-    scaldys-builder --help
+    scaldys-project --help
 
 You should see the top-level help message listing the available subcommands.
 

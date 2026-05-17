@@ -1,11 +1,11 @@
-# builder.toml — scaldys-builder project configuration
+# builder.toml — scaldys-project project configuration
 #
-# This file is read by scaldys-builder at build time.  Every setting has a
+# This file is read by scaldys-project at build time.  Every setting has a
 # default, so the file is entirely optional.  It is provided here with all
 # available options documented so that the complete configuration surface is
 # visible without consulting the manual.
 #
-# Options that are not applicable to *this* project (scaldys-builder itself)
+# Options that are not applicable to *this* project (scaldys-project itself)
 # are shown but commented out, with a note explaining why they are inactive.
 #
 # Reference: docs/manual/source/users/topics/configuration.rst
@@ -46,7 +46,7 @@
 #
 # Default: [] — Cython is disabled; all source files are staged as-is.
 #
-# scaldys-builder is a pure-Python package; no modules require compilation.
+# scaldys-project is a pure-Python package; no modules require compilation.
 compiled_modules = []
 
 # source_root
@@ -99,7 +99,7 @@ source_root = "src"
 #
 # Default: [] — no documentation is distributed with the installer.
 #
-# Not applicable to scaldys-builder: this project is distributed via PyPI,
+# Not applicable to scaldys-project: this project is distributed via PyPI,
 # not as a Windows end-user installer, so no docs are ever bundled into
 # dist artefacts.
 public_doc_dirs = ["manual"]
@@ -127,7 +127,7 @@ public_doc_dirs = ["manual"]
 #
 # Default: [] — no sphinx-apidoc pre-pass; all .rst files are hand-authored.
 #
-# scaldys-builder's manual is fully hand-authored; no apidoc pass is needed.
+# scaldys-project's manual is fully hand-authored; no apidoc pass is needed.
 internal_doc_dirs = []
 
 
@@ -149,7 +149,7 @@ internal_doc_dirs = []
 #   {project_name}.ico                 application icon       (optional)
 #   setup_pyruntime.ps1                runtime setup script   (required for pyruntime mode)
 #
-# scaldys-builder is a developer tool installed via pip/uv, not distributed
+# scaldys-project is a developer tool installed via pip/uv, not distributed
 # as a Windows end-user installer.  No .iss or launcher scripts are needed.
 # deployment_mode = "wheel_only" below disables those compliance requirements.
 

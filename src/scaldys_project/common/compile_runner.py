@@ -1,9 +1,9 @@
 """
-Cython compilation runner for scaldys-builder.
+Cython compilation runner for scaldys-project.
 
 Invoked as a module by the build system::
 
-    python -P -m scaldys_builder.common.compile_runner build_ext --build-lib <path>
+    python -P -m scaldys_project.common.compile_runner build_ext --build-lib <path>
 
 Reads the list of modules to compile from ``builder.toml`` in the current
 working directory (the consuming project's root).  If no modules are configured

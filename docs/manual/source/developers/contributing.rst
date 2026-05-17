@@ -5,9 +5,9 @@ Contributing
 ************
 
 This guide covers how to set up a development environment for contributing to
-``scaldys-builder`` itself: cloning, testing, linting, and publishing.
+``scaldys-project`` itself: cloning, testing, linting, and publishing.
 
-For extending ``scaldys-builder`` with new modules, build steps, or a new
+For extending ``scaldys-project`` with new modules, build steps, or a new
 platform builder, see :ref:`extension_points` instead.
 
 .. contents:: On this page
@@ -21,8 +21,8 @@ Development Setup
 Clone the repository and create the virtual environment with `uv
 <https://docs.astral.sh/uv/>`_::
 
-    git clone https://github.com/scaldys/scaldys-builder.git
-    cd scaldys-builder
+    git clone https://github.com/scaldys/scaldys-project.git
+    cd scaldys-project
     uv sync --group dev
 
 This installs the package in editable mode together with all development
@@ -37,7 +37,7 @@ Running the Tests
 
 With coverage::
 
-    uv run pytest --cov=scaldys_builder --cov-report=term-missing
+    uv run pytest --cov=scaldys_project --cov-report=term-missing
 
 Linting and Type Checking
 --------------------------
@@ -64,7 +64,7 @@ Versioning, Building, and Publishing
 
 Version is declared once in ``pyproject.toml`` under ``[project] version`` and
 read at runtime via ``importlib.metadata`` in
-``src/scaldys_builder/__about__.py``.  Update ``pyproject.toml`` before
+``src/scaldys_project/__about__.py``.  Update ``pyproject.toml`` before
 tagging a release.
 
 Build a wheel and source distribution::
@@ -83,17 +83,17 @@ To test against TestPyPI first, uncomment the ``[[tool.uv.index]]`` block in
 Testing Changes Against a Consuming Project
 --------------------------------------------
 
-When developing a feature in ``scaldys-builder``, you can validate it against
+When developing a feature in ``scaldys-project``, you can validate it against
 a real consuming project without publishing to PyPI.  From inside the consuming
-project, point it at your local ``scaldys-builder`` checkout::
+project, point it at your local ``scaldys-project`` checkout::
 
     # From inside the consuming project
-    uv add --dev "scaldys-builder @ path/to/scaldys-builder"
+    uv add --dev "scaldys-project @ path/to/scaldys-project"
 
-Or install in editable mode so any change to ``scaldys-builder`` source is
+Or install in editable mode so any change to ``scaldys-project`` source is
 picked up immediately without reinstalling::
 
-    uv add --dev --editable "path/to/scaldys-builder"
+    uv add --dev --editable "path/to/scaldys-project"
 
 
 Reporting Issues
@@ -101,4 +101,4 @@ Reporting Issues
 
 Please report bugs and feature requests on the GitHub issue tracker:
 
-https://github.com/scaldys/scaldys-builder/issues
+https://github.com/scaldys/scaldys-project/issues

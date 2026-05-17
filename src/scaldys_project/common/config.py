@@ -1,5 +1,5 @@
 """
-Build configuration loader for scaldys-builder.
+Build configuration loader for scaldys-project.
 
 Reads project-specific build settings from ``builder.toml`` in the project root.
 If the file is absent, or a section is missing, all settings fall back to defaults —

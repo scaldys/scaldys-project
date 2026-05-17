@@ -4,7 +4,7 @@
 Cython Compilation
 ******************
 
-``scaldys-builder`` can optionally compile selected Python modules to native
+``scaldys-project`` can optionally compile selected Python modules to native
 Windows extension modules (``.pyd`` files) using Cython and the MSVC compiler.
 This is useful for two purposes:
 
@@ -17,7 +17,7 @@ When to use Cython compilation
 ================================
 
 Cython compilation is entirely optional.  If ``compiled_modules`` is empty
-(the default), ``scaldys-builder`` stages the Python source tree as-is for
+(the default), ``scaldys-project`` stages the Python source tree as-is for
 the subsequent distribution step.  Enable it only for modules where the
 trade-offs are worth the added complexity:
 
@@ -30,7 +30,7 @@ Requirements
 
 Install the ``[cython]`` extra::
 
-    uv add --dev "scaldys-builder[cython]"
+    uv add --dev "scaldys-project[cython]"
 
 This installs ``Cython`` and ``setuptools``.  The MSVC compiler must also be
 present; it is provided by *Visual Studio Build Tools* or a full Visual Studio
@@ -56,7 +56,7 @@ write it in an ``import`` statement.
 How it works
 ============
 
-The compilation runs as part of ``scaldys-builder build windows`` (and
+The compilation runs as part of ``scaldys-project build windows`` (and
 ``build all``), before PyInstaller bundling or wheel assembly.
 Internally it proceeds in three phases:
 
@@ -79,9 +79,9 @@ both Cython and PyInstaller, leaving your original source untouched.
 Phase 2 — Cython compilation
 -----------------------------
 
-``scaldys-builder`` invokes its internal compile runner as a subprocess::
+``scaldys-project`` invokes its internal compile runner as a subprocess::
 
-    python -P -m scaldys_builder.common.compile_runner \
+    python -P -m scaldys_project.common.compile_runner \
         build/compiled  myapp.core.engine myapp.core.crypto
 
 The runner uses ``Cython.Build.cythonize`` with ``setuptools`` to:
@@ -94,7 +94,7 @@ The runner uses ``Cython.Build.cythonize`` with ``setuptools`` to:
 Phase 3 — Source clean-up
 --------------------------
 
-After compilation, ``scaldys-builder`` removes the ``.py`` files in
+After compilation, ``scaldys-project`` removes the ``.py`` files in
 ``build/compiled/`` that correspond to compiled modules.  This ensures
 PyInstaller picks up the ``.pyd`` extension rather than the Python source:
 

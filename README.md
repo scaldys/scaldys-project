@@ -1,6 +1,6 @@
-# scaldys-builder
+# scaldys-project
 
-`scaldys-builder` automates the complete Windows distribution pipeline for
+`scaldys-project` automates the complete Windows distribution pipeline for
 Python projects. A single command takes your source code through Sphinx
 documentation, optional Cython compilation, and — depending on the chosen
 deployment mode — one of three distribution strategies:
@@ -10,25 +10,25 @@ deployment mode — one of three distribution strategies:
 - **wheel_only** — binary wheel only, no installer (for pip-installable apps)
 
 If you are starting a new project, [scaldys-template](https://github.com/scaldys/scaldys-template)
-provides a ready-to-use project scaffold with `scaldys-builder` already integrated:
+provides a ready-to-use project scaffold with `scaldys-project` already integrated:
 packaging scripts, Sphinx documentation, CI/CD workflows, and a working `builder.toml`.
 
-For a full guide on using and integrating `scaldys-builder` in your project,
-see the [user documentation](https://github.com/scaldys/scaldys-builder).
+For a full guide on using and integrating `scaldys-project` in your project,
+see the [user documentation](https://github.com/scaldys/scaldys-project).
 
 ---
 
 ## Development
 
-This section is for contributors working on `scaldys-builder` itself.
+This section is for contributors working on `scaldys-project` itself.
 
-Project repository and issue tracker: https://github.com/scaldys/scaldys-builder
+Project repository and issue tracker: https://github.com/scaldys/scaldys-project
 
 ### Quick start
 
 ```bash
-git clone https://github.com/scaldys/scaldys-builder.git
-cd scaldys-builder
+git clone https://github.com/scaldys/scaldys-project.git
+cd scaldys-project
 uv sync --group dev
 uv run pytest
 uv run ruff check src tests && uv run pyright

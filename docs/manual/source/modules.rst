@@ -4,4 +4,4 @@ src
 .. toctree::
    :maxdepth: 4
 
-   scaldys_builder
+   scaldys_project

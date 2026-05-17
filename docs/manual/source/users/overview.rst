@@ -4,15 +4,15 @@
 Overview
 ********
 
-What scaldys-builder does for you
+What scaldys-project does for you
 =================================
 
-You write Python.  ``scaldys-builder`` takes care of turning that code into
+You write Python.  ``scaldys-project`` takes care of turning that code into
 something you can hand to a Windows user.
 
 Running a single command from your project root::
 
-    scaldys-builder build all
+    scaldys-project build all
 
 produces, in order:
 
@@ -97,7 +97,7 @@ template that already has everything wired together:
 - ``packaging/windows/`` with a complete ``.iss`` script, auto-detecting
   launcher scripts, and an application icon
 - ``docs/manual/`` with a working Sphinx project (freely renameable)
-- ``pyproject.toml`` declaring ``scaldys-builder[cython,windows,docs]`` as a
+- ``pyproject.toml`` declaring ``scaldys-project[cython,windows,docs]`` as a
   dev dependency
 - GitHub Actions workflows for CI, PyPI publishing, and release management
 
@@ -112,7 +112,7 @@ Where to go next
     comes with everything pre-wired.  Clone it and skip straight to
     :ref:`quickstart` to run your first build.
 
-**Adding ``scaldys-builder`` to an existing project?**
+**Adding ``scaldys-project`` to an existing project?**
     Start with :ref:`installation` to add it as a dev dependency, then follow
     the :ref:`quickstart` to set up the required files and run your first build.
 

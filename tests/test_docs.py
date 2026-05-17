@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from scaldys_builder.common.docs import DocEngine, DocumentationBuilder, _detect_engine
+from scaldys_project.common.docs import DocEngine, DocumentationBuilder, _detect_engine
 
 
 # ---------------------------------------------------------------------------

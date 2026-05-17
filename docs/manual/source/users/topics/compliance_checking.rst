@@ -4,14 +4,14 @@
 Project Compliance
 ********************
 
-Before running any build step, ``scaldys-builder`` automatically validates
+Before running any build step, ``scaldys-project`` automatically validates
 that your project has the required files and structure.  All issues are
 collected and reported together — so you can fix everything in one pass —
 then the tool exits without starting the build.
 
 You can also run the check manually at any time without triggering a build::
 
-    scaldys-builder check
+    scaldys-project check
 
 This lets you verify a freshly cloned project or confirm your setup before
 investing time in a full build.
@@ -137,7 +137,7 @@ being run.
 Relationship to pre-flight checks
 ==================================
 
-``scaldys-builder`` performs two validation phases before any build work
+``scaldys-project`` performs two validation phases before any build work
 begins:
 
 1. **Compliance check** (this page): confirms that the *project's own files*

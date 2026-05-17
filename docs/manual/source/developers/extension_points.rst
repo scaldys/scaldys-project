@@ -4,7 +4,7 @@
 Extension Points
 ****************
 
-This page describes how to extend ``scaldys-builder`` — either by configuring
+This page describes how to extend ``scaldys-project`` — either by configuring
 new behaviour from a consuming project, or by modifying the codebase itself.
 
 Before reading this page, the :ref:`architecture` page provides the structural
@@ -49,7 +49,7 @@ Adding a New Cython Module to a Consuming Project
 ==================================================
 
 Compiled modules are declared in the consuming project's ``builder.toml``,
-not in ``scaldys-builder`` itself.  To add a module:
+not in ``scaldys-project`` itself.  To add a module:
 
 1. Add the dotted module name to the ``compiled_modules`` list::
 
@@ -58,7 +58,7 @@ not in ``scaldys-builder`` itself.  To add a module:
 
 2. ``Compiler.run_cython()`` reads this list at build time and passes it to
    ``compile_runner.py`` via ``setup()`` → ``cythonize()``.  No changes to
-   ``scaldys-builder`` are needed.
+   ``scaldys-project`` are needed.
 
 The ``source_root`` key (default ``src``) tells the compiler where your
 package lives relative to the project root::
@@ -101,14 +101,14 @@ To insert a new step:
 Adding a New Platform Builder
 ==============================
 
-``scaldys-builder`` is designed so that a Linux or macOS builder can be added
+``scaldys-project`` is designed so that a Linux or macOS builder can be added
 without touching existing Windows code.  You need four things:
 
 1. **A new** ``BuildEnvironment`` subclass
-   Create ``src/scaldys_builder/<platform>/builder.py`` and subclass
+   Create ``src/scaldys_project/<platform>/builder.py`` and subclass
    ``BaseBuildEnvironment``::
 
-       from scaldys_builder.common.base import BaseBuildEnvironment
+       from scaldys_project.common.base import BaseBuildEnvironment
 
        class LinuxBuildEnvironment(BaseBuildEnvironment):
            def __init__(self, project_path: Path, verbose: bool = False) -> None:
@@ -123,7 +123,7 @@ without touching existing Windows code.  You need four things:
 2. **A new** ``Builder`` subclass
    In the same file, subclass ``BaseBuilder``::
 
-       from scaldys_builder.common.base import BaseBuilder
+       from scaldys_project.common.base import BaseBuilder
 
        class LinuxBuilder(BaseBuilder):
            def __init__(self, project_path: Path, verbose: bool = False) -> None:
@@ -140,7 +140,7 @@ without touching existing Windows code.  You need four things:
 3. **Wire up CLI commands** in ``__main__.py``
    Add a new ``Typer`` sub-app following the existing pattern::
 
-       from scaldys_builder.linux.builder import LinuxBuilder
+       from scaldys_project.linux.builder import LinuxBuilder
 
        linux_app = typer.Typer(help="Linux specific build subcommands", no_args_is_help=True)
        build_app.add_typer(linux_app, name="linux")

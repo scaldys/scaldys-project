@@ -1,7 +1,7 @@
 import tempfile
 from pathlib import Path
 
-from scaldys_builder.common.config import load_config
+from scaldys_project.common.config import load_config
 
 
 def test_load_config_defaults_when_no_file():

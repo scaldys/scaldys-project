@@ -2,8 +2,8 @@ import logging
 from enum import Enum
 from pathlib import Path
 
-from scaldys_builder.common.base import BaseBuildEnvironment
-from scaldys_builder.common.utils import safe_empty_dir
+from scaldys_project.common.base import BaseBuildEnvironment
+from scaldys_project.common.utils import safe_empty_dir
 
 logger = logging.getLogger(__name__)
 

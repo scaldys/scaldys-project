@@ -7,7 +7,7 @@ Submodules
 scaldys\_builder.common.base module
 -----------------------------------
 
-.. automodule:: scaldys_builder.common.base
+.. automodule:: scaldys_project.common.base
    :members:
    :show-inheritance:
    :undoc-members:
@@ -15,7 +15,7 @@ scaldys\_builder.common.base module
 scaldys\_builder.common.compile\_runner module
 ----------------------------------------------
 
-.. automodule:: scaldys_builder.common.compile_runner
+.. automodule:: scaldys_project.common.compile_runner
    :members:
    :show-inheritance:
    :undoc-members:
@@ -23,7 +23,7 @@ scaldys\_builder.common.compile\_runner module
 scaldys\_builder.common.config module
 -------------------------------------
 
-.. automodule:: scaldys_builder.common.config
+.. automodule:: scaldys_project.common.config
    :members:
    :show-inheritance:
    :undoc-members:
@@ -31,7 +31,7 @@ scaldys\_builder.common.config module
 scaldys\_builder.common.docs module
 -----------------------------------
 
-.. automodule:: scaldys_builder.common.docs
+.. automodule:: scaldys_project.common.docs
    :members:
    :show-inheritance:
    :undoc-members:
@@ -39,7 +39,7 @@ scaldys\_builder.common.docs module
 scaldys\_builder.common.utils module
 ------------------------------------
 
-.. automodule:: scaldys_builder.common.utils
+.. automodule:: scaldys_project.common.utils
    :members:
    :show-inheritance:
    :undoc-members:
@@ -47,7 +47,7 @@ scaldys\_builder.common.utils module
 Module contents
 ---------------
 
-.. automodule:: scaldys_builder.common
+.. automodule:: scaldys_project.common
    :members:
    :show-inheritance:
    :undoc-members:

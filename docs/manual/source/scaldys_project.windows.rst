@@ -7,7 +7,7 @@ Submodules
 scaldys\_builder.windows.builder module
 ---------------------------------------
 
-.. automodule:: scaldys_builder.windows.builder
+.. automodule:: scaldys_project.windows.builder
    :members:
    :show-inheritance:
    :undoc-members:
@@ -15,7 +15,7 @@ scaldys\_builder.windows.builder module
 Module contents
 ---------------
 
-.. automodule:: scaldys_builder.windows
+.. automodule:: scaldys_project.windows
    :members:
    :show-inheritance:
    :undoc-members:

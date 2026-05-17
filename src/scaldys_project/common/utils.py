@@ -1,5 +1,5 @@
 """
-Windows-resilient file system utilities for scaldys-builder.
+Windows-resilient file system utilities for scaldys-project.
 
 All operations implement retry-with-backoff to handle transient lock errors
 that commonly occur on Windows when OneDrive is actively synchronizing files.
