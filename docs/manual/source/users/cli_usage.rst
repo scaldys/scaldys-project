@@ -29,6 +29,7 @@ Command tree
     scaldys-project
     ├── check
     ├── test
+    ├── publish
     ├── build
     │   ├── all
     │   ├── docs
@@ -376,15 +377,66 @@ Uses Windows-resilient retry logic to handle locked files.
 
 ----
 
+``publish``
+-----------
+
+Publish the binary wheel from ``dist/`` to PyPI.
+
+.. code-block:: bash
+
+    scaldys-project publish [OPTIONS]
+
+**What it does**
+
+Locates the binary wheel produced by ``build all`` in the ``dist/``
+directory and uploads it to PyPI using ``uv publish``.
+
+Before uploading, the command performs the following safety checks in order:
+
+1. **``dist/`` exists** — exits with code ``1`` if the directory is not found.
+2. **Wheel present** — exits with code ``1`` if no ``.whl`` files are in ``dist/``.
+3. **No pure-Python wheel** — if every wheel in ``dist/`` ends with
+   ``-none-any.whl``, the upload is refused.  Publishing a pure wheel would
+   expose Cython source code on PyPI.  Run ``scaldys-project build all`` first
+   to produce a binary (platform-specific) wheel.
+4. **Exactly one binary wheel** — if multiple binary wheels are present,
+   the command exits with code ``1``.  Run ``scaldys-project build clean``
+   followed by ``build all`` to obtain a clean single-wheel ``dist/``.
+
+On success, ``uv publish <wheel>`` is invoked to upload the wheel.  The
+``--test`` flag appends ``--index testpypi`` to the ``uv publish`` call,
+redirecting the upload to Test PyPI.
+
+**Options**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Option
+     - Description
+   * - ``--test``
+     - Publish to `Test PyPI <https://test.pypi.org>`_ instead of PyPI.
+   * - ``--help``
+     - Show command help and exit.
+
+.. note::
+   Run ``scaldys-project build all`` before publishing to ensure a fresh
+   binary wheel exists in ``dist/``.  If stale wheels have accumulated,
+   run ``scaldys-project build clean`` first.
+
+----
+
 Global behaviour
 ----------------
 
 Project root discovery
 ^^^^^^^^^^^^^^^^^^^^^^
 
-The ``build`` and ``check`` commands resolve the project root at startup by
-walking up the directory tree from ``cwd`` until a ``pyproject.toml`` file is
-found.  You can invoke them from any subdirectory of your project.
+The ``build``, ``check``, and ``publish`` commands resolve the project root at
+startup by walking up the directory tree from ``cwd`` until a
+``pyproject.toml`` file is found.  You can invoke them from any subdirectory
+of your project.
 
 The ``ci`` and ``test`` commands operate directly on the **current working
 directory** and do not perform project root discovery.  Run them from the root
