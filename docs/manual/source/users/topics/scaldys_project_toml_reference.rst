@@ -74,10 +74,8 @@ For narrative explanations of each section see :ref:`configuration`.
     # [docs] — Documentation build settings
     # ══════════════════════════════════════════════════════════════════════════
     #
-    # Controls which documentation units are processed by `build docs`,
-    # which of those are distributed alongside the Windows application, and
-    # which require a sphinx-apidoc pre-pass to auto-generate API reference
-    # stubs.
+    # Controls which documentation units are processed by `build docs` and
+    # which of those are distributed alongside the Windows application.
     #
     # A "documentation unit" is a subdirectory of docs/ that contains its own
     # Sphinx source tree (i.e. a source/conf.py file), for example:
@@ -111,27 +109,6 @@ For narrative explanations of each section see :ref:`configuration`.
     #
     # Default: [] — no documentation is distributed with the installer.
     public_doc_dirs = []
-
-    # internal_doc_dirs
-    #
-    # A list of subdirectory names under docs/ that contain internal
-    # documentation for the developers of the program — information that
-    # explains how the software works internally, and which is not distributed
-    # to end users.
-    #
-    # For each name listed, `sphinx-apidoc` is run automatically before
-    # `sphinx-build`.  sphinx-apidoc scans the Python source tree and generates
-    # .rst stub files for every public module, producing an API reference
-    # section from docstrings.  Only include units that actually require the
-    # sphinx-apidoc pre-pass; purely hand-authored internal units do not need
-    # it and should be omitted.  Must be a subset of the Sphinx directories
-    # (i.e. those that have a source/conf.py file).
-    #
-    # Example:
-    #   internal_doc_dirs = ["developer_guide"]
-    #
-    # Default: [] — no sphinx-apidoc pre-pass; all .rst files are hand-authored.
-    internal_doc_dirs = []
 
 
     # ══════════════════════════════════════════════════════════════════════════

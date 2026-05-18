@@ -87,12 +87,11 @@ documentation unit.  The subdirectory names are freely choosable — there
 are no fixed or required names.  ``scaldys-project`` auto-detects the engine
 used by each unit from its contents (see :ref:`documentation_building`).
 
-Configure which units are included in the distribution and which need a
-``sphinx-apidoc`` pre-pass via ``[docs]`` in ``scaldys-project.toml``::
+Configure which units are included in the distribution via ``[docs]`` in
+``scaldys-project.toml``::
 
     [docs]
     public_doc_dirs = ["manual"]
-    internal_doc_dirs = ["developer_guide"]
 
 Windows packaging layout
 --------------------------

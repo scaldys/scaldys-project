@@ -68,9 +68,6 @@ class BaseBuildEnvironment:
         self.sphinx_exe_path = self._find_tool(
             "sphinx-build" + (".exe" if os.name == "nt" else ""), self.python_dir_path
         )
-        self.sphinx_apidoc_exe_path = self._find_tool(
-            "sphinx-apidoc" + (".exe" if os.name == "nt" else ""), self.python_dir_path
-        )
 
     def _find_tool(self, name: str, fallback_path: Path) -> Path:
         """

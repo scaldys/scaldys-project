@@ -65,9 +65,8 @@ source_root = "src"
 # [docs] — Documentation build settings
 # ══════════════════════════════════════════════════════════════════════════════
 #
-# Controls which documentation units are processed by `build windows docs`,
-# which of those are distributed alongside the Windows application, and which
-# require a sphinx-apidoc pre-pass to auto-generate API reference stubs.
+# Controls which documentation units are processed by `build docs` and
+# which of those are distributed alongside the Windows application.
 #
 # A "documentation unit" is a subdirectory of docs/ that contains its own
 # Sphinx source tree (i.e. a source/conf.py file), for example:
@@ -102,33 +101,7 @@ source_root = "src"
 # Not applicable to scaldys-project: this project is distributed via PyPI,
 # not as a Windows end-user installer, so no docs are ever bundled into
 # dist artefacts.
-public_doc_dirs = ["manual"]
-
-# internal_doc_dirs
-#
-# A list of subdirectory names under docs/ that contain internal documentation
-# for the developers of the program — information that explains how the
-# software works internally, and which is not distributed to end users.
-#
-# For each name listed, `sphinx-apidoc` is run automatically before
-# `sphinx-build`.  sphinx-apidoc scans the Python source tree and generates
-# .rst stub files for every public module, producing an API reference section
-# from docstrings.  A sphinx-apidoc pre-pass is one common use case; the
-# directory may also contain fully hand-authored internal documentation.
-#
-# Only include units that actually require the sphinx-apidoc pre-pass;
-# purely hand-authored internal units do not need it and should be omitted.
-#
-# Must be a subset of the Sphinx directories — i.e. those that have a
-# source/conf.py file.
-#
-# Example:
-#   internal_doc_dirs = ["developer_guide"]
-#
-# Default: [] — no sphinx-apidoc pre-pass; all .rst files are hand-authored.
-#
-# scaldys-project's manual is fully hand-authored; no apidoc pass is needed.
-internal_doc_dirs = []
+public_doc_dirs = []
 
 
 # ══════════════════════════════════════════════════════════════════════════════

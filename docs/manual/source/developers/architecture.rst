@@ -69,8 +69,8 @@ For the Windows platform the composition looks like this:
     ``.exe`` installer.
 
 **DocumentationBuilder** (``common/docs.py``)
-    Shared across platforms.  Builds the user guide and optional developer
-    guide using ``sphinx-build`` and ``sphinx-apidoc``.
+    Shared across platforms.  Builds all documentation units found under
+    ``docs/`` using ``sphinx-build``.
 
 **WindowsBuilder** (``windows/builder.py``)
     Thin orchestrator.  Its ``main()`` method defines an ordered ``steps``
@@ -98,7 +98,7 @@ Tracing what happens when ``scaldys-project build all`` is run:
    b. ``WindowsBuildEnvironment.__init__`` calls ``super().__init__()``
       (``BaseBuildEnvironment``), which reads ``pyproject.toml`` for ``name``
       and ``version``, calls ``load_config()`` to read ``scaldys-project.toml``, and
-      discovers shared tools (``sphinx-build``, ``sphinx-apidoc``).
+      discovers shared tools (``sphinx-build``).
    c. Back in ``WindowsBuildEnvironment``, Windows-specific tools are
       discovered (``pyinstaller.exe``, ``ISCC.exe``) and Windows-specific
       paths are resolved from the loaded config.
@@ -146,7 +146,6 @@ result is stored as ``self.config``.
                                               │       source_root: str
                                               ├── docs: DocsConfig
                                               │       public_doc_dirs: list[str]
-                                              │       internal_doc_dirs: list[str]
                                               └── windows: WindowsConfig
                                                       script_dir: str
                                                       deployment_mode: str

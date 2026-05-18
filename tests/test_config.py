@@ -14,7 +14,7 @@ def test_load_config_defaults_when_no_file():
 
 
 def test_load_config_reads_compiled_modules():
-    """load_config reads compiled_modules from [cython] section."""
+    """load_config reads compiled_modules from the [cython] section."""
     with tempfile.TemporaryDirectory() as tmpdir:
         (Path(tmpdir) / "scaldys-project.toml").write_text(
             '[cython]\ncompiled_modules = ["myapp.core.foo", "myapp.core.bar"]\n'
@@ -24,7 +24,7 @@ def test_load_config_reads_compiled_modules():
 
 
 def test_load_config_reads_source_root():
-    """load_config reads source_root from [cython] section."""
+    """load_config reads source_root from the [cython] section."""
     with tempfile.TemporaryDirectory() as tmpdir:
         (Path(tmpdir) / "scaldys-project.toml").write_text('[cython]\nsource_root = "source"\n')
         config = load_config(Path(tmpdir))
@@ -32,7 +32,7 @@ def test_load_config_reads_source_root():
 
 
 def test_load_config_reads_windows_script_dir():
-    """load_config reads script_dir from [windows] section."""
+    """load_config reads script_dir from the [windows] section."""
     with tempfile.TemporaryDirectory() as tmpdir:
         (Path(tmpdir) / "scaldys-project.toml").write_text('[windows]\nscript_dir = "build/win"\n')
         config = load_config(Path(tmpdir))
@@ -59,42 +59,18 @@ def test_load_config_empty_file():
 
 
 def test_load_config_defaults_docs_section():
-    """load_config returns empty lists for docs when section is absent."""
+    """load_config returns an empty list for docs when the section is absent."""
     with tempfile.TemporaryDirectory() as tmpdir:
         config = load_config(Path(tmpdir))
     assert config.docs.public_doc_dirs == []
-    assert config.docs.internal_doc_dirs == []
 
 
 def test_load_config_reads_public_doc_dirs():
-    """load_config reads public_doc_dirs from [docs] section."""
+    """load_config reads public_doc_dirs from the [docs] section."""
     with tempfile.TemporaryDirectory() as tmpdir:
         (Path(tmpdir) / "scaldys-project.toml").write_text('[docs]\npublic_doc_dirs = ["manual"]\n')
         config = load_config(Path(tmpdir))
     assert config.docs.public_doc_dirs == ["manual"]
-    assert config.docs.internal_doc_dirs == []
-
-
-def test_load_config_reads_internal_doc_dirs():
-    """load_config reads internal_doc_dirs from [docs] section."""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        (Path(tmpdir) / "scaldys-project.toml").write_text(
-            '[docs]\ninternal_doc_dirs = ["developer_guide"]\n'
-        )
-        config = load_config(Path(tmpdir))
-    assert config.docs.internal_doc_dirs == ["developer_guide"]
-    assert config.docs.public_doc_dirs == []
-
-
-def test_load_config_reads_full_docs_section():
-    """load_config reads both public_doc_dirs and internal_doc_dirs from [docs] section."""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        (Path(tmpdir) / "scaldys-project.toml").write_text(
-            '[docs]\npublic_doc_dirs = ["manual"]\ninternal_doc_dirs = ["developer_guide"]\n'
-        )
-        config = load_config(Path(tmpdir))
-    assert config.docs.public_doc_dirs == ["manual"]
-    assert config.docs.internal_doc_dirs == ["developer_guide"]
 
 
 def test_load_config_docs_defaults_when_empty_file():
@@ -103,4 +79,3 @@ def test_load_config_docs_defaults_when_empty_file():
         (Path(tmpdir) / "scaldys-project.toml").write_text("")
         config = load_config(Path(tmpdir))
     assert config.docs.public_doc_dirs == []
-    assert config.docs.internal_doc_dirs == []

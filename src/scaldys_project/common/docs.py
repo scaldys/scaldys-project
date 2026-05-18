@@ -65,23 +65,6 @@ class DocumentationBuilder:
         """
         self.env = env
 
-    def _run_apidoc(self, doc_dir: Path) -> None:
-        """
-        Run ``sphinx-apidoc`` on the project source, writing RST output into ``doc_dir/source/``.
-
-        Parameters
-        ----------
-        doc_dir : Path
-            The documentation unit directory (e.g. ``docs/developer_guide``).
-        """
-        source_dir = str(self.env.src_dir_path)
-        output_dir = str(doc_dir.joinpath("source"))
-        logger.info("  Running sphinx-apidoc...")
-        self.env.run_command(
-            [str(self.env.sphinx_apidoc_exe_path), "-f", "-o", output_dir, source_dir],
-            f"Error running sphinx-apidoc for '{doc_dir.name}'",
-        )
-
     def _build_sphinx(self, doc_dir: Path, build_dir: Path) -> None:
         """
         Run ``sphinx-build`` for ``html`` and ``singlehtml`` targets.
@@ -109,9 +92,8 @@ class DocumentationBuilder:
         """
         Build a single documentation unit.
 
-        Detects the engine, optionally runs sphinx-apidoc (if configured in
-        ``scaldys-project.toml`` ``[docs] internal_doc_dirs``), then builds.  Logs a warning
-        and returns without building for unknown or unsupported engines.
+        Detects the engine, then builds.  Logs a warning and returns without
+        building for unknown or unsupported engines.
 
         Parameters
         ----------
@@ -138,10 +120,6 @@ class DocumentationBuilder:
         # SPHINX path
         build_dir = self.env.build_dir_path / dir_name
         logger.info(f"[bold]Building Sphinx documentation: '{dir_name}'...[/bold]")
-
-        if dir_name in self.env.config.docs.internal_doc_dirs:
-            self._run_apidoc(doc_dir)
-
         self._build_sphinx(doc_dir, build_dir)
 
     def build(self) -> None:

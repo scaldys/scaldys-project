@@ -94,36 +94,12 @@ A minimal configuration that works well with ``scaldys-project``:
 
 ``scaldys-project`` does not override any ``conf.py`` settings.
 
-API documentation (sphinx-apidoc)
-===================================
-
-Some documentation units are generated from source code docstrings rather
-than hand-written RST.  For these units, ``sphinx-apidoc`` must run before
-``sphinx-build`` to generate the ``.rst`` stub files.
-
-To enable the ``sphinx-apidoc`` pre-pass for a directory, list it in
-``scaldys-project.toml``::
-
-    [docs]
-    internal_doc_dirs = ["developer_guide"]
-
-When ``developer_guide`` (or any listed name) is encountered during the build:
-
-1. ``sphinx-apidoc`` scans the project source tree (``source_root`` as
-   configured in ``[cython]``, default ``src/``) and writes ``.rst`` stubs
-   into ``docs/<name>/source/``.
-2. ``sphinx-build`` compiles the stubs to HTML.
-
-The directory still needs a pre-existing ``source/conf.py`` for Sphinx to
-pick up themes and extensions.  Only the ``.rst`` stubs are generated; the
-``conf.py`` is always written by hand.
-
 Build output::
 
     build/<name>/html/
     build/<name>/singlehtml/
 
-This output is useful for browsing the API reference during development but
+This output is useful for browsing the documentation during development but
 is typically not included in the Windows installer (see
 `Distribution of built docs`_ below).
 

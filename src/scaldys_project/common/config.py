@@ -20,7 +20,6 @@ Example ``scaldys-project.toml``::
 
     [docs]
     public_doc_dirs = ["manual"]
-    internal_doc_dirs = ["developer_guide"]
 """
 
 import tomllib
@@ -107,14 +106,9 @@ class DocsConfig:
         Subdirectory names under ``docs/`` whose built HTML output is copied
         into distribution artifacts (PyInstaller dist + Inno Setup).
         An empty list means no documentation is distributed.
-    internal_doc_dirs : list of str
-        Subdirectory names that require a ``sphinx-apidoc`` pre-pass before
-        ``sphinx-build`` is invoked.  Must be a subset of the Sphinx directories
-        (i.e. those containing ``source/conf.py``).
     """
 
     public_doc_dirs: list[str] = field(default_factory=list)
-    internal_doc_dirs: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -177,6 +171,5 @@ def load_config(project_path: Path) -> BuildConfig:
         ),
         docs=DocsConfig(
             public_doc_dirs=docs_data.get("public_doc_dirs", []),
-            internal_doc_dirs=docs_data.get("internal_doc_dirs", []),
         ),
     )

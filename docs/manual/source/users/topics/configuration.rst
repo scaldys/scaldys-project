@@ -76,15 +76,12 @@ See :ref:`cython_compilation` for a full explanation of how compilation works.
 ``[docs]``
 ----------
 
-Controls which documentation units are distributed to end users and which
-contain internal developer documentation (with an optional ``sphinx-apidoc``
-pre-pass).
+Controls which documentation units are distributed to end users.
 
 .. code-block:: toml
 
     [docs]
     public_doc_dirs = ["manual"]
-    internal_doc_dirs = ["developer_guide"]
 
 .. list-table::
    :header-rows: 1
@@ -101,21 +98,13 @@ pre-pass).
        and ``dist/documentation/<name>/`` (standalone documentation copy).
        These are the documentation units destined for end users of the program.
        An empty list means no documentation is distributed.
-   * - ``internal_doc_dirs``
-     - ``[]``
-     - List of subdirectory names containing internal documentation for
-       developers of the program — not distributed to end users.  For each
-       listed name, a ``sphinx-apidoc`` pre-pass runs before ``sphinx-build``
-       to generate ``.rst`` stubs from docstrings.  Must be a subset of the
-       Sphinx directories (those containing ``source/conf.py``).
 
-**Example — distribute one unit, generate one unit from source code**
+**Example — distribute one unit to end users**
 
 .. code-block:: toml
 
     [docs]
     public_doc_dirs = ["manual"]
-    internal_doc_dirs = ["developer_guide"]
 
 See :ref:`documentation_building` for a full explanation of how the doc
 build works.
@@ -201,7 +190,6 @@ Complete example
 
     [docs]
     public_doc_dirs = ["manual"]
-    internal_doc_dirs = ["developer_guide"]
 
 Annotated reference file
 ========================
@@ -233,5 +221,3 @@ defaults apply:
      - ``false`` (online installer; only applies in ``pyruntime`` mode)
    * - ``docs.public_doc_dirs``
      - ``[]`` (no documentation distributed)
-   * - ``docs.internal_doc_dirs``
-     - ``[]`` (no apidoc pre-pass)
