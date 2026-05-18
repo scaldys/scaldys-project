@@ -460,6 +460,21 @@ class Compiler:
         )
         dest_pyproject.write_text(text, encoding="utf-8")
 
+        # Write a setup.py that forces setuptools to tag the wheel as platform-specific.
+        # Without this, setuptools sees no ext_modules being compiled at build time
+        # (the .pyd is pre-built) and falls back to the pure-Python tag py3-none-any,
+        # which is incorrect for a wheel containing compiled extensions.
+        setup_py = compiled_path / "setup.py"
+        setup_py.write_text(
+            "from setuptools import setup\n"
+            "from setuptools.dist import Distribution\n\n"
+            "class BinaryDistribution(Distribution):\n"
+            "    def has_ext_modules(self):\n"
+            "        return True\n\n"
+            "setup(distclass=BinaryDistribution)\n",
+            encoding="utf-8",
+        )
+
         logger.info("[bold]Building distribution wheel from compiled sources...[/bold]")
         self.env.run_command(
             [uv_exe, "build", "--wheel", "--out-dir", str(wheels_dir)],
