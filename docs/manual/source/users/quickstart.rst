@@ -19,13 +19,13 @@ Prerequisites
   from `jrsoftware.org <https://jrsoftware.org/isinfo.php>`_ and install to
   the default location
 
-Step 1 — Create scaldys.toml
+Step 1 — Create scaldys-project.toml
 ------------------------------
 
 For a pure-Python project with packaging files in the default location
 (``packaging/windows/``), no configuration file is needed — skip to Step 2.
 
-For anything else, create ``scaldys.toml`` in your project root:
+For anything else, create ``scaldys-project.toml`` in your project root:
 
 .. code-block:: toml
 
@@ -80,7 +80,7 @@ When prompted, choose **yes** to separate source and build directories.
 This produces the ``docs/manual/source/`` layout that Sphinx requires.
 
 To declare which documentation units should be bundled into the installer, add
-to ``scaldys.toml``::
+to ``scaldys-project.toml``::
 
     [docs]
     public_doc_dirs = ["manual"]
@@ -141,7 +141,7 @@ Next steps
 ----------
 
 - :ref:`cli_usage` — complete command reference
-- :ref:`configuration` — full ``scaldys.toml`` options
+- :ref:`configuration` — full ``scaldys-project.toml`` options
 - :ref:`cython_compilation` — how Cython compilation works
 - :ref:`windows_exe` — Windows deployment modes
 - :ref:`windows_installer` — Inno Setup integration

@@ -87,7 +87,7 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
         )
 
         # Windows packaging files (.iss, .bat, .ps1, .ico) live in the directory
-        # specified by scaldys.toml [windows] script_dir (default: packaging/windows).
+        # specified by scaldys-project.toml [windows] script_dir (default: packaging/windows).
         self.script_dir_path = (self.project_path / self.config.windows.script_dir).resolve()
         self.win32_icon_file_path = self.script_dir_path.joinpath(f"{self.project_name}.ico")
 
@@ -259,7 +259,7 @@ class Compiler:
         """
         Stage source files and optionally compile selected modules with Cython.
 
-        If ``scaldys.toml`` declares no ``compiled_modules``, the Cython step
+        If ``scaldys-project.toml`` declares no ``compiled_modules``, the Cython step
         is skipped and all source files are staged as-is.
 
         Raises
@@ -276,7 +276,7 @@ class Compiler:
 
         compiled_py_files: set[str] = set()
 
-        # 2. Run Cython compilation if modules are declared in scaldys.toml
+        # 2. Run Cython compilation if modules are declared in scaldys-project.toml
         if self.env.config.cython.compiled_modules:
             logger.info("  Compiling modules with Cython...")
             # -P disables adding cwd to sys.path (security/reproducibility).
@@ -464,16 +464,22 @@ class Compiler:
         # Without this, setuptools sees no ext_modules being compiled at build time
         # (the .pyd is pre-built) and falls back to the pure-Python tag py3-none-any,
         # which is incorrect for a wheel containing compiled extensions.
+        # Only inject this when compiled_modules are declared; a pure-Python build
+        # must produce the standard py3-none-any tag.
         setup_py = compiled_path / "setup.py"
-        setup_py.write_text(
-            "from setuptools import setup\n"
-            "from setuptools.dist import Distribution\n\n"
-            "class BinaryDistribution(Distribution):\n"
-            "    def has_ext_modules(self):\n"
-            "        return True\n\n"
-            "setup(distclass=BinaryDistribution)\n",
-            encoding="utf-8",
-        )
+        if self.env.config.cython.compiled_modules:
+            setup_py.write_text(
+                "from setuptools import setup\n"
+                "from setuptools.dist import Distribution\n\n"
+                "class BinaryDistribution(Distribution):\n"
+                "    def has_ext_modules(self):\n"
+                "        return True\n\n"
+                "setup(distclass=BinaryDistribution)\n",
+                encoding="utf-8",
+            )
+        else:
+            # Ensure no stale setup.py from a previous build forces a binary tag.
+            safe_unlink(setup_py)
 
         logger.info("[bold]Building distribution wheel from compiled sources...[/bold]")
         self.env.run_command(
@@ -693,7 +699,7 @@ class Packager:
             raise RuntimeError(
                 "uv not found in PATH. Cannot pre-build the PythonRuntime environment. "
                 "Install uv (https://docs.astral.sh/uv/) and retry, or set "
-                "bundle_pyruntime = false in scaldys.toml to use the online installer."
+                "bundle_pyruntime = false in scaldys-project.toml to use the online installer."
             )
 
         python_version = self.env.python_version_file_path.read_text().strip()

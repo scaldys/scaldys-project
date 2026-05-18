@@ -63,7 +63,7 @@ at the start of ``build windows`` and ``build all``, but without triggering
 a build.
 
 The rules that are evaluated depend on the ``deployment_mode`` setting in
-``scaldys.toml``.  In ``wheel_only`` mode the Inno Setup script and launcher
+``scaldys-project.toml``.  In ``wheel_only`` mode the Inno Setup script and launcher
 files are not required.
 
 Use this command to verify a freshly cloned project, or to diagnose issues
@@ -256,7 +256,7 @@ auto-detected from each subdirectory's contents.
 
 For each Sphinx unit (``source/conf.py`` present), two HTML formats are
 produced: standard multi-page HTML and single-page HTML.  For units listed
-in ``[docs] internal_doc_dirs`` in ``scaldys.toml``, ``sphinx-apidoc`` runs
+in ``[docs] internal_doc_dirs`` in ``scaldys-project.toml``, ``sphinx-apidoc`` runs
 first to generate ``.rst`` stubs from source code docstrings.
 
 **Output locations**
@@ -299,7 +299,7 @@ documentation.
 
 **What it does**
 
-Reads ``deployment_mode`` from ``scaldys.toml`` (default: ``"pyinstaller"``)
+Reads ``deployment_mode`` from ``scaldys-project.toml`` (default: ``"pyinstaller"``)
 and runs the corresponding distribution pipeline:
 
 ``pyinstaller`` mode

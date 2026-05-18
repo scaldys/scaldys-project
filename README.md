@@ -14,7 +14,7 @@ If you are starting a new project,
 [scaldys-template](https://github.com/scaldys/scaldys-template) provides a
 ready-to-use project scaffold with `scaldys-project` already integrated:
 packaging scripts, Sphinx documentation, CI/CD workflows, and a working
-`scaldys.toml`.
+`scaldys-project.toml`.
 
 For a full guide on using and integrating `scaldys-project` in your project, see
 the [user documentation](https://github.com/scaldys/scaldys-project).

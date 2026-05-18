@@ -31,7 +31,7 @@ def build_docs(
 def build_windows(
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output."),
 ) -> None:
-    """Build Windows distribution artifact (behaviour depends on deployment_mode in scaldys.toml)."""
+    """Build Windows distribution artifact (behaviour depends on deployment_mode in scaldys-project.toml)."""
     builder = WindowsBuilder(find_project_root(), verbose=verbose)
     builder.build_distribution(console=console)
 

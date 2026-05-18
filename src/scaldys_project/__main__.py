@@ -18,7 +18,7 @@ consuming project (the directory that contains ``pyproject.toml``)::
     scaldys-project test            # run pytest
 
 The Windows distribution step is controlled by ``deployment_mode`` in
-``scaldys.toml``:
+``scaldys-project.toml``:
 
     pyinstaller  (default) — PyInstaller exe + Inno Setup installer
     pyruntime              — binary wheel + Inno Setup installer with PythonRuntime

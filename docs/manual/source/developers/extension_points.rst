@@ -32,7 +32,7 @@ breaking the design:
 
 - **Config is loaded once.**  ``load_config()`` is called inside
   ``BaseBuildEnvironment.__init__`` and stored as ``self.config``.  No
-  component re-reads ``scaldys.toml`` at runtime.  Extend ``config.py`` if
+  component re-reads ``scaldys-project.toml`` at runtime.  Extend ``config.py`` if
   new configuration keys are needed.
 
 - **Platform code stays in its subdirectory.**  Windows-specific logic lives
@@ -48,7 +48,7 @@ breaking the design:
 Adding a New Cython Module to a Consuming Project
 ==================================================
 
-Compiled modules are declared in the consuming project's ``scaldys.toml``,
+Compiled modules are declared in the consuming project's ``scaldys-project.toml``,
 not in ``scaldys-project`` itself.  To add a module:
 
 1. Add the dotted module name to the ``compiled_modules`` list::
@@ -67,7 +67,7 @@ package lives relative to the project root::
     source_root = "src"
     compiled_modules = ["mypackage.fast_module"]
 
-See :ref:`configuration` for the full ``scaldys.toml`` reference.
+See :ref:`configuration` for the full ``scaldys-project.toml`` reference.
 
 
 Adding a New Build Step to ``WindowsBuilder.main()``
@@ -151,7 +151,7 @@ without touching existing Windows code.  You need four things:
            builder.main()
 
 4. **Add a** ``BuildConfig`` **section if needed**
-   If the new platform requires configuration keys beyond what ``scaldys.toml``
+   If the new platform requires configuration keys beyond what ``scaldys-project.toml``
    already provides, extend ``common/config.py`` with a new section dataclass
    and register it on ``BuildConfig``.
 

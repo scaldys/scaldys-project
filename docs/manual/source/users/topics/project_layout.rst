@@ -38,7 +38,7 @@ The following layout is the recommended structure for a project using
 
     my-project/
     ├── pyproject.toml              ← project metadata (required)
-    ├── scaldys.toml                ← scaldys-project config (optional)
+    ├── scaldys-project.toml                ← scaldys-project config (optional)
     ├── .python-version             ← Python version pin (required for pyruntime mode)
     ├── src/
     │   └── myapp/                  ← Python source packages
@@ -73,7 +73,7 @@ Source layout (``src/`` layout)
 ---------------------------------
 
 ``scaldys-project`` defaults to ``source_root = "src"`` (configurable in
-``scaldys.toml``).  If your project uses a flat layout (packages directly at
+``scaldys-project.toml``).  If your project uses a flat layout (packages directly at
 the project root), set::
 
     [cython]
@@ -88,7 +88,7 @@ are no fixed or required names.  ``scaldys-project`` auto-detects the engine
 used by each unit from its contents (see :ref:`documentation_building`).
 
 Configure which units are included in the distribution and which need a
-``sphinx-apidoc`` pre-pass via ``[docs]`` in ``scaldys.toml``::
+``sphinx-apidoc`` pre-pass via ``[docs]`` in ``scaldys-project.toml``::
 
     [docs]
     public_doc_dirs = ["manual"]
@@ -99,7 +99,7 @@ Windows packaging layout
 
 The directory containing Windows packaging files defaults to
 ``packaging/windows/`` but can be changed via ``[windows] script_dir`` in
-``scaldys.toml``::
+``scaldys-project.toml``::
 
     [windows]
     script_dir = "deploy/windows"

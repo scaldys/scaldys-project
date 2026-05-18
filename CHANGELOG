@@ -9,6 +9,48 @@
 
 
 
+[0.12.0] - 2026-05-18
+---------------------
+
+**Changed**:
+    - Configuration file renamed from ``scaldys.toml`` to ``scaldys-project.toml``.
+
+      The file name now unambiguously identifies which tool owns it within the
+      ``scaldys`` project umbrella.  Using just ``scaldys.toml`` was ambiguous
+      when a consuming project also uses other tools under the same umbrella
+      (e.g. ``scaldys-template``); naming the file after the specific tool
+      (``scaldys-project``) removes that ambiguity entirely and is consistent
+      with the hyphenated package name convention.  No settings, sections, or
+      defaults are changed.
+
+      .. note::
+         **Breaking change for consuming projects.**  Any project that provides
+         a ``scaldys.toml`` file must rename it to ``scaldys-project.toml``.
+         The file contents remain identical; only the filename changes.
+
+      - Documentation file ``scaldys_toml_reference.rst`` renamed to
+        ``scaldys_project_toml_reference.rst`` and its
+        ``.. _scaldys_toml_reference:`` label updated to
+        ``.. _scaldys_project_toml_reference:`` accordingly.
+      - All internal source code, tests, and documentation updated to reference
+        ``scaldys-project.toml`` and ``scaldys_project_toml_reference``.
+
+**Fixed**:
+    - Pure-Python wheel now correctly tagged ``py3-none-any`` when no
+      ``compiled_modules`` are declared.
+
+      ``Compiler._build_wheel()`` previously wrote a ``setup.py`` that forced
+      a platform-specific wheel tag unconditionally.  The intent was to prevent
+      setuptools from downgrading a wheel that contains pre-built ``.pyd``
+      extensions to ``py3-none-any``, but the same ``setup.py`` was injected
+      even when ``compiled_modules = []`` (the default), causing a pure-Python
+      build to produce a spurious platform tag such as ``cp313-cp313-win_amd64``.
+      The ``BinaryDistribution`` ``setup.py`` is now only written when
+      ``compiled_modules`` is non-empty; otherwise any stale ``setup.py`` from a
+      previous build is removed, allowing setuptools to apply the correct
+      ``py3-none-any`` tag.
+
+
 [0.11.0] - 2026-05-17
 ---------------------
 

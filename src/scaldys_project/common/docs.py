@@ -110,7 +110,7 @@ class DocumentationBuilder:
         Build a single documentation unit.
 
         Detects the engine, optionally runs sphinx-apidoc (if configured in
-        ``scaldys.toml`` ``[docs] internal_doc_dirs``), then builds.  Logs a warning
+        ``scaldys-project.toml`` ``[docs] internal_doc_dirs``), then builds.  Logs a warning
         and returns without building for unknown or unsupported engines.
 
         Parameters

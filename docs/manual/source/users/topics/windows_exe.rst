@@ -6,7 +6,7 @@ Windows Distribution Modes
 
 ``scaldys-project`` supports three deployment modes for distributing a Python
 application to Windows users.  The active mode is controlled by
-``deployment_mode`` in ``scaldys.toml``.
+``deployment_mode`` in ``scaldys-project.toml``.
 
 .. list-table::
    :header-rows: 1
@@ -26,7 +26,7 @@ application to Windows users.  The active mode is controlled by
      - Binary wheel only, no installer
      - Packages distributed via ``pip`` or ``uv``
 
-Set the mode in ``scaldys.toml``:
+Set the mode in ``scaldys-project.toml``:
 
 .. code-block:: toml
 
@@ -44,7 +44,7 @@ Shared steps (all modes)
 Cython compilation
 ------------------
 
-If ``[cython] compiled_modules`` is non-empty in ``scaldys.toml``,
+If ``[cython] compiled_modules`` is non-empty in ``scaldys-project.toml``,
 ``scaldys-project`` first stages a copy of the source tree into
 ``build/compiled/``, compiles the specified modules to ``.pyd`` extension
 files with Cython, and removes the corresponding ``.py`` files so the

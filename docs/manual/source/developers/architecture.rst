@@ -30,7 +30,7 @@ The module layout mirrors this split:
     ├── common/
     │   ├── base.py             # BaseBuildEnvironment, BaseBuilder
     │   ├── compile_runner.py   # Cython/setuptools build script (run as subprocess)
-    │   ├── config.py           # scaldys.toml loading and dataclasses
+    │   ├── config.py           # scaldys-project.toml loading and dataclasses
     │   ├── docs.py             # DocumentationBuilder (Sphinx)
     │   └── utils.py            # Retry-safe file operations
     └── windows/
@@ -97,7 +97,7 @@ Tracing what happens when ``scaldys-project build all`` is run:
    a. ``WindowsBuilder.__init__`` creates a ``WindowsBuildEnvironment``.
    b. ``WindowsBuildEnvironment.__init__`` calls ``super().__init__()``
       (``BaseBuildEnvironment``), which reads ``pyproject.toml`` for ``name``
-      and ``version``, calls ``load_config()`` to read ``scaldys.toml``, and
+      and ``version``, calls ``load_config()`` to read ``scaldys-project.toml``, and
       discovers shared tools (``sphinx-build``, ``sphinx-apidoc``).
    c. Back in ``WindowsBuildEnvironment``, Windows-specific tools are
       discovered (``pyinstaller.exe``, ``ISCC.exe``) and Windows-specific
@@ -140,7 +140,7 @@ result is stored as ``self.config``.
 
 .. code-block:: text
 
-    scaldys.toml  ──▶  load_config()  ──▶  BuildConfig
+    scaldys-project.toml  ──▶  load_config()  ──▶  BuildConfig
                                               ├── cython: CythonConfig
                                               │       compiled_modules: list[str]
                                               │       source_root: str
@@ -152,7 +152,7 @@ result is stored as ``self.config``.
                                                       deployment_mode: str
                                                       bundle_pyruntime: bool
 
-If ``scaldys.toml`` is absent ``load_config()`` returns ``BuildConfig()``
+If ``scaldys-project.toml`` is absent ``load_config()`` returns ``BuildConfig()``
 immediately, applying all dataclass defaults.  If the file is present,
 ``tomllib`` parses it and each section is mapped to the corresponding
 dataclass; any missing key falls back to its dataclass default.

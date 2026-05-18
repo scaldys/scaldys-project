@@ -39,7 +39,7 @@ installation.  The CPython installer does not include a C compiler.
 Configuration
 =============
 
-Declare modules to compile in ``scaldys.toml``:
+Declare modules to compile in ``scaldys-project.toml``:
 
 .. code-block:: toml
 

@@ -102,7 +102,7 @@ than hand-written RST.  For these units, ``sphinx-apidoc`` must run before
 ``sphinx-build`` to generate the ``.rst`` stub files.
 
 To enable the ``sphinx-apidoc`` pre-pass for a directory, list it in
-``scaldys.toml``::
+``scaldys-project.toml``::
 
     [docs]
     internal_doc_dirs = ["developer_guide"]
@@ -131,7 +131,7 @@ Distribution of built docs
 ==========================
 
 Not every documentation unit needs to be shipped to end users.  Use
-``[docs] public_doc_dirs`` in ``scaldys.toml`` to declare which built units
+``[docs] public_doc_dirs`` in ``scaldys-project.toml`` to declare which built units
 the packager should copy into the distribution:
 
 .. code-block:: toml
@@ -181,7 +181,7 @@ Given an example project with two documentation units — ``manual`` and
    * - ``build/developer_guide/singlehtml/``
      - Developer / API guide, single-page HTML
 
-With ``public_doc_dirs = ["manual"]`` in ``scaldys.toml``, the distribution
+With ``public_doc_dirs = ["manual"]`` in ``scaldys-project.toml``, the distribution
 contains:
 
 In ``pyinstaller`` / ``pyruntime`` mode::

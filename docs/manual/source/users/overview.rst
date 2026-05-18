@@ -20,7 +20,7 @@ produces, in order:
    to HTML, with configured units bundled into the installer for offline use.
 
 2. **A Windows distribution** — the exact form depends on the
-   ``deployment_mode`` you choose in ``scaldys.toml``:
+   ``deployment_mode`` you choose in ``scaldys-project.toml``:
 
    - **pyinstaller** (default): PyInstaller bundles the application into a
      self-contained directory that runs on any Windows machine without a
@@ -86,13 +86,13 @@ Getting started quickly with scaldys-template
 =============================================
 
 Setting up all the required files (Sphinx project, Inno Setup script,
-launcher scripts, ``scaldys.toml``, ``pyproject.toml``, GitHub Actions
+launcher scripts, ``scaldys-project.toml``, ``pyproject.toml``, GitHub Actions
 workflows, …) from scratch takes time.  `scaldys-template
 <https://github.com/scaldys/scaldys-template>`_ is a ready-to-use project
 template that already has everything wired together:
 
 - A ``src``-layout Python package with a Typer-based CLI entry point
-- ``scaldys.toml`` pre-configured with an example Cython module and
+- ``scaldys-project.toml`` pre-configured with an example Cython module and
   ``deployment_mode = "pyinstaller"``
 - ``packaging/windows/`` with a complete ``.iss`` script, auto-detecting
   launcher scripts, and an application icon
@@ -119,6 +119,6 @@ Where to go next
 **Already set up and looking for reference information?**
 
 - :ref:`cli_usage` — complete command reference
-- :ref:`configuration` — ``scaldys.toml`` options
+- :ref:`configuration` — ``scaldys-project.toml`` options
 - :ref:`project_layout` — expected directory structure and build output
 - :ref:`topics` — in-depth guides for each build step

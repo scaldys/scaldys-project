@@ -1,4 +1,4 @@
-# scaldys.toml — scaldys-project project configuration
+# scaldys-project.toml — scaldys-project project configuration
 #
 # This file is read by scaldys-project at build time.  Every setting has a
 # default, so the file is entirely optional.  It is provided here with all

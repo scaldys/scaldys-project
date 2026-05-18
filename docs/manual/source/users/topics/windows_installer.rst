@@ -22,7 +22,7 @@ Packaging files
 ===============
 
 Place the following files in the directory specified by
-``[windows] script_dir`` in ``scaldys.toml`` (default: ``packaging/windows/``):
+``[windows] script_dir`` in ``scaldys-project.toml`` (default: ``packaging/windows/``):
 
 .. code-block:: text
 
@@ -159,7 +159,7 @@ the active ``deployment_mode``:
    ``[windows] script_dir`` are copied to ``artifacts/portable/bin/``.
 
 2. **Copy documentation** — for each directory listed in ``[docs] public_doc_dirs``
-   in ``scaldys.toml``, the HTML output (from ``build/<name>/html/``) is
+   in ``scaldys-project.toml``, the HTML output (from ``build/<name>/html/``) is
    copied to both ``artifacts/portable/documentation/<name>/`` (bundled with
    the portable package) and ``artifacts/documentation/<name>/`` (standalone
    docs only).
@@ -173,7 +173,7 @@ the active ``deployment_mode``:
    ``artifacts/portable/wheels/``.
 
 5. **Build PythonRuntime** (``pyruntime`` mode, offline sub-mode only) — if
-   ``[windows] bundle_pyruntime = true`` is set in ``scaldys.toml``,
+   ``[windows] bundle_pyruntime = true`` is set in ``scaldys-project.toml``,
    ``scaldys-project`` pre-builds a ``uv``-managed Python virtual environment
    at ``artifacts/pyruntime/`` containing all runtime dependencies.  See
    `Online and offline installer modes`_ below.
@@ -201,7 +201,7 @@ They control how the Python runtime environment is delivered to end users.
     pre-built environment is bundled — the ``setup.exe`` is smaller but the
     end user's machine must have internet access during installation.
 
-    To use online mode, omit ``bundle_pyruntime`` from ``scaldys.toml`` (or
+    To use online mode, omit ``bundle_pyruntime`` from ``scaldys-project.toml`` (or
     set it to ``false``).  The Inno Setup script should call
     ``setup_pyruntime.ps1`` during install to create the environment.
 
@@ -210,7 +210,7 @@ They control how the Python runtime environment is delivered to end users.
     machine and embedded inside ``setup.exe``.  Installation succeeds on
     air-gapped machines.  The ``setup.exe`` is correspondingly larger.
 
-    To enable offline mode, set in ``scaldys.toml``:
+    To enable offline mode, set in ``scaldys-project.toml``:
 
     .. code-block:: toml
 

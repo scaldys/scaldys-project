@@ -1,10 +1,10 @@
-.. _scaldys_toml_reference:
+.. _scaldys_project_toml_reference:
 
-****************************
-scaldys.toml — Full Reference
-****************************
+**********************************
+scaldys-project.toml — Full Reference
+**********************************
 
-The annotated file below lists every available ``scaldys.toml`` setting in
+The annotated file below lists every available ``scaldys-project.toml`` setting in
 one place.  Each option is accompanied by an inline comment that describes
 its purpose, accepted values, and default.  Copy this block into your project
 root, adjust the values to suit your project, and delete any comments or
@@ -14,7 +14,7 @@ For narrative explanations of each section see :ref:`configuration`.
 
 .. code-block:: toml
 
-    # scaldys.toml — complete annotated reference
+    # scaldys-project.toml — complete annotated reference
     #
     # Place this file alongside pyproject.toml in your project root.
     # Every setting has a default, so the file is entirely optional —
