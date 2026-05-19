@@ -20,6 +20,7 @@ import logging
 import os
 import re
 import shutil
+import tomllib
 from pathlib import Path
 from typing import Optional, Any, Union, Iterable
 from scaldys_project.common.base import BaseBuildEnvironment, BaseBuilder
@@ -435,6 +436,22 @@ class Compiler:
         # backend (setuptools) can discover it in the flat layout of build/compiled/.
         dest_pyproject = compiled_path / "pyproject.toml"
         safe_copy(self.env.project_path / "pyproject.toml", dest_pyproject)
+
+        # Copy the readme file referenced in pyproject.toml so that setuptools
+        # can embed its contents as the package description when building the wheel.
+        # Without this, setuptools silently omits the description and PyPI shows
+        # "The author of this package has not provided a project description".
+        with open(self.env.project_path / "pyproject.toml", "rb") as _f:
+            _pyproject_meta = tomllib.load(_f)
+        _readme = _pyproject_meta.get("project", {}).get("readme")
+        if isinstance(_readme, str) and _readme:
+            _readme_src = self.env.project_path / _readme
+            if _readme_src.exists():
+                safe_copy(_readme_src, compiled_path / _readme)
+        elif isinstance(_readme, dict) and _readme.get("file"):
+            _readme_src = self.env.project_path / _readme["file"]
+            if _readme_src.exists():
+                safe_copy(_readme_src, compiled_path / _readme["file"])
 
         # Restrict setuptools package discovery to the project package only.
         # build/compiled/ contains extra_hooks/ (PyInstaller hooks) alongside the

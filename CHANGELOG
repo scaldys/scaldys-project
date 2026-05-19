@@ -9,6 +9,21 @@
 
 
 
+[0.13.0] - 2026-05-19
+---------------------
+
+**Fixed**:
+    - ``README.md`` (or whichever file is declared as ``readme`` in
+      ``pyproject.toml``) is now copied into ``build/compiled/`` alongside
+      ``pyproject.toml`` before the wheel is built, so PyPI receives the
+      package description instead of showing *"The author of this package has
+      not provided a project description"*.
+
+**Docs**:
+    - ``windows_exe.rst`` — *How the wheel is built* section updated to
+      document that the readme file is copied into ``build/compiled/``.
+
+
 [0.12.0] - 2026-05-19
 ---------------------
 

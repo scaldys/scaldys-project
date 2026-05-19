@@ -91,7 +91,10 @@ How the wheel is built
 
 1. A copy of the project's ``pyproject.toml`` is written into
    ``build/compiled/`` so that setuptools can discover the package.
-2. The copy is patched to:
+   The readme file referenced by the ``readme`` field in ``pyproject.toml``
+   (e.g. ``README.md``) is also copied there so that setuptools can embed
+   its contents as the package description in the wheel metadata.
+2. The copy of ``pyproject.toml`` is patched to:
 
    - restrict package discovery to the project package only (excluding
      ``extra_hooks/`` and other top-level directories), and
