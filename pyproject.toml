@@ -1,6 +1,6 @@
 [project]
 name = "scaldys-project"
-version = "0.12.0"
+version = "0.13.0"
 authors = [
   { name="Scaldys", email="scaldys@scaldys.net" },
 ]
@@ -42,6 +42,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"scaldys_project.resources" = [".pre-commit-check-config.yaml"]
 
 [dependency-groups]
 dev = [

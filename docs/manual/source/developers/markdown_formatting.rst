@@ -5,9 +5,10 @@ Markdown Formatting and Hooks
 *****************************
 
 This page explains the full picture of Markdown formatting in this project:
-why Prettier is used, how the two ``pre-commit`` configuration files differ,
-why they are both needed, and what happens at each stage — git commit, local
-CLI command, and GitHub Actions CI.
+why Prettier is used, how the pre-commit configuration is split between a
+project-level file and a config bundled in the ``scaldys-project`` wheel,
+and what happens at each stage — git commit, local CLI command, and GitHub
+Actions CI.
 
 .. contents:: On this page
    :local:
@@ -60,29 +61,29 @@ downloads and isolates Prettier automatically.
     trigger a spurious "files were modified by this hook" failure.
 
 
-The Two Pre-commit Configuration Files
-=======================================
+Pre-commit Configuration Files
+================================
 
-The project ships two pre-commit configuration files.  They are almost
-identical — same repository mirror, same pinned version, same file-type
-filter — but differ in one critical flag:
+Two pre-commit configurations are involved in Markdown formatting.  They are
+almost identical — same repository mirror, same pinned version, same
+file-type filter — but differ in one critical flag:
 
 .. list-table::
    :header-rows: 1
-   :widths: 35 30 35
+   :widths: 40 25 35
 
-   * - File
+   * - Config
      - Prettier flag
      - Used by
-   * - ``.pre-commit-config.yaml``
+   * - ``.pre-commit-config.yaml`` *(project file)*
      - *(none — rewrite mode)*
-     - git pre-commit hook, ``format markdown``
-   * - ``.pre-commit-check-config.yaml``
+     - git pre-commit hook, ``format markdown``, GitHub Actions
+   * - ``scaldys_project/resources/.pre-commit-check-config.yaml`` *(bundled in wheel)*
      - ``--check``
      - ``ci markdown``
 
-``.pre-commit-config.yaml`` — rewrite mode
-------------------------------------------
+``.pre-commit-config.yaml`` — rewrite mode (project file)
+----------------------------------------------------------
 
 .. code-block:: yaml
 
@@ -93,17 +94,19 @@ filter — but differ in one critical flag:
           - id: prettier
             types_or: [markdown]
 
-When invoked without ``--check``, Prettier **rewrites files in place**.
-pre-commit detects that files were modified and exits non-zero, printing
+This file lives at the root of each scaldys-compliant project.  When invoked
+without ``--check``, Prettier **rewrites files in place**.  pre-commit detects
+that files were modified and exits non-zero, printing
 ``files were modified by this hook``.  This is the expected behaviour for a
 git pre-commit hook: the commit is blocked, the files are already fixed, and
 the contributor simply runs ``git add`` and retries the commit.
 
-This config is also used by ``scaldys-project format markdown``, where the
-intent is explicitly to apply fixes.
+This config is also used by ``scaldys-project format markdown`` (where the
+intent is explicitly to apply fixes) and by the GitHub Actions ``ci.yml``
+workflow step.
 
-``.pre-commit-check-config.yaml`` — check-only mode
------------------------------------------------------
+``.pre-commit-check-config.yaml`` — check-only mode (bundled in wheel)
+------------------------------------------------------------------------
 
 .. code-block:: yaml
 
@@ -121,7 +124,14 @@ but does not modify any file**.  This is the behaviour needed for a
 verification command: report what is wrong without silently changing the
 working tree.
 
-This config is used by ``scaldys-project ci markdown``.
+This config is owned entirely by the ``scaldys-project`` tool — its content
+is identical in every consuming project — so it is bundled as a package
+resource inside the wheel
+(``scaldys_project/resources/.pre-commit-check-config.yaml``).  When
+``scaldys-project ci markdown`` runs, the command resolves the absolute path
+to the bundled file via ``importlib.resources`` and passes it to pre-commit's
+``--config`` flag.  **No** ``.pre-commit-check-config.yaml`` file is required
+in the consuming project.
 
 Why not a single config file?
 ------------------------------
@@ -132,12 +142,16 @@ has no equivalent CLI flag that can be injected at invocation time when
 running through pre-commit — the ``args`` list must be declared in the
 configuration file.  A second configuration file is therefore the cleanest
 way to toggle between rewrite mode and check-only mode without modifying the
-shared ``.pre-commit-config.yaml`` that governs the git hook.
+shared ``.pre-commit-config.yaml`` that governs the git hook.  Bundling the
+check-only config in the wheel removes it as a file that consumer projects
+must maintain.
 
 Maintenance note
-    When upgrading Prettier, update the ``rev`` field in **both** files and
-    keep ``types_or`` in sync.  The only intentional difference is the
-    presence or absence of ``args: ["--check"]``.
+    When upgrading Prettier, update the ``rev`` field in ``.pre-commit-config.yaml``
+    *and* in ``src/scaldys_project/resources/.pre-commit-check-config.yaml``
+    inside the ``scaldys-project`` source tree, and keep ``types_or`` in sync.
+    The only intentional difference between the two configs is the presence or
+    absence of ``args: ["--check"]``.
 
 
 The ``ci`` vs ``format`` Command Contract
@@ -162,7 +176,7 @@ files and exit with the formatter's return code.
      - ``uv run ruff format --diff .``
    * - ``ci markdown``
      - No
-     - ``uv run pre-commit run --config .pre-commit-check-config.yaml prettier --all-files``
+     - ``uv run pre-commit run --config <bundled-check-config> prettier --all-files``
    * - ``format python``
      - Yes
      - ``uv run ruff format .``
@@ -201,7 +215,9 @@ mode).
 ``scaldys-project ci markdown`` (local)
 -----------------------------------------
 
-Uses ``.pre-commit-check-config.yaml`` (``--check`` mode).
+Uses the check-only config bundled in the ``scaldys-project`` wheel
+(``--check`` mode).  No ``.pre-commit-check-config.yaml`` file is needed in
+the project.
 
 * All files correctly formatted: exits ``0``.
 * Any file needs formatting: prints the offending file names, exits non-zero.
@@ -237,13 +253,14 @@ files.
 
 Why the GitHub Actions step uses rewrite mode
    Prettier does not expose a ``--check``-only mode through the pre-commit
-   hook interface without an ``args`` override.  The CI step predates the
-   introduction of ``.pre-commit-check-config.yaml`` and continues to work
-   correctly because a non-zero exit is all that is needed to fail the
-   pipeline.  Changing it would require either passing ``args`` in the
-   workflow YAML (coupling CI to the hook internals) or switching to a
-   different invocation strategy.  The current approach is simpler and the
-   outcome is identical.
+   hook interface without an ``args`` override in a config file.  The CI step
+   uses the project's ``.pre-commit-config.yaml`` (rewrite mode) and relies
+   on pre-commit's non-zero exit to fail the pipeline — the runner is
+   ephemeral and never commits rewrites back, so the net effect is identical
+   to a check.  Switching to the bundled check-only config would require the
+   workflow to invoke ``scaldys-project ci markdown`` instead of calling
+   pre-commit directly; the current approach is simpler and the outcome is
+   identical.
 
 
 ``rbubley/mirrors-prettier`` vs the Official Mirror

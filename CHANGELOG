@@ -15,9 +15,14 @@
 **Added**:
     - ``scaldys-project ci markdown`` — check-only Markdown formatting check
       that mirrors the *Prettier format* step in the GitHub Actions CI
-      pipeline.  Uses ``.pre-commit-check-config.yaml`` (prettier with
-      ``--check``) so no files are modified.  Included as the final step of
-      ``ci all``.
+      pipeline.  Prettier runs in ``--check`` mode so no files are modified.
+      Included as the final step of ``ci all``.
+
+      The check-only pre-commit configuration is bundled inside the
+      ``scaldys-project`` wheel
+      (``scaldys_project/resources/.pre-commit-check-config.yaml``) and
+      resolved via ``importlib.resources`` at runtime.  Consumer projects do
+      **not** need a ``.pre-commit-check-config.yaml`` file in their root.
 
     - ``scaldys-project format`` — new command group for auto-formatting files
       in place:
@@ -28,22 +33,26 @@
         ``uv run pre-commit run prettier --all-files``
       - ``format all`` — runs ``format python`` then ``format markdown``
 
-    - ``.pre-commit-check-config.yaml`` — companion pre-commit configuration
-      used by ``ci markdown`` that passes ``--check`` to Prettier so the hook
-      reports differences without rewriting files.
+    - ``scaldys_project/resources/.pre-commit-check-config.yaml`` — check-only
+      pre-commit configuration (Prettier with ``--check``) bundled as a package
+      resource inside the wheel.  Used exclusively by ``ci markdown``; consumer
+      projects are not required to provide this file.
 
 **Docs**:
     - ``docs/manual/source/developers/markdown_formatting.rst`` expanded with a
-      full technical explanation: the two pre-commit config files and their
-      roles, the ``ci`` (check-only) vs ``format`` (fix-in-place) contract,
-      and a scenario-by-scenario comparison of local git hook, ``ci markdown``,
-      ``format markdown``, and GitHub Actions behaviour.
+      full technical explanation: how the pre-commit config is split between the
+      project-level ``.pre-commit-config.yaml`` and the check-only config
+      bundled in the wheel, the ``ci`` (check-only) vs ``format``
+      (fix-in-place) contract, and a scenario-by-scenario comparison of local
+      git hook, ``ci markdown``, ``format markdown``, and GitHub Actions
+      behaviour.
     - ``docs/manual/source/developers/contributing.rst`` updated to list all
-      ``ci`` and ``format`` subcommands with their intent, replacing stale
-      raw ``uv`` command snippets.
+      ``ci`` and ``format`` subcommands with their intent; cross-reference text
+      updated to reflect the project-file / bundled-resource split.
     - ``docs/manual/source/users/cli_usage.rst`` updated with the ``format``
       command group (tree, ``format all``, ``format python``, ``format
-      markdown`` sections) and the corrected ``ci markdown`` description.
+      markdown`` sections) and the corrected ``ci markdown`` description
+      (bundled config, no project file required).
 
 
 [0.12.0] - 2026-05-18

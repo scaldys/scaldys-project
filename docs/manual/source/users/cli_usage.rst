@@ -129,7 +129,7 @@ GitHub Actions job step:
 1. ``uv run ruff check .`` — lint
 2. ``uv run ruff format --diff .`` — format check (no rewrite)
 3. ``uv sync && uv run pyright ./src`` — type checking
-4. ``uv run pre-commit run prettier --all-files`` — Markdown format check
+4. ``uv run pre-commit run prettier --all-files`` (``--check`` mode, bundled config) — Markdown format check
 
 If any step exits with a non-zero code the sequence stops immediately and
 ``scaldys-project`` exits with that code.
@@ -193,10 +193,11 @@ Check Markdown file formatting with Prettier.
 
     scaldys-project ci markdown
 
-Executes ``uv run pre-commit run --config .pre-commit-check-config.yaml prettier --all-files``.
-Prettier runs with ``--check``: it reports which files would be reformatted
-and exits non-zero if any file is not correctly formatted.  **No files are
-modified.**
+Runs Prettier via pre-commit in check-only mode (``--check``).  The
+pre-commit configuration is bundled inside the ``scaldys-project`` wheel —
+**no** ``.pre-commit-check-config.yaml`` file is required in your project.
+Prettier reports which files would be reformatted and exits non-zero if any
+file is not correctly formatted.  **No files are modified.**
 
 This mirrors the *Prettier format* step in the GitHub Actions ``ci.yml``
 workflow exactly.  To actually reformat Markdown files, use

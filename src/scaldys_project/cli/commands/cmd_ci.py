@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import importlib.resources
 import logging
 import subprocess
 from pathlib import Path
@@ -81,18 +82,22 @@ def ci_typecheck() -> None:
 def ci_markdown() -> None:
     """Check markdown formatting with prettier (check only, no rewrite)."""
     logger.info("[bold]Checking markdown formatting...[/bold]")
-    _run(
-        [
-            "uv",
-            "run",
-            "pre-commit",
-            "run",
-            "--config",
-            ".pre-commit-check-config.yaml",
-            "prettier",
-            "--all-files",
-        ]
+    _check_config = importlib.resources.files("scaldys_project.resources").joinpath(
+        ".pre-commit-check-config.yaml"
     )
+    with importlib.resources.as_file(_check_config) as config_path:
+        _run(
+            [
+                "uv",
+                "run",
+                "pre-commit",
+                "run",
+                "--config",
+                str(config_path),
+                "prettier",
+                "--all-files",
+            ]
+        )
 
 
 @ci_app.command("all")

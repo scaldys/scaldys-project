@@ -74,9 +74,9 @@ After formatting, stage and commit the changes, then re-run ``ci all`` to
 confirm everything is clean.
 
 See :ref:`markdown_formatting_guide` for the full technical explanation of
-how ``ci markdown`` and ``format markdown`` differ, why two pre-commit
-configuration files exist, and how local behaviour compares to GitHub
-Actions.
+how ``ci markdown`` and ``format markdown`` differ, how the pre-commit config
+is split between a project-level file and the bundled wheel resource, and how
+local behaviour compares to GitHub Actions.
 
 Building the Documentation Locally
 ------------------------------------
