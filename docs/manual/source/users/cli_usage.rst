@@ -35,12 +35,17 @@ Command tree
     │   ├── docs
     │   ├── windows
     │   └── clean
-    └── ci
+    ├── ci
+    │   ├── all
+    │   ├── lint
+    │   ├── format
+    │   ├── typecheck
+    │   ├── markdown
+    │   └── build
+    └── format
         ├── all
-        ├── lint
-        ├── format
-        ├── typecheck
-        └── build
+        ├── python
+        └── markdown
 
 ----
 
@@ -124,7 +129,7 @@ GitHub Actions job step:
 1. ``uv run ruff check .`` — lint
 2. ``uv run ruff format --diff .`` — format check (no rewrite)
 3. ``uv sync && uv run pyright ./src`` — type checking
-4. ``uv build`` — package build
+4. ``uv run pre-commit run prettier --all-files`` — Markdown format check
 
 If any step exits with a non-zero code the sequence stops immediately and
 ``scaldys-project`` exits with that code.
@@ -176,6 +181,27 @@ Run pyright type checking.
 Executes ``uv sync`` followed by ``uv run pyright ./src``.  The ``uv sync``
 step ensures the virtual environment is up to date before pyright inspects
 installed stubs.
+
+----
+
+``ci markdown``
+-----------------
+
+Check Markdown file formatting with Prettier.
+
+.. code-block:: bash
+
+    scaldys-project ci markdown
+
+Executes ``uv run pre-commit run --config .pre-commit-check-config.yaml prettier --all-files``.
+Prettier runs with ``--check``: it reports which files would be reformatted
+and exits non-zero if any file is not correctly formatted.  **No files are
+modified.**
+
+This mirrors the *Prettier format* step in the GitHub Actions ``ci.yml``
+workflow exactly.  To actually reformat Markdown files, use
+``scaldys-project format markdown``.  See :ref:`markdown_formatting_guide`
+for configuration details.
 
 ----
 
@@ -422,6 +448,60 @@ redirecting the upload to Test PyPI.
    Run ``scaldys-project build all`` before publishing to ensure a fresh
    binary wheel exists in ``dist/``.  If stale wheels have accumulated,
    run ``scaldys-project build clean`` first.
+
+----
+
+``format all``
+--------------
+
+Auto-format all Python and Markdown files in sequence.
+
+.. code-block:: bash
+
+    scaldys-project format all
+
+Runs ``format python`` followed by ``format markdown``, stopping on first
+failure.  Use this as a quick pre-commit sweep to fix any formatting issues
+before running ``ci all``.
+
+----
+
+``format python``
+-----------------
+
+Auto-format Python source files with ruff.
+
+.. code-block:: bash
+
+    scaldys-project format python
+
+Executes ``uv run ruff format .``.  Rewrites any Python file whose
+formatting differs from ruff's output.  Equivalent to ``ci format`` but
+with the ``--diff`` flag removed so files are actually rewritten.
+
+----
+
+``format markdown``
+-------------------
+
+Auto-format Markdown files with prettier.
+
+.. code-block:: bash
+
+    scaldys-project format markdown
+
+Executes ``uv run pre-commit run prettier --all-files``.  Prettier rewrites
+any Markdown file that is not correctly formatted **in place**, then
+pre-commit exits non-zero to signal that files were changed.  If all files
+are already correctly formatted, the command exits with code ``0``.
+
+Typical workflow after a ``ci markdown`` failure::
+
+    scaldys-project format markdown
+    git add -p
+    git commit
+
+See :ref:`markdown_formatting_guide` for configuration details.
 
 ----
 

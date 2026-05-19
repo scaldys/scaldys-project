@@ -9,6 +9,43 @@
 
 
 
+[0.13.0] - 2026-05-19
+---------------------
+
+**Added**:
+    - ``scaldys-project ci markdown`` — check-only Markdown formatting check
+      that mirrors the *Prettier format* step in the GitHub Actions CI
+      pipeline.  Uses ``.pre-commit-check-config.yaml`` (prettier with
+      ``--check``) so no files are modified.  Included as the final step of
+      ``ci all``.
+
+    - ``scaldys-project format`` — new command group for auto-formatting files
+      in place:
+
+      - ``format python`` — rewrites Python source files with
+        ``uv run ruff format .``
+      - ``format markdown`` — rewrites Markdown files with
+        ``uv run pre-commit run prettier --all-files``
+      - ``format all`` — runs ``format python`` then ``format markdown``
+
+    - ``.pre-commit-check-config.yaml`` — companion pre-commit configuration
+      used by ``ci markdown`` that passes ``--check`` to Prettier so the hook
+      reports differences without rewriting files.
+
+**Docs**:
+    - ``docs/manual/source/developers/markdown_formatting.rst`` expanded with a
+      full technical explanation: the two pre-commit config files and their
+      roles, the ``ci`` (check-only) vs ``format`` (fix-in-place) contract,
+      and a scenario-by-scenario comparison of local git hook, ``ci markdown``,
+      ``format markdown``, and GitHub Actions behaviour.
+    - ``docs/manual/source/developers/contributing.rst`` updated to list all
+      ``ci`` and ``format`` subcommands with their intent, replacing stale
+      raw ``uv`` command snippets.
+    - ``docs/manual/source/users/cli_usage.rst`` updated with the ``format``
+      command group (tree, ``format all``, ``format python``, ``format
+      markdown`` sections) and the corrected ``ci markdown`` description.
+
+
 [0.12.0] - 2026-05-18
 ---------------------
 

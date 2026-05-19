@@ -47,36 +47,36 @@ For a quicker local run with terminal coverage output::
 
     uv run pytest --cov=scaldys_project --cov-report=term-missing
 
-Linting and Type Checking
---------------------------
+Linting, Type Checking, and Formatting
+----------------------------------------
 
-Use the ``ci`` commands to run quality checks locally, mirroring the GitHub
-Actions pipeline exactly::
+Use the ``ci`` commands to run all quality checks locally.  These are
+**check-only**: they detect problems but never modify files, mirroring the
+GitHub Actions pipeline exactly::
 
     scaldys-project ci all          # run every step; stops on first failure
     scaldys-project ci lint         # ruff check only
     scaldys-project ci format       # ruff format --diff (check, no rewrite)
     scaldys-project ci typecheck    # pyright only
-    scaldys-project ci build        # uv build only
+    scaldys-project ci markdown     # prettier --check (check, no rewrite)
 
 Run these from the root of the ``scaldys-project`` repository.  If
 ``scaldys-project ci all`` passes, the GitHub Actions run will too.
 
-The individual underlying commands are::
+When a ``ci`` step reports failures, use the corresponding ``format`` command
+to fix the files in place::
 
-    uv run ruff check .
-    uv run ruff format --diff .
-    uv sync && uv run pyright ./src
-    uv build
+    scaldys-project format python   # rewrite Python files with ruff format
+    scaldys-project format markdown # rewrite Markdown files with prettier
+    scaldys-project format all      # rewrite both in sequence
 
-Markdown files are formatted with `Prettier <https://prettier.io/>`_ via
-pre-commit.  To run it manually::
+After formatting, stage and commit the changes, then re-run ``ci all`` to
+confirm everything is clean.
 
-    uv run pre-commit run prettier --all-files
-
-See :ref:`markdown_formatting_guide` for a full explanation of the
-``.prettierrc`` options, why ``rbubley/mirrors-prettier`` is used, and how
-CI enforces the same check.
+See :ref:`markdown_formatting_guide` for the full technical explanation of
+how ``ci markdown`` and ``format markdown`` differ, why two pre-commit
+configuration files exist, and how local behaviour compares to GitHub
+Actions.
 
 Building the Documentation Locally
 ------------------------------------
