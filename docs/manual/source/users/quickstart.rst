@@ -3,14 +3,59 @@
 Quick Start
 ===========
 
+This guide covers two paths:
+
+* **Starting a new project** — use ``scaldys-project init`` to scaffold a
+  complete project from ``scaldys-template`` in one step.
+* **Adding to an existing project** — manually wire up the required files and
+  configuration for a Python project that already exists.
+
+----
+
+Starting a new project
+----------------------
+
+The fastest way to begin is ``scaldys-project init``.  It downloads
+``scaldys-template``, asks a short set of questions, and produces a fully
+configured project directory with a working virtual environment.
+
+Run it from the directory where you want the new project to appear (for
+example, your workspace root)::
+
+    scaldys-project init
+
+The wizard walks you through four sections:
+
+1. **Project identity** — project name, package name, slug, organisation.
+2. **Author & metadata** — name, email, description, version.
+3. **Build configuration** — Windows deployment mode.
+4. **Output** — target directory (default: ``./<project-slug>``), whether to
+   initialise git, whether to run ``uv sync``.
+
+After confirming the summary, the command creates the project, optionally
+initialises a git repository, and runs ``uv sync`` to install dependencies.
+
+Then move into the project and verify it::
+
+    cd my-cool-app
+    uv run scaldys-project check
+
+For the full details of every wizard prompt, substitution step, and CLI flag
+see :ref:`project_initialization`.
+
+----
+
+Adding to an existing project
+------------------------------
+
 This guide walks you through setting up an existing Python project to use
 ``scaldys-project`` and running your first complete Windows build.
 
 It assumes ``scaldys-project`` is already installed in your project — if not,
 see :ref:`installation` first.
 
-Prerequisites
--------------
+Prerequisites (existing project)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - ``scaldys-project`` installed as a dev dependency (see :ref:`installation`)
 - A Python project with a ``pyproject.toml`` at its root
@@ -20,7 +65,7 @@ Prerequisites
   the default location
 
 Step 1 — Create scaldys-project.toml
-------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For a pure-Python project with packaging files in the default location
 (``packaging/windows/``), no configuration file is needed — skip to Step 2.
@@ -42,7 +87,7 @@ For anything else, create ``scaldys-project.toml`` in your project root:
 See :ref:`configuration` for the full configuration reference.
 
 Step 2 — Add Windows packaging files
---------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Create the directory specified by ``[windows] script_dir`` (default:
 ``packaging/windows/``) and place the following project-specific files
@@ -64,7 +109,7 @@ See :ref:`windows_installer` for the expected content of each file, including
 a minimal ``myapp.iss`` template and auto-detecting launcher script examples.
 
 Step 3 — Prepare your Sphinx documentation
---------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Create a subdirectory under ``docs/`` for each documentation unit.  The name
 is freely choosable — ``manual``, ``help``, ``guide``, or anything else.
@@ -89,7 +134,7 @@ See :ref:`documentation_building` for the complete expected layout, engine
 auto-detection rules, and Sphinx configuration tips.
 
 Step 4 — Run the full build
------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 From anywhere inside your project tree, run::
 
@@ -118,7 +163,7 @@ A Rich progress bar tracks each stage. Output artefacts land in:
         documentation/        ← standalone docs copy (if public_doc_dirs is set)
 
 Step 5 — Run individual stages
---------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can run each stage independently:
 
@@ -138,8 +183,9 @@ All commands accept ``--verbose`` / ``-v`` for detailed debug output::
     scaldys-project build all --verbose
 
 Next steps
-----------
+^^^^^^^^^^
 
+- :ref:`project_initialization` — full ``init`` command guide (wizard prompts, substitution map, options)
 - :ref:`cli_usage` — complete command reference
 - :ref:`configuration` — full ``scaldys-project.toml`` options
 - :ref:`cython_compilation` — how Cython compilation works

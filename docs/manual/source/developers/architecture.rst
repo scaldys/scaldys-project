@@ -26,6 +26,7 @@ The module layout mirrors this split:
     │       ├── cmd_build.py    # build subcommands (all, docs, windows, clean)
     │       ├── cmd_check.py    # check command
     │       ├── cmd_ci.py       # ci subcommands (all, lint, format, typecheck, build)
+    │       ├── cmd_init.py     # init command — project scaffolding from scaldys-template
     │       └── cmd_test.py     # test command
     ├── common/
     │   ├── base.py             # BaseBuildEnvironment, BaseBuilder
@@ -194,4 +195,5 @@ requiring the ``[cython]`` extra to be installed.
 
 To extend the system with new modules, build steps, or a new platform builder,
 see :ref:`extension_points`.  For the contributor workflow (cloning, testing,
-publishing), see :ref:`contributing`.
+publishing), see :ref:`contributing`.  For the design of the ``init`` project
+scaffolding command, see :ref:`init_command_internals`.

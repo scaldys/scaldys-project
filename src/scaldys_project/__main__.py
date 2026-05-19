@@ -4,6 +4,7 @@ Main entry point for the scaldys-project build system.
 Provides a unified CLI for building projects.  Run from the root of the
 consuming project (the directory that contains ``pyproject.toml``)::
 
+    scaldys-project init             # scaffold a new project from scaldys-template
     scaldys-project build all       # full build: docs + Windows distribution
     scaldys-project build docs      # documentation only
     scaldys-project build windows   # Windows distribution only (mode-dependent)

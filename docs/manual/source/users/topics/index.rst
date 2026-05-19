@@ -12,6 +12,7 @@ troubleshoot an issue.
 .. toctree::
    :maxdepth: 2
 
+   project_initialization
    project_layout
    configuration
    scaldys_project_toml_reference
@@ -23,6 +24,11 @@ troubleshoot an issue.
 
 Guide summaries
 ===============
+
+:ref:`project_initialization`
+    How to scaffold a new scaldys-compliant project from ``scaldys-template``
+    using ``scaldys-project init`` — the interactive wizard, substitution map,
+    excluded items, and post-init actions.
 
 :ref:`project_layout`
     The directory structure your project must follow and where all build

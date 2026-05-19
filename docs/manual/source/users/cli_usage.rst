@@ -27,6 +27,7 @@ Command tree
 .. code-block:: text
 
     scaldys-project
+    ├── init
     ├── check
     ├── test
     ├── publish
@@ -47,6 +48,79 @@ Command tree
         ├── all
         ├── python
         └── markdown
+
+----
+
+.. _cli_init:
+
+``init``
+---------
+
+Scaffold a new scaldys-template-based project interactively.
+
+.. code-block:: bash
+
+    scaldys-project init [OPTIONS]
+
+**What it does**
+
+Launches an interactive wizard that collects project metadata (name, author,
+description, deployment mode, and more), downloads
+`scaldys-template <https://github.com/scaldys/scaldys-template>`_ from GitHub
+(or uses a local copy), and produces a fully-substituted project directory
+ready for development.
+
+The wizard is divided into four sections:
+
+1. **Project identity** — project name, package name, project slug,
+   organisation name.
+2. **Author & metadata** — author name and email, short description, initial
+   version, optional GitHub username for README badge URLs.
+3. **Build configuration** — Windows deployment mode
+   (``pyinstaller`` / ``pyruntime`` / ``wheel_only``).
+4. **Output & post-init actions** — target directory, whether to initialise
+   a git repository, whether to run ``uv sync``.
+
+A summary panel is shown before any files are written.  Confirm with **Y** to
+proceed or **N** to abort.
+
+After the project is created, use ``uv run`` to invoke ``scaldys-project``
+commands inside the new project::
+
+    cd my-cool-app
+    uv run scaldys-project check
+
+For the full guide including substitution details and post-init behaviour, see
+:ref:`project_initialization`.
+
+**Options**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Option
+     - Description
+   * - ``--local PATH``
+     - Use a local directory as the template source instead of downloading
+       from GitHub.
+   * - ``--template-ref REF``
+     - Branch or tag of ``scaldys-template`` to download.  Default:
+       ``master``.
+   * - ``--force``, ``-f``
+     - Overwrite the target directory if it already exists.
+   * - ``--no-git``
+     - Skip ``git init`` and the initial commit.
+   * - ``--no-sync``
+     - Skip running ``uv sync`` after project creation.
+   * - ``--help``
+     - Show command help and exit.
+
+.. note::
+   ``init`` does not require a ``pyproject.toml`` in the current directory.
+   Unlike most other ``scaldys-project`` commands, it is run from the parent
+   directory where you want the new project to appear, not from inside an
+   existing project.
 
 ----
 

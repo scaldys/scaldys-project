@@ -10,11 +10,19 @@ deployment mode — one of three distribution strategies:
   runtime (for apps that coexist with Quarto/Jupyter)
 - **wheel_only** — binary wheel only, no installer (for pip-installable apps)
 
-If you are starting a new project,
-[scaldys-template](https://github.com/scaldys/scaldys-template) provides a
-ready-to-use project scaffold with `scaldys-project` already integrated:
-packaging scripts, Sphinx documentation, CI/CD workflows, and a working
-`scaldys-project.toml`.
+If you are starting a new project, use `scaldys-project init` to scaffold one
+from [scaldys-template](https://github.com/scaldys/scaldys-template) in a single
+command. The interactive wizard collects your project name, author details, and
+deployment mode, then downloads the template, substitutes all placeholder names,
+and optionally runs `git init` and `uv sync`:
+
+```bash
+scaldys-project init
+```
+
+`scaldys-template` provides a ready-to-use scaffold with `scaldys-project`
+already integrated: packaging scripts, Sphinx documentation, CI/CD workflows,
+and a working `scaldys-project.toml`.
 
 For a full guide on using and integrating `scaldys-project` in your project, see
 the [user documentation](https://github.com/scaldys/scaldys-project).

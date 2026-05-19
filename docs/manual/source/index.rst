@@ -35,6 +35,7 @@ Documentation Contents
    :caption: Developers
 
    developers/architecture
+   developers/init_command
    developers/extension_points
    developers/contributing
    developers/publishing

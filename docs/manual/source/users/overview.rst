@@ -101,16 +101,23 @@ template that already has everything wired together:
   dev dependency
 - GitHub Actions workflows for CI, PyPI publishing, and release management
 
-Clone or use it as a GitHub template to start a new project with the entire
-Windows distribution pipeline already in place.
+Use ``scaldys-project init`` to scaffold a new project from the template in
+one step — the interactive wizard downloads the template, substitutes all
+placeholder names, and optionally runs ``git init`` and ``uv sync``::
+
+    scaldys-project init
+
+For a detailed walkthrough of every wizard prompt and option, see
+:ref:`project_initialization`.
 
 Where to go next
 =================
 
 **Starting a new project from scratch?**
-    Use `scaldys-template <https://github.com/scaldys/scaldys-template>`_ — it
-    comes with everything pre-wired.  Clone it and skip straight to
-    :ref:`quickstart` to run your first build.
+    Run ``scaldys-project init`` — it downloads `scaldys-template
+    <https://github.com/scaldys/scaldys-template>`_ and scaffolds a fully
+    configured project directory from an interactive wizard.  See
+    :ref:`project_initialization` or jump straight to :ref:`quickstart`.
 
 **Adding ``scaldys-project`` to an existing project?**
     Start with :ref:`installation` to add it as a dev dependency, then follow

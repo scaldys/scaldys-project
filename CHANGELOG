@@ -9,10 +9,40 @@
 
 
 
-[0.13.0] - 2026-05-19
+[0.13.0] - 2026-05-20
 ---------------------
 
 **Added**:
+    - ``scaldys-project init`` — new interactive project-scaffolding command.
+      Downloads `scaldys-template <https://github.com/scaldys/scaldys-template>`_
+      from GitHub (or uses a local copy via ``--local PATH``) and produces a
+      fully configured project directory in one step.
+
+      An interactive wizard collects project name, package name, project slug,
+      organisation name, author details, description, version, GitHub username,
+      Windows deployment mode, and target directory.  A summary panel is shown
+      before any files are written.
+
+      After copying the template the command performs, in order:
+
+      1. String replacement of all placeholder tokens in text files
+         (``Scaldys-Template``, ``scaldys_template``, ``scaldys-template``,
+         ``scaldys@scaldys.net``, ``Scaldys``; see *Placeholder substitution*
+         in the user guide for the full ordered list).
+      2. Post-order rename of every file and directory whose name contains a
+         placeholder token.
+      3. Targeted post-processing: copyright year and author in Sphinx
+         ``conf.py`` files, description and initial version in
+         ``pyproject.toml``, deployment mode in ``scaldys-project.toml``.
+      4. Optional ``git init`` + initial commit.
+      5. Optional ``uv sync`` to install project dependencies.
+
+      Options: ``--local PATH``, ``--template-ref REF`` (default: ``master``),
+      ``--force`` / ``-f``, ``--no-git``, ``--no-sync``.
+
+      No new package dependencies are required; all file operations use the
+      Python standard library.
+
     - ``scaldys-project ci doclint`` — new RST documentation lint step that
       runs ``uv run sphinx-lint docs/`` in the current directory.  Reports RST
       style and syntax issues; exits non-zero if any are found.  No files are
@@ -29,6 +59,26 @@
       not provided a project description"*.
 
 **Docs**:
+    - ``users/topics/project_initialization.rst`` (new) — full user guide for
+      ``scaldys-project init``: interactive wizard reference, substitution map,
+      excluded items table, ``--local`` / ``--force`` usage, ``uv run`` tip,
+      and CLI options reference.
+    - ``developers/init_command.rst`` (new) — developer internals for
+      ``cmd_init.py``: module structure, template acquisition, exclusion list,
+      replacement ordering rationale, binary file detection, post-order rename
+      algorithm, targeted post-processing details, error handling, and an
+      extension guide.
+    - ``users/quickstart.rst`` — restructured into two paths: *Starting a new
+      project* (using ``init``) and *Adding to an existing project* (original
+      content).
+    - ``users/cli_usage.rst`` — ``init`` added to the command tree; new
+      ``init`` reference section added with options table.
+    - ``users/topics/index.rst`` — ``project_initialization`` added to the
+      toctree and guide summaries.
+    - ``developers/architecture.rst`` — ``cmd_init.py`` added to the module
+      layout diagram; cross-reference to ``init_command_internals`` added.
+    - ``users/overview.rst`` — *Getting started quickly* section updated to
+      mention ``scaldys-project init`` as the bootstrap command.
     - ``cli_usage.rst`` — ``doclint`` added to the ``ci`` command tree; step 5
       (*RST documentation lint*) added to the ``ci all`` step list; new ``ci
       doclint`` reference section added; step descriptions for ``ci all``
