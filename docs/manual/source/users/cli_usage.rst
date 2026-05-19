@@ -41,6 +41,7 @@ Command tree
     │   ├── format
     │   ├── typecheck
     │   ├── markdown
+    │   ├── doclint
     │   └── build
     └── format
         ├── all
@@ -126,10 +127,11 @@ Run every CI quality check in sequence, stopping on first failure.
 Executes the following steps in order, each mirroring the corresponding
 GitHub Actions job step:
 
-1. ``uv run ruff check .`` — lint
+1. ``uv run ruff check .`` — Python lint
 2. ``uv run ruff format --diff .`` — format check (no rewrite)
-3. ``uv sync && uv run pyright ./src`` — type checking
+3. ``uv sync && uv run pyright ./src`` — Python type checking
 4. ``uv run pre-commit run prettier --all-files`` (``--check`` mode, bundled config) — Markdown format check
+5. ``uv run sphinx-lint docs/`` — RST documentation lint
 
 If any step exits with a non-zero code the sequence stops immediately and
 ``scaldys-project`` exits with that code.
@@ -203,6 +205,21 @@ This mirrors the *Prettier format* step in the GitHub Actions ``ci.yml``
 workflow exactly.  To actually reformat Markdown files, use
 ``scaldys-project format markdown``.  See :ref:`markdown_formatting_guide`
 for configuration details.
+
+----
+
+``ci doclint``
+--------------
+
+Check RST documentation files with sphinx-lint.
+
+.. code-block:: bash
+
+    scaldys-project ci doclint
+
+Executes ``uv run sphinx-lint docs/`` in the current directory.  Reports RST
+style and syntax issues and exits non-zero if any are found.  No files are
+modified.
 
 ----
 

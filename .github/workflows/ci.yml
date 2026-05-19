@@ -30,6 +30,9 @@ jobs:
       - name: PyRight type consistency
         run: uv run pyright ./src
 
+      - name: Sphinx doc lint
+        run: uv run sphinx-lint docs/
+
   test:
     name: Run tests
     needs: [code_quality]

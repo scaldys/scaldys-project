@@ -57,8 +57,8 @@ def _run_format_diff(cmd: list[str]) -> None:
 
 @ci_app.command("lint")
 def ci_lint() -> None:
-    """Run ruff check (lint)."""
-    logger.info("[bold]Running lint...[/bold]")
+    """Run ruff check (Python lint)."""
+    logger.info("[bold]Running Python lint...[/bold]")
     _run(["uv", "run", "ruff", "check", "."])
 
 
@@ -72,9 +72,9 @@ def ci_format() -> None:
 @ci_app.command("typecheck")
 def ci_typecheck() -> None:
     """Run pyright type checking."""
-    logger.info("[bold]Syncing dependencies...[/bold]")
+    logger.info("[bold]Syncing Python dependencies...[/bold]")
     _run(["uv", "sync"], quiet=True)
-    logger.info("[bold]Running type check...[/bold]")
+    logger.info("[bold]Running Python type check...[/bold]")
     _run(["uv", "run", "pyright", "./src"])
 
 
@@ -100,14 +100,22 @@ def ci_markdown() -> None:
         )
 
 
+@ci_app.command("doclint")
+def ci_doclint() -> None:
+    """Run sphinx-lint on the docs directory."""
+    logger.info("[bold]Running doc lint...[/bold]")
+    _run(["uv", "run", "sphinx-lint", "docs/"])
+
+
 @ci_app.command("all")
 def ci_all() -> None:
     """Run all CI steps in sequence, stopping on first failure."""
     steps = [
-        ("Lint", ci_lint),
+        ("Python lint", ci_lint),
         ("Format check", ci_format),
         ("Type check", ci_typecheck),
         ("Markdown check", ci_markdown),
+        ("Doc lint", ci_doclint),
     ]
     with Progress(
         SpinnerColumn(),

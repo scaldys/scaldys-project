@@ -55,10 +55,11 @@ Use the ``ci`` commands to run all quality checks locally.  These are
 GitHub Actions pipeline exactly::
 
     scaldys-project ci all          # run every step; stops on first failure
-    scaldys-project ci lint         # ruff check only
+    scaldys-project ci lint         # ruff check only (Python lint)
     scaldys-project ci format       # ruff format --diff (check, no rewrite)
-    scaldys-project ci typecheck    # pyright only
+    scaldys-project ci typecheck    # pyright only (Python type check)
     scaldys-project ci markdown     # prettier --check (check, no rewrite)
+    scaldys-project ci doclint      # sphinx-lint on docs/ (RST lint)
 
 Run these from the root of the ``scaldys-project`` repository.  If
 ``scaldys-project ci all`` passes, the GitHub Actions run will too.

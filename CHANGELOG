@@ -12,6 +12,15 @@
 [0.13.0] - 2026-05-19
 ---------------------
 
+**Added**:
+    - ``scaldys-project ci doclint`` — new RST documentation lint step that
+      runs ``uv run sphinx-lint docs/`` in the current directory.  Reports RST
+      style and syntax issues; exits non-zero if any are found.  No files are
+      modified.  Included as the final step of ``ci all``, mirroring the new
+      *Sphinx doc lint* step added to the GitHub Actions ``ci.yml`` workflow.
+
+    - ``sphinx-lint`` added to the project dev dependencies.
+
 **Fixed**:
     - ``README.md`` (or whichever file is declared as ``readme`` in
       ``pyproject.toml``) is now copied into ``build/compiled/`` alongside
@@ -20,6 +29,12 @@
       not provided a project description"*.
 
 **Docs**:
+    - ``cli_usage.rst`` — ``doclint`` added to the ``ci`` command tree; step 5
+      (*RST documentation lint*) added to the ``ci all`` step list; new ``ci
+      doclint`` reference section added; step descriptions for ``ci all``
+      updated to use *Python lint* and *Python type checking* wording.
+    - ``contributing.rst`` — ``scaldys-project ci doclint`` added to the ``ci``
+      command list with an inline annotation.
     - ``windows_exe.rst`` — *How the wheel is built* section updated to
       document that the readme file is copied into ``build/compiled/``.
 
