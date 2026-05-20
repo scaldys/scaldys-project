@@ -228,6 +228,14 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
                             f"'{self.config.windows.script_dir}/{fname}'"
                         )
 
+        # Tests directory must exist at project root.
+        tests_dir = self.project_path / "tests"
+        if not tests_dir.is_dir():
+            issues.append(
+                "Tests directory not found: 'tests/'. "
+                "Create it and add at least one test file."
+            )
+
         if issues:
             logger.error(
                 f"[bold red]Project compliance check failed — "

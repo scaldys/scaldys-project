@@ -117,6 +117,14 @@ being run.
        fails, run ``uv sync`` (or ``pip install -e .``) and retry.
      - ``build windows``, ``build all``, ``check`` — ``pyinstaller`` mode only
      - :ref:`windows_exe` — *Mode 1: pyinstaller*
+   * - 11
+     - A ``tests/`` directory must exist at the project root.  This is
+       where ``scaldys-project test`` (via ``[tool.pytest.ini_options]
+       testpaths``) looks for tests.  A missing directory would cause the
+       test command to silently collect nothing; the compliance check makes
+       that failure explicit before any build or check command proceeds.
+     - ``build windows``, ``build all``, ``check`` — all modes
+     - :ref:`project_layout` — *Tests directory*
 
 .. note::
 
@@ -124,7 +132,7 @@ being run.
    ``scaldys-project.toml`` requires them.  In ``wheel_only`` mode rules 5–9 are
    skipped entirely because no installer is created.  Rule 9 is only
    evaluated in ``pyruntime`` mode.  Rule 10 is only evaluated in
-   ``pyinstaller`` mode.
+   ``pyinstaller`` mode.  Rule 11 is unconditional and always evaluated.
 
 .. note::
 

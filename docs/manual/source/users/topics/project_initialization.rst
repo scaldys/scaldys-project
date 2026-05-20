@@ -54,15 +54,17 @@ Project identity
    * - Prompt
      - Notes
    * - **Project name**
-     - The human-readable display name used in CLI help text, documentation
-       titles, and the installer.  Example: ``My Cool App``.
+     - The human-readable display name used in README and documentation titles.
+       Prefer a single word.  Multi-word names: use all lowercase with dashes
+       (e.g. ``my-cool-app``); underscores are allowed but not recommended.
    * - **Package name**
-     - The Python import name.  Default: project name lowercased with spaces
-       and hyphens replaced by underscores.  Example: ``my_cool_app``.
+     - The Python import name.  Underscores only — dashes are forbidden
+       (e.g. ``my_cool_app``).  Used in the ``src/`` layout and ``import``
+       statements.  Auto-derived from the project name.
    * - **Project slug**
-     - The CLI command name and file-name prefix.  Default: project name
-       lowercased with spaces and underscores replaced by hyphens.
-       Example: ``my-cool-app``.
+     - The repository / directory identifier and CLI entry-point name.
+       Lowercase with dashes only — underscores are forbidden
+       (e.g. ``my-cool-app``).  Auto-derived from the project name.
    * - **Organization name**
      - Used as the top-level folder inside the OS app-data directory
        (e.g. ``%LOCALAPPDATA%\<Organization>\<Package>`` on Windows).
@@ -272,7 +274,7 @@ CLI options reference
        from GitHub.
    * - ``--template-ref REF``
      - Branch or tag of ``scaldys-template`` to download.  Default:
-       ``master``.  Example: ``--template-ref v1.0.0``.
+       ``main``.  Example: ``--template-ref v1.0.0``.
    * - ``--force``, ``-f``
      - Overwrite the target directory if it already exists.
    * - ``--no-git``

@@ -64,7 +64,7 @@ The following layout is the recommended structure for a project using
     │       ├── setup_pyruntime.ps1 ← runtime setup script (pyruntime mode)
     │       └── myapp.ico
     ├── examples/                   ← example files (optional, bundled if present)
-    └── tests/
+    └── tests/                      ← test suite (required)
 
 In ``wheel_only`` mode the ``packaging/windows/`` directory and its
 contents are not required.
@@ -110,6 +110,15 @@ If an ``examples/`` directory exists in the project root,
 ``scaldys-project build windows`` copies its contents to
 ``artifacts/portable/examples/`` so the examples are included in the Windows
 installer.  This directory is entirely optional.
+
+Tests directory
+---------------
+
+A ``tests/`` directory at the project root is **required**.
+``scaldys-project test`` runs ``pytest`` with ``testpaths = ["tests"]`` (set
+in ``pyproject.toml``), so a missing directory would cause the test command
+to silently collect nothing.  ``scaldys-project check`` enforces this rule
+before any build starts (see :ref:`compliance_checking` — Rule 11).
 
 Build output layout
 ===================

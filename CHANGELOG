@@ -12,6 +12,21 @@
 [0.14.0] - 2026-05-20
 ---------------------
 
+**Added**:
+    - New compliance rule: ``tests/`` directory must exist at the project root.
+      ``scaldys-project check`` (and every build command that runs compliance
+      checks) now reports a failure if the directory is absent:
+
+      .. code-block:: text
+
+         ✗ Tests directory not found: 'tests/'. Create it and add at least one test file.
+
+      The rule is unconditional — it applies in all deployment modes.  The
+      ``tests/`` directory is already where ``scaldys-project test`` (via
+      ``[tool.pytest.ini_options] testpaths``) looks for tests, so a missing
+      directory would cause the test command to silently collect nothing.  The
+      check makes that failure explicit and early.
+
 **Changed**:
     - ``scaldys-project init`` wizard — contextual hints are now printed above
       each prompt so users understand what to enter without consulting the
@@ -54,7 +69,10 @@
       ``main``.
     - ``users/cli_usage.rst`` — ``--template-ref`` default corrected to
       ``main``.
-
+    - ``users/topics/compliance_checking.rst`` — Rule 11 added to the
+      compliance table; mode-condition notes updated.
+    - ``users/topics/project_layout.rst`` — ``tests/`` annotated as required
+      in the recommended layout diagram; new *Tests directory* section added.
 
 [0.13.0] - 2026-05-20
 ---------------------
