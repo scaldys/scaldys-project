@@ -70,23 +70,56 @@ def _collect_params() -> dict[str, Any]:
     console.print()
     console.print(Rule("[bold]Project identity[/bold]"))
 
+    console.print(
+        "  [dim]Prefer one word; multi-word → lowercase with dashes "
+        "(e.g. [italic]my-cool-app[/italic]). Used in README and docs titles.[/dim]"
+    )
     project_name: str = typer.prompt("Project name")
+    console.print(
+        "  [dim]Python import name — underscores only, dashes forbidden "
+        "(e.g. [italic]my_cool_app[/italic]). Used in [italic]src/[/italic] layout and "
+        "[italic]import[/italic] statements.[/dim]"
+    )
     package_name: str = typer.prompt("Package name", default=_to_package_name(project_name))
+    console.print(
+        "  [dim]Repo / directory identifier — lowercase with dashes, underscores forbidden "
+        "(e.g. [italic]my-cool-app[/italic]). Used as git repo name and CLI entry-point.[/dim]"
+    )
     project_slug: str = typer.prompt("Project slug", default=_to_project_slug(project_name))
+    console.print("  [dim]Used in copyright notices and package metadata.[/dim]")
     organization_name: str = typer.prompt("Organization name", default="Scaldys")
 
     console.print()
     console.print(Rule("[bold]Author & metadata[/bold]"))
+    console.print("  [dim]Used in [italic]pyproject.toml[/italic] and Sphinx docs copyright.[/dim]")
     author_name: str = typer.prompt("Author name", default="")
+    console.print("  [dim]Used in [italic]pyproject.toml[/italic] authors list.[/dim]")
     author_email: str = typer.prompt("Author email", default="")
-    description: str = typer.prompt("Short description", default="A Python application.")
-    version: str = typer.prompt("Initial version", default="0.1.0")
-    github_username: str = typer.prompt(
-        "GitHub username/org (optional, for README badge URLs)", default=""
+    console.print(
+        "  [dim]One-line summary (≤ 80 chars). Stored in [italic]pyproject.toml[/italic] "
+        "and shown in README.[/dim]"
     )
+    description: str = typer.prompt("Short description", default="A Python application.")
+    console.print(
+        "  [dim]Semantic version MAJOR.MINOR.PATCH. Stored in [italic]pyproject.toml[/italic]. "
+        "Use [italic]0.1.0[/italic] for early development.[/dim]"
+    )
+    version: str = typer.prompt("Initial version", default="0.1.0")
+    console.print(
+        "  [dim]Used to generate badge URLs and repo links in README. "
+        "Leave empty to skip.[/dim]"
+    )
+    github_username: str = typer.prompt("GitHub username/org", default="")
 
     console.print()
     console.print(Rule("[bold]Build configuration[/bold]"))
+    console.print(
+        "  [dim]Controls how the project is packaged and distributed "
+        "(stored in [italic]scaldys-project.toml[/italic]):[/dim]\n"
+        "  [dim]  [italic]pyinstaller[/italic]  — standalone executable; no Python required on target[/dim]\n"
+        "  [dim]  [italic]pyruntime[/italic]    — bundled portable Python runtime[/dim]\n"
+        "  [dim]  [italic]wheel_only[/italic]   — standard .whl; Python must be present on target[/dim]"
+    )
     deployment_mode = ""
     while deployment_mode not in _DEPLOYMENT_MODES:
         deployment_mode = typer.prompt(
@@ -97,11 +130,22 @@ def _collect_params() -> dict[str, Any]:
 
     console.print()
     console.print(Rule("[bold]Output[/bold]"))
+    console.print(
+        "  [dim]Where the project folder is created. "
+        "Defaults to [italic]./<project-slug>[/italic] inside the current directory.[/dim]"
+    )
     target_dir: str = typer.prompt("Target directory", default=f"./{project_slug}")
 
     console.print()
     console.print(Rule("[bold]Post-init actions[/bold]"))
+    console.print(
+        "  [dim]Runs [italic]git init[/italic] + initial commit inside the new project directory.[/dim]"
+    )
     init_git: bool = typer.confirm("Initialise git repository?", default=True)
+    console.print(
+        "  [dim]Runs [italic]uv sync[/italic] to create [italic].venv[/italic] "
+        "and install all dependencies immediately.[/dim]"
+    )
     run_sync: bool = typer.confirm("Run uv sync?", default=True)
 
     return {

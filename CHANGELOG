@@ -9,6 +9,53 @@
 
 
 
+[0.14.0] - 2026-05-20
+---------------------
+
+**Changed**:
+    - ``scaldys-project init`` wizard — contextual hints are now printed above
+      each prompt so users understand what to enter without consulting the
+      manual.  Every prompt in the four-section wizard gains a short dim/italic
+      line that covers:
+
+      - *Project name* — single word preferred; multi-word: lowercase with
+        dashes (e.g. ``my-cool-app``); underscores allowed but not recommended.
+      - *Package name* — underscores only, dashes forbidden (e.g.
+        ``my_cool_app``); used in ``src/`` layout and ``import`` statements.
+      - *Project slug* — lowercase with dashes only, underscores forbidden
+        (e.g. ``my-cool-app``); used as git repo name and CLI entry-point.
+      - *Organization name* — used in copyright notices and package metadata.
+      - *Author name / email* — written to ``pyproject.toml`` and Sphinx docs.
+      - *Short description* — one-line summary (≤ 80 chars) for
+        ``pyproject.toml`` and README.
+      - *Initial version* — semantic version ``MAJOR.MINOR.PATCH``, stored in
+        ``pyproject.toml``.
+      - *GitHub username/org* — used to generate badge URLs in README; leave
+        empty to skip.
+      - *Deployment mode* — inline legend listing what each of the three modes
+        (``pyinstaller``, ``pyruntime``, ``wheel_only``) produces.
+      - *Target directory* — where the project folder is created.
+      - *Initialise git repository?* — runs ``git init`` + initial commit.
+      - *Run uv sync?* — creates ``.venv`` and installs all dependencies.
+
+**Fixed**:
+    - ``--template-ref`` default documented as ``master`` in the changelog
+      entry for 0.13.0 and in both ``cli_usage.rst`` and
+      ``project_initialization.rst``; corrected to ``main`` (matches the
+      actual code default).
+
+**Docs**:
+    - ``users/topics/project_initialization.rst`` — *Project identity* wizard
+      table updated: **Project name** notes now state the naming convention
+      (single word preferred, multi-word → lowercase with dashes); **Package
+      name** notes explicitly state dashes are forbidden and the field is used
+      in ``src/`` layout and imports; **Project slug** notes explicitly state
+      underscores are forbidden.  ``--template-ref`` default corrected to
+      ``main``.
+    - ``users/cli_usage.rst`` — ``--template-ref`` default corrected to
+      ``main``.
+
+
 [0.13.0] - 2026-05-20
 ---------------------
 

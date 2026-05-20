@@ -106,7 +106,7 @@ For the full guide including substitution details and post-init behaviour, see
        from GitHub.
    * - ``--template-ref REF``
      - Branch or tag of ``scaldys-template`` to download.  Default:
-       ``master``.
+       ``main``.
    * - ``--force``, ``-f``
      - Overwrite the target directory if it already exists.
    * - ``--no-git``
