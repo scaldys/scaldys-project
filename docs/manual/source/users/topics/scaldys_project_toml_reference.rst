@@ -149,7 +149,7 @@ For narrative explanations of each section see :ref:`configuration`.
     # Controls how the application is packaged for Windows users.
     # Three values are supported:
     #
-    # "pyinstaller" (default)
+    # "wheel_only" (default)
     #   PyInstaller bundles the application into a self-contained executable
     #   directory (dist/portable/bin/).  Inno Setup wraps it into a setup .exe.
     #   No Python installation is required on the end-user's machine.
@@ -167,7 +167,7 @@ For narrative explanations of each section see :ref:`configuration`.
     #   created.  Use this for packages distributed via pip or uv rather than a
     #   setup .exe.  The .iss script and launcher files are not required.
     #
-    # Default: "pyinstaller"
+    # Default: "wheel_only"
     deployment_mode = "pyinstaller"
 
     # bundle_pyruntime

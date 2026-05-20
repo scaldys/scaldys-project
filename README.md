@@ -5,10 +5,11 @@ Python projects. A single command takes your source code through Sphinx
 documentation, optional Cython compilation, and — depending on the chosen
 deployment mode — one of three distribution strategies:
 
-- **pyinstaller** (default) — PyInstaller exe + Inno Setup installer
+- **wheel_only** (default) — binary wheel only, no installer (for
+  pip-installable apps)
+- **pyinstaller** — PyInstaller exe + Inno Setup installer
 - **pyruntime** — binary wheel + Inno Setup installer with a managed Python
   runtime (for apps that coexist with Quarto/Jupyter)
-- **wheel_only** — binary wheel only, no installer (for pip-installable apps)
 
 If you are starting a new project, use `scaldys-project init` to scaffold one
 from [scaldys-template](https://github.com/scaldys/scaldys-template) in a single

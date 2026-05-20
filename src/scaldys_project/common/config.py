@@ -16,7 +16,7 @@ Example ``scaldys-project.toml``::
 
     [windows]
     script_dir = "packaging/windows"
-    deployment_mode = "pyinstaller"  # or "pyruntime"
+    deployment_mode = "wheel_only"  # or "pyinstaller", "pyruntime"
 
     [docs]
     public_doc_dirs = ["manual"]
@@ -60,7 +60,7 @@ class WindowsConfig:
     deployment_mode : str
         Controls how the application is packaged for end-user distribution.
 
-        ``"pyinstaller"`` (default) — the application is bundled into a
+        ``"pyinstaller"`` — the application is bundled into a
         standalone executable using PyInstaller.  No Python runtime is deployed
         alongside it.  A binary wheel is still built and placed in
         ``dist/`` for users who manage their own virtual environments.
@@ -72,7 +72,7 @@ class WindowsConfig:
         frozen executable.  Use this mode when the application needs to
         coexist with tools such as Quarto that require a real Python interpreter.
 
-        ``"wheel_only"`` — Neither PyInstaller nor Inno Setup is used.  A
+        ``"wheel_only"`` (default) — Neither PyInstaller nor Inno Setup is used.  A
         binary wheel is built and placed in ``dist/``.  No installer is
         produced.  Use this mode when end users install the application into
         their own Python environment via ``pip``/``uv pip install``.
@@ -91,7 +91,7 @@ class WindowsConfig:
     """
 
     script_dir: str = "packaging/windows"
-    deployment_mode: str = "pyinstaller"
+    deployment_mode: str = "wheel_only"
     bundle_pyruntime: bool = False
 
 
@@ -152,7 +152,7 @@ def load_config(project_path: Path) -> BuildConfig:
     windows_data = data.get("windows", {})
     docs_data = data.get("docs", {})
 
-    deployment_mode = windows_data.get("deployment_mode", "pyinstaller")
+    deployment_mode = windows_data.get("deployment_mode", "wheel_only")
     if deployment_mode not in ("pyinstaller", "pyruntime", "wheel_only"):
         raise RuntimeError(
             f"{config_file}: [windows] deployment_mode must be "

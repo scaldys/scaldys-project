@@ -415,7 +415,7 @@ documentation.
 
 **What it does**
 
-Reads ``deployment_mode`` from ``scaldys-project.toml`` (default: ``"pyinstaller"``)
+Reads ``deployment_mode`` from ``scaldys-project.toml`` (default: ``"wheel_only"``)
 and runs the corresponding distribution pipeline:
 
 ``pyinstaller`` mode

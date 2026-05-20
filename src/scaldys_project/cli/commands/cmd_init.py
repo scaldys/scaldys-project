@@ -90,7 +90,7 @@ def _collect_params() -> dict[str, Any]:
     deployment_mode = ""
     while deployment_mode not in _DEPLOYMENT_MODES:
         deployment_mode = typer.prompt(
-            f"Deployment mode ({'/'.join(_DEPLOYMENT_MODES)})", default="pyinstaller"
+            f"Deployment mode ({'/'.join(_DEPLOYMENT_MODES)})", default="wheel_only"
         )
         if deployment_mode not in _DEPLOYMENT_MODES:
             logger.error(f"[red]Invalid mode.[/red] Choose one of: {', '.join(_DEPLOYMENT_MODES)}")

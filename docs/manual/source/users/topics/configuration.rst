@@ -135,11 +135,17 @@ distribution options.
        packaging files: Inno Setup script (``.iss``), launcher scripts
        (``.bat``, ``.ps1``), and the optional application icon (``.ico``).
    * - ``deployment_mode``
-     - ``"pyinstaller"``
+     - ``"wheel_only"``
      - Controls how the application is packaged for Windows users.
        Three values are supported:
 
-       ``"pyinstaller"`` (default)
+       ``"wheel_only"`` (default)
+           Builds a binary distribution wheel only.  No Windows installer
+           is created.  Use this for packages distributed via ``pip`` or
+           ``uv`` rather than a setup ``.exe``.  The Inno Setup script and
+           launcher files are not required.
+
+       ``"pyinstaller"``
            PyInstaller bundles your application into a self-contained
            executable directory.  Inno Setup wraps it into a setup ``.exe``.
            No Python installation is required on the end-user's machine.
@@ -151,12 +157,6 @@ distribution options.
            environment.  Use this mode when the application must coexist
            with tools such as Quarto or Jupyter that require a real Python
            interpreter.  Requires ``.python-version`` at the project root.
-
-       ``"wheel_only"``
-           Builds a binary distribution wheel only.  No Windows installer
-           is created.  Use this for packages distributed via ``pip`` or
-           ``uv`` rather than a setup ``.exe``.  The Inno Setup script and
-           launcher files are not required.
 
        See :ref:`windows_exe` for a full description of each mode.
    * - ``bundle_pyruntime``

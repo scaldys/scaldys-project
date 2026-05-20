@@ -102,8 +102,8 @@ Build configuration
      - Notes
    * - **Deployment mode**
      - Selects the Windows packaging strategy written to
-       ``scaldys-project.toml``.  Choices: ``pyinstaller`` (default),
-       ``pyruntime``, ``wheel_only``.  See :ref:`windows_exe` for details.
+       ``scaldys-project.toml``.  Choices: ``wheel_only`` (default),
+       ``pyinstaller``, ``pyruntime``.  See :ref:`windows_exe` for details.
 
 Output & post-init actions
 ---------------------------

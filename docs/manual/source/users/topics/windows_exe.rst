@@ -15,16 +15,16 @@ application to Windows users.  The active mode is controlled by
    * - Mode
      - What it builds
      - When to use
-   * - ``pyinstaller`` (default)
+   * - ``wheel_only`` (default)
+     - Binary wheel only, no installer
+     - Packages distributed via ``pip`` or ``uv``
+   * - ``pyinstaller``
      - PyInstaller exe + Inno Setup installer
      - Most applications; no Python needed on end-user machine
    * - ``pyruntime``
      - Binary wheel + Inno Setup installer with a managed Python runtime
      - Apps that must coexist with Quarto, Jupyter, or another Python
        environment
-   * - ``wheel_only``
-     - Binary wheel only, no installer
-     - Packages distributed via ``pip`` or ``uv``
 
 Set the mode in ``scaldys-project.toml``:
 

@@ -144,7 +144,7 @@ public_doc_dirs = []
 # Controls how the application is packaged and deployed to end-user machines.
 # Two modes are available:
 #
-# "pyinstaller" (default) — PYINSTALLER MODE
+# "pyinstaller" — PYINSTALLER MODE
 #   The application is frozen into a standalone executable by PyInstaller.
 #   No Python runtime is deployed alongside it.  This is the right choice
 #   for most applications: it produces a self-contained, fast-starting
@@ -187,7 +187,7 @@ public_doc_dirs = []
 #   Within pyruntime mode, online vs. offline deployment is controlled by
 #   the bundle_pyruntime key below.
 #
-# "wheel_only" — WHEEL-ONLY MODE
+# "wheel_only" (default) — WHEEL-ONLY MODE
 #   Neither PyInstaller nor Inno Setup is used.  A binary wheel is built
 #   from the Cython-compiled sources and placed in dist/wheels/.  No
 #   installer is produced.
@@ -206,7 +206,7 @@ public_doc_dirs = []
 #   The bundle_pyruntime key is ignored in this mode.
 #   Compliance check does NOT require .iss / launcher scripts.
 #
-# Default: "pyinstaller"
+# Default: "wheel_only"
 #
 deployment_mode = "wheel_only"
 

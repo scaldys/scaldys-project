@@ -21,9 +21,9 @@ consuming project (the directory that contains ``pyproject.toml``)::
 The Windows distribution step is controlled by ``deployment_mode`` in
 ``scaldys-project.toml``:
 
-    pyinstaller  (default) — PyInstaller exe + Inno Setup installer
+    wheel_only   (default) — binary wheel only, no installer
+    pyinstaller            — PyInstaller exe + Inno Setup installer
     pyruntime              — binary wheel + Inno Setup installer with PythonRuntime
-    wheel_only             — binary wheel only, no installer
 """
 
 from scaldys_project.cli.cli import app

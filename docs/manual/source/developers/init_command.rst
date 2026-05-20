@@ -239,7 +239,7 @@ The template version ``"0.9.0"`` is replaced via ``re.sub`` with a
 ``scaldys-project.toml`` — deployment mode
 -------------------------------------------
 
-When the user selects a deployment mode other than the default ``pyinstaller``,
+When the user selects a deployment mode other than the default ``wheel_only``,
 a literal ``str.replace`` updates the ``deployment_mode`` value.  No action is
 taken when the default is kept.
 

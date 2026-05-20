@@ -22,14 +22,14 @@ produces, in order:
 2. **A Windows distribution** — the exact form depends on the
    ``deployment_mode`` you choose in ``scaldys-project.toml``:
 
-   - **pyinstaller** (default): PyInstaller bundles the application into a
+   - **wheel_only** (default): only a binary distribution wheel is produced.  Use this
+     for packages distributed via ``pip`` or ``uv``.
+   - **pyinstaller**: PyInstaller bundles the application into a
      self-contained directory that runs on any Windows machine without a
      Python installation.
    - **pyruntime**: a managed Python virtual environment is deployed
      alongside the application.  Use this when your app must coexist with
      Quarto, Jupyter, or another tool that requires a real Python interpreter.
-   - **wheel_only**: only a binary distribution wheel is produced.  Use this
-     for packages distributed via ``pip`` or ``uv``.
 
    In all modes, a ``.pyd``-only distribution wheel is built from compiled
    sources.  Optionally, selected modules are first compiled to native
