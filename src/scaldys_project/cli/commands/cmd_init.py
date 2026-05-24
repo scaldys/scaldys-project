@@ -106,8 +106,7 @@ def _collect_params() -> dict[str, Any]:
     )
     version: str = typer.prompt("Initial version", default="0.1.0")
     console.print(
-        "  [dim]Used to generate badge URLs and repo links in README. "
-        "Leave empty to skip.[/dim]"
+        "  [dim]Used to generate badge URLs and repo links in README. Leave empty to skip.[/dim]"
     )
     github_username: str = typer.prompt("GitHub username/org", default="")
 

@@ -28,7 +28,7 @@ jobs:
         run: uv run pre-commit run prettier --all-files
 
       - name: PyRight type consistency
-        run: uv run pyright ./src
+        run: uv run pyright ./src ./tests
 
       - name: Sphinx doc lint
         run: uv run sphinx-lint docs/

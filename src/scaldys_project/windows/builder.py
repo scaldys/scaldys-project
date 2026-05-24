@@ -232,8 +232,7 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
         tests_dir = self.project_path / "tests"
         if not tests_dir.is_dir():
             issues.append(
-                "Tests directory not found: 'tests/'. "
-                "Create it and add at least one test file."
+                "Tests directory not found: 'tests/'. Create it and add at least one test file."
             )
 
         if issues:

@@ -75,7 +75,7 @@ def ci_typecheck() -> None:
     logger.info("[bold]Syncing Python dependencies...[/bold]")
     _run(["uv", "sync"], quiet=True)
     logger.info("[bold]Running Python type check...[/bold]")
-    _run(["uv", "run", "pyright", "./src"])
+    _run(["uv", "run", "pyright", "./src", "./tests"])
 
 
 @ci_app.command("markdown")
