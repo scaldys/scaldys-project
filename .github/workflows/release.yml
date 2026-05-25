@@ -17,8 +17,8 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v3
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v6
 
       - name: Build the project
         run: uv build --index-strategy unsafe-best-match
