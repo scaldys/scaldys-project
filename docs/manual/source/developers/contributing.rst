@@ -57,7 +57,7 @@ Use the ``ci`` commands to run all quality checks locally.  These are
 GitHub Actions pipeline exactly. Each command logs the complete subprocess
 syntax before execution::
 
-    scaldys-project ci all          # run every step; stops on first failure
+    scaldys-project ci all          # run every step; continues on error
     scaldys-project ci lint         # ruff check only (Python lint)
     scaldys-project ci format       # ruff format --diff (check, no rewrite)
     scaldys-project ci typecheck    # pyright only (Python type check)
@@ -72,7 +72,7 @@ to fix the files in place::
 
     scaldys-project format python   # rewrite Python files with ruff format
     scaldys-project format markdown # rewrite Markdown files with prettier
-    scaldys-project format all      # rewrite both in sequence
+    scaldys-project format all      # rewrite both (continues on error)
 
 After formatting, stage and commit the changes, then re-run ``ci all`` to
 confirm everything is clean.

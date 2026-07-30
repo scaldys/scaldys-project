@@ -111,7 +111,7 @@ def ci_doclint() -> None:
 
 @ci_app.command("all")
 def ci_all() -> None:
-    """Run all CI steps in sequence, stopping on first failure."""
+    """Run all CI steps in sequence, continuing regardless of errors."""
     steps = [
         ("Python lint", ci_lint),
         ("Format check", ci_format),
@@ -119,6 +119,7 @@ def ci_all() -> None:
         ("Markdown check", ci_markdown),
         ("Doc lint", ci_doclint),
     ]
+    failed_steps = []
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -130,7 +131,19 @@ def ci_all() -> None:
         task = progress.add_task("[cyan]Running CI checks...", total=len(steps))
         for name, step_fn in steps:
             progress.update(task, description=f"[cyan]{name}...")
-            step_fn()
+            try:
+                step_fn()
+            except typer.Exit as e:
+                if e.exit_code != 0:
+                    failed_steps.append(name)
+            except Exception as e:
+                logger.error(f"Step '{name}' failed with an unexpected error: {e}")
+                failed_steps.append(name)
             progress.advance(task)
         progress.update(task, description="[cyan]CI checks")
+
+    if failed_steps:
+        logger.error(f"[bold red]\u2717 CI checks failed in: {', '.join(failed_steps)}[/bold red]")
+        raise typer.Exit(code=1)
+
     logger.info("[bold green]\u2713 All CI checks passed![/bold green]")

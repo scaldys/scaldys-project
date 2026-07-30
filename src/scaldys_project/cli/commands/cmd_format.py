@@ -59,11 +59,12 @@ def format_markdown() -> None:
 
 @format_app.command("all")
 def format_all() -> None:
-    """Auto-format all files (Python + Markdown) in sequence."""
+    """Auto-format all files (Python + Markdown) in sequence, continuing regardless of errors."""
     steps = [
         ("Python", format_python),
         ("Markdown", format_markdown),
     ]
+    failed_steps = []
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -75,7 +76,19 @@ def format_all() -> None:
         task = progress.add_task("[cyan]Formatting files...", total=len(steps))
         for name, step_fn in steps:
             progress.update(task, description=f"[cyan]Formatting {name}...")
-            step_fn()
+            try:
+                step_fn()
+            except typer.Exit as e:
+                if e.exit_code != 0:
+                    failed_steps.append(name)
+            except Exception as e:
+                logger.error(f"Step '{name}' failed with an unexpected error: {e}")
+                failed_steps.append(name)
             progress.advance(task)
         progress.update(task, description="[cyan]Format")
+
+    if failed_steps:
+        logger.error(f"[bold red]\u2717 Formatting failed in: {', '.join(failed_steps)}[/bold red]")
+        raise typer.Exit(code=1)
+
     logger.info("[bold green]\u2713 All files formatted![/bold green]")

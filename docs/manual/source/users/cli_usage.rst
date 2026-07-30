@@ -191,7 +191,7 @@ behaviour (e.g. ``uv run pytest -k my_test``).
 ``ci all``
 -----------
 
-Run every CI quality check in sequence, stopping on first failure.
+Run every CI quality check in sequence, continuing regardless of errors.
 
 .. code-block:: bash
 
@@ -209,8 +209,9 @@ in the terminal output:
 4. ``uv run pre-commit run prettier --all-files`` (``--check`` mode, bundled config) — Markdown format check
 5. ``uv run sphinx-lint docs/`` — RST documentation lint
 
-If any step exits with a non-zero code the sequence stops immediately and
-``scaldys-project`` exits with that code.
+If any step fails, the command continues to the next one. After all steps have
+been attempted, ``scaldys-project`` exits with code ``1`` if any failure
+occurred, and displays a summary of the failed steps.
 
 All ``ci`` commands operate on the **current working directory**, not the
 project root discovered by ``pyproject.toml`` walk-up.  Run them from the
@@ -554,9 +555,10 @@ Auto-format all Python and Markdown files in sequence.
 
     scaldys-project format all
 
-Runs ``format python`` followed by ``format markdown``, stopping on first
-failure.  Use this as a quick pre-commit sweep to fix any formatting issues
-before running ``ci all``.
+Runs ``format python`` followed by ``format markdown``, continuing regardless
+of errors.  Use this as a quick pre-commit sweep to fix any formatting issues
+before running ``ci all``.  If any step fails, a summary is displayed and the
+command exits non-zero.
 
 ----
 

@@ -8,6 +8,40 @@
     Docs       for any documentation changes
 
 
+[0.15.0] - 2026-07-31
+---------------------
+
+**Added**:
+    - Log the complete subprocess syntax to the terminal when executing CI,
+      format, and test commands.
+    - New compliance rule: Cython-compiled modules must not use ``match/case``
+      (PEP 634) syntax.  Cython does not yet fully support this syntax, so
+      ``scaldys-project`` now validates all modules listed in
+      ``compiled_modules`` before starting the build.  If any ``match/case``
+      blocks are detected, the compliance check reports a failure:
+
+      .. code-block:: text
+
+         ✗ match/case is not fully supported yet in cython. Replace it with an equivalent if-elif-else structure. Concerned files: src/myapp/engine.py
+
+      The rule applies whenever ``compiled_modules`` in ``scaldys-project.toml``
+      is not empty.
+
+**Changed**:
+    - ``ci all`` and ``format all`` now execute all steps regardless of failures, providing a summary report at the end.
+    - Minor improvements to terminal output readability.
+
+**Docs**:
+    - Updated CLI usage and developer guides to reflect command logging and the non-interrupting behavior of ``ci all`` and ``format all``.
+    - ``users/topics/compliance_checking.rst`` — Rule 12 added to the
+      compliance table; mode-condition notes updated.
+    - ``users/topics/cython_compilation.rst`` — *Limitations and caveats*
+      updated to document the ``match/case`` limitation.
+    - ``users/topics/scaldys_project_toml_reference.rst`` — Added a note
+      to the ``compiled_modules`` setting regarding ``match/case``.
+    - ``users/topics/configuration.rst`` — Added a note to the
+      ``compiled_modules`` description.
+
 
 [0.14.0] - 2026-05-20
 ---------------------
@@ -73,6 +107,7 @@
       compliance table; mode-condition notes updated.
     - ``users/topics/project_layout.rst`` — ``tests/`` annotated as required
       in the recommended layout diagram; new *Tests directory* section added.
+
 
 [0.13.0] - 2026-05-20
 ---------------------
