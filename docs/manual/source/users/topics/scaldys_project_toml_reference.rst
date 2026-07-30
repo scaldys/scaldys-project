@@ -49,6 +49,8 @@ For narrative explanations of each section see :ref:`configuration`.
     # stages everything (compiled and uncompiled alike) under build/compiled/
     # before handing the tree to PyInstaller.
     #
+    # NOTE: Compiled modules must not use match/case (PEP 634) syntax.
+    #
     # Example:
     #   compiled_modules = [
     #       "myapp.core.engine",   # performance-critical inner loop

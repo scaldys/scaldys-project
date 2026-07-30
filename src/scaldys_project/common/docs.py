@@ -81,7 +81,7 @@ class DocumentationBuilder:
 
         for builder_name in ("html", "singlehtml"):
             out = str(build_dir.joinpath(builder_name))
-            logger.info(f"  Building {builder_name} ({doc_dir.name})...")
+            logger.info(f"  [green]\u25ba[/green] Building {builder_name} ({doc_dir.name})...")
             self.env.run_command(
                 [str(self.env.sphinx_exe_path), "-b", builder_name, source_dir, out],
                 f"Error running sphinx-build -{builder_name} for '{doc_dir.name}'",

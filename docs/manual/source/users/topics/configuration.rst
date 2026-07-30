@@ -48,7 +48,8 @@ Controls Cython compilation.
      - ``[]``
      - List of fully-qualified dotted module paths to compile with Cython.
        An empty list (the default) disables Cython; source files are staged
-       as-is for PyInstaller.
+       as-is for PyInstaller. **Note: Compiled modules must not use
+       match/case (PEP 634) syntax.**
    * - ``source_root``
      - ``"src"``
      - Directory relative to the project root that contains your Python

@@ -46,6 +46,26 @@ uv run pytest
 uv run ruff check src tests && uv run pyright
 ```
 
+### Upgrading dependencies
+
+To automatically "bump" the version constraints in `pyproject.toml` to their
+latest versions, you have two primary options:
+
+1. **Recommended: `uv-upgrade`**  
+   The community-developed `uv-upgrade` tool specifically handles this workflow.
+   You can run it without permanent installation using `uvx`:
+
+   ```bash
+   uvx uv-upgrade
+   ```
+
+2. **Native `uv` Workflow**  
+   You can update specific packages manually using `uv add <package>`. To update
+   the lockfile (`uv.lock`) while respecting your current constraints, use:
+   ```bash
+   uv lock --upgrade
+   ```
+
 ### Further reading
 
 The manual's Developers section covers everything else a contributor needs:

@@ -125,6 +125,11 @@ being run.
        that failure explicit before any build or check command proceeds.
      - ``build windows``, ``build all``, ``check`` — all modes
      - :ref:`project_layout` — *Tests directory*
+   * - 12
+     - Cython modules must not use ``match/case`` syntax (PEP 634), as it
+       is not yet fully supported by the Cython compiler.
+     - All build commands (if ``compiled_modules`` is not empty)
+     - :ref:`cython_compilation` — *Limitations and caveats*
 
 .. note::
 
@@ -132,7 +137,7 @@ being run.
    ``scaldys-project.toml`` requires them.  In ``wheel_only`` mode rules 5–9 are
    skipped entirely because no installer is created.  Rule 9 is only
    evaluated in ``pyruntime`` mode.  Rule 10 is only evaluated in
-   ``pyinstaller`` mode.  Rule 11 is unconditional and always evaluated.
+   ``pyinstaller`` mode.  Rule 11 and 12 are unconditional and always evaluated.
 
 .. note::
 

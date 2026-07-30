@@ -1,3 +1,4 @@
+import ast
 import logging
 import os
 import sys
@@ -134,6 +135,41 @@ class BaseBuildEnvironment:
             logger.error(f"{err_msg}: {e}")
             raise RuntimeError(err_msg) from e
 
+    def validate_cython_modules(self) -> list[str]:
+        """Check that modules to be compiled with Cython do not use match/case.
+
+        Returns
+        -------
+        list of str
+            List of paths to files containing match/case constructs.
+        """
+        issues = []
+        # ast.Match is available in Python 3.10+
+        match_type = getattr(ast, "Match", None)
+        if match_type is None:
+            return issues
+
+        for module in self.config.cython.compiled_modules:
+            # Convert dotted module path to file path relative to src_dir_path
+            rel_path = module.replace(".", "/") + ".py"
+            file_path = self.src_dir_path / rel_path
+
+            if not file_path.exists():
+                continue
+
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    tree = ast.parse(f.read())
+
+                for node in ast.walk(tree):
+                    if isinstance(node, match_type):
+                        issues.append(str(file_path.relative_to(self.project_path)))
+                        break
+            except Exception:
+                # If it doesn't parse as valid Python, Cython will fail anyway.
+                pass
+        return issues
+
 
 class BaseBuilder:
     """
@@ -171,7 +207,7 @@ class BaseBuilder:
         target_dirs = [self.env.build_dir_path, self.env.dist_dir_path, self.env.artifacts_dir_path]
         logger.info("[bold]Cleaning build directories...[/bold]")
         for path in target_dirs:
-            logger.info(f"  Cleaning directory '{path}'")
+            logger.info(f"  [green]\u25ba[/green] Cleaning directory '{path}'")
             safe_empty_dir(path)
 
         for c_file in self.env.src_dir_path.rglob("*.c"):

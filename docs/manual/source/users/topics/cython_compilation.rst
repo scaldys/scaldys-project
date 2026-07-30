@@ -124,6 +124,14 @@ Not all Python is valid Cython
 Pure-Python files compile with Cython without any changes in most cases.
 However, some dynamic Python patterns (heavy use of ``exec``, ``eval``,
 runtime ``__import__``, etc.) may behave differently or fail to compile.
+
+Additionally, **match/case statements (PEP 634) are not currently supported** by
+the Cython version used by ``scaldys-project``. If your module uses ``match/case``,
+you must replace it with an equivalent ``if-elif-else`` structure before
+compilation. ``scaldys-project`` automatically checks for this during the
+compliance phase and will abort the build if any ``match/case`` syntax is
+detected in modules listed in ``compiled_modules``.
+
 Test compiled modules carefully before shipping.
 
 Module dependencies
