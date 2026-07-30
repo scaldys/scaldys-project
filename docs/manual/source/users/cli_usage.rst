@@ -179,7 +179,8 @@ Run the project test suite.
 **What it does**
 
 Runs ``uv run pytest -v --durations=0 --cov --cov-report=xml`` in the current
-working directory.  Exits with the same return code as pytest (``0`` on
+working directory. The complete command syntax is displayed in the terminal
+output before execution. Exits with the same return code as pytest (``0`` on
 success, non-zero on failure).
 
 This command has no options; pass pytest arguments directly if you need custom
@@ -199,7 +200,8 @@ Run every CI quality check in sequence, stopping on first failure.
 **What it does**
 
 Executes the following steps in order, each mirroring the corresponding
-GitHub Actions job step:
+GitHub Actions job step. The syntax for each underlying command is displayed
+in the terminal output:
 
 1. ``uv run ruff check .`` — Python lint
 2. ``uv run ruff format --diff .`` — format check (no rewrite)
@@ -616,8 +618,11 @@ Logging
 ^^^^^^^
 
 By default, ``INFO``-level messages are shown via Rich's formatted console
-output.  Pass ``--verbose`` / ``-v`` to any command to enable ``DEBUG``-level
-output, which includes all subprocess invocations and file operation details.
+output. For ``ci``, ``format``, and ``test`` commands, this includes the
+complete syntax of the underlying subprocess command (displayed in dim text).
+Pass ``--verbose`` / ``-v`` to any command to enable ``DEBUG``-level output,
+which includes all subprocess invocations and file operation details for all
+commands (including ``build``).
 
 Exit codes
 ^^^^^^^^^^

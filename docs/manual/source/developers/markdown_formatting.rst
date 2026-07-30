@@ -184,6 +184,10 @@ files and exit with the formatter's return code.
      - Yes
      - ``uv run pre-commit run prettier --all-files``
 
+.. note::
+   The underlying invocation for each command is displayed in the terminal
+   output at the standard ``INFO`` level (in dim text).
+
 The intended local workflow is:
 
 1. Run ``scaldys-project ci all`` to check everything — same result as CI.

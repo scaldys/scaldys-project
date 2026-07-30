@@ -35,7 +35,9 @@ Install the pre-commit hooks so they run automatically on every commit::
 Running the Tests
 -----------------
 
-Use the ``test`` command to run the full test suite the same way CI does::
+Use the ``test`` command to run the full test suite the same way CI does.
+The command displays the exact syntax being executed before starting the
+tests::
 
     scaldys-project test
 
@@ -52,7 +54,8 @@ Linting, Type Checking, and Formatting
 
 Use the ``ci`` commands to run all quality checks locally.  These are
 **check-only**: they detect problems but never modify files, mirroring the
-GitHub Actions pipeline exactly::
+GitHub Actions pipeline exactly. Each command logs the complete subprocess
+syntax before execution::
 
     scaldys-project ci all          # run every step; stops on first failure
     scaldys-project ci lint         # ruff check only (Python lint)

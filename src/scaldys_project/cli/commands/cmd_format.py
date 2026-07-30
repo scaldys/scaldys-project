@@ -29,6 +29,7 @@ def _run(cmd: list[str], success_codes: frozenset[int] = frozenset({0})) -> None
     Use frozenset({0, 1}) for pre-commit format commands where exit code 1
     means "files were reformatted" rather than an error.
     """
+    logger.info(f"  [dim]Command: {' '.join(cmd)}[/dim]")
     result = subprocess.run(cmd, cwd=Path.cwd(), capture_output=True, text=True)
     output = (result.stdout + result.stderr).strip()
     lines = [

@@ -182,6 +182,10 @@ All commands accept ``--verbose`` / ``-v`` for detailed debug output::
 
     scaldys-project build all --verbose
 
+For ``ci``, ``format``, and ``test`` commands, the core subprocess command
+syntax is already displayed at the standard ``INFO`` level (in dim text)
+without requiring the verbose flag.
+
 Next steps
 ^^^^^^^^^^
 

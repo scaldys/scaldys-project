@@ -18,11 +18,16 @@ usage and options::
 Verbose output
 ==============
 
-If a build step fails or behaves unexpectedly, re-run the command with
-``--verbose`` / ``-v`` to enable debug-level logging.  This prints every
-subprocess invocation, file operation, and tool discovery step::
+If a command fails or behaves unexpectedly, re-run it with ``--verbose`` /
+``-v`` to enable debug-level logging.  This prints every subprocess
+invocation, file operation, and tool discovery step::
 
     scaldys-project build all --verbose
+
+For ``ci``, ``format``, and ``test`` commands, the core subprocess command
+syntax is already displayed at the standard ``INFO`` level (in dim text).
+The verbose flag remains necessary to see full debug details and subprocess
+invocations for ``build`` commands.
 
 The extra output often identifies the root cause directly (missing tool,
 wrong path, locked file, etc.).
