@@ -21,7 +21,7 @@ logging.basicConfig(
     handlers=[RichHandler(rich_tracebacks=True, console=console, show_path=False, markup=True)],
 )
 
-app = typer.Typer(help="Scaldys Builder", no_args_is_help=True)
+app = typer.Typer(help="Scaldys Project", no_args_is_help=True)
 
 app.add_typer(cmd_build.build_app, name="build")
 app.add_typer(cmd_ci.ci_app, name="ci")

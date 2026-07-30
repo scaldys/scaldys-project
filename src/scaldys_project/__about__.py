@@ -9,7 +9,7 @@ __all__ = [
 
 from importlib.metadata import version, PackageNotFoundError
 
-APP_NAME = "Scaldys Builder"
+APP_NAME = "Scaldys Project"
 PACKAGE_NAME = "scaldys-project"
 ORGANIZATION_NAME = "Scaldys"
 

@@ -121,15 +121,24 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
         RuntimeError
             If any required tool is missing.
         """
-        logger.info("[bold blue]Running pre-flight checks...[/bold blue]")
+        logger.info("[bold]Running pre-flight checks...[/bold]")
 
         missing = []
-        if require_sphinx and not self.sphinx_exe_path.exists():
-            missing.append(f"Sphinx (sphinx-build.exe) at {self.sphinx_exe_path}")
-        if require_pyinstaller and not self.pyinstaller_exe_path.exists():
-            missing.append(f"PyInstaller (pyinstaller.exe) at {self.pyinstaller_exe_path}")
-        if require_innosetup and not self.innosetup_exe_path.exists():
-            missing.append(f"Inno Setup (ISCC.exe) at {self.innosetup_exe_path}")
+        if require_sphinx:
+            if self.sphinx_exe_path.exists():
+                logger.info(f"  [green]\u2713[/green] Sphinx found at {self.sphinx_exe_path}")
+            else:
+                missing.append(f"Sphinx (sphinx-build.exe) at {self.sphinx_exe_path}")
+        if require_pyinstaller:
+            if self.pyinstaller_exe_path.exists():
+                logger.info(f"  [green]\u2713[/green] PyInstaller found at {self.pyinstaller_exe_path}")
+            else:
+                missing.append(f"PyInstaller (pyinstaller.exe) at {self.pyinstaller_exe_path}")
+        if require_innosetup:
+            if self.innosetup_exe_path.exists():
+                logger.info(f"  [green]\u2713[/green] Inno Setup found at {self.innosetup_exe_path}")
+            else:
+                missing.append(f"Inno Setup (ISCC.exe) at {self.innosetup_exe_path}")
 
         if missing:
             logger.error("[bold red]Missing required tools:[/bold red]")
@@ -164,27 +173,35 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
         SystemExit
             If any compliance issues are found.
         """
-        logger.info("[bold blue]Checking project compliance...[/bold blue]")
+        logger.info("[bold]Checking project compliance...[/bold]")
 
         issues: list[str] = []
 
         # Always: source root and package directory must exist.
         pkg_dir = self.src_dir_path / self.project_package_name
+        layout_ok = True
         if not self.src_dir_path.is_dir():
             issues.append(f"Source root directory not found: '{self.config.cython.source_root}/'")
+            layout_ok = False
         elif not pkg_dir.is_dir():
             issues.append(
                 f"Package directory not found: "
                 f"'{self.config.cython.source_root}/{self.project_package_name}/'"
             )
-        elif require_exe:
-            # Only check __main__.py when the package dir exists (avoids duplicate noise).
-            main_py = pkg_dir / "__main__.py"
-            if not main_py.exists():
-                issues.append(
-                    f"Package entry point not found: "
-                    f"'{self.config.cython.source_root}/{self.project_package_name}/__main__.py'"
-                )
+            layout_ok = False
+
+        if layout_ok:
+            logger.info("  [green]\u2713[/green] Source root and package layout")
+            if require_exe:
+                # Only check __main__.py when the package dir exists (avoids duplicate noise).
+                main_py = pkg_dir / "__main__.py"
+                if not main_py.exists():
+                    issues.append(
+                        f"Package entry point not found: "
+                        f"'{self.config.cython.source_root}/{self.project_package_name}/__main__.py'"
+                    )
+                else:
+                    logger.info("  [green]\u2713[/green] Package entry point (__main__.py)")
 
         # .python-version is always required: it is the single source of truth
         # for the Python version used by the build and the PythonRuntime setup.
@@ -193,6 +210,8 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
                 ".python-version not found in project root. "
                 "Create it with the target Python version (e.g. '3.13')."
             )
+        else:
+            logger.info("  [green]\u2713[/green] Python version configuration (.python-version)")
 
         # In pyinstaller mode the hook calls copy_metadata() to bundle dist-info
         # into the frozen executable so that importlib.metadata.version() works at
@@ -204,6 +223,7 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
 
             try:
                 _meta.distribution(self.project_name)
+                logger.info("  [green]\u2713[/green] Package installation in virtual environment")
             except _meta.PackageNotFoundError:
                 issues.append(
                     f"Package '{self.project_name}' is not installed in the active virtual "
@@ -217,6 +237,7 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
                     f"Windows packaging directory not found: '{self.config.windows.script_dir}/'"
                 )
             else:
+                all_files_exist = True
                 for fname in [
                     f"{self.project_name}.iss",
                     f"{self.project_name}_commandline.bat",
@@ -227,6 +248,9 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
                             f"Required packaging file not found: "
                             f"'{self.config.windows.script_dir}/{fname}'"
                         )
+                        all_files_exist = False
+                if all_files_exist:
+                    logger.info("  [green]\u2713[/green] Windows packaging scripts and ISS file")
 
         # Tests directory must exist at project root.
         tests_dir = self.project_path / "tests"
@@ -234,6 +258,8 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
             issues.append(
                 "Tests directory not found: 'tests/'. Create it and add at least one test file."
             )
+        else:
+            logger.info("  [green]\u2713[/green] Tests directory")
 
         if issues:
             logger.error(
