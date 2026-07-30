@@ -709,7 +709,7 @@ wheels = [
 
 [[package]]
 name = "scaldys-project"
-version = "0.14.21"
+version = "0.15.0"
 source = { editable = "." }
 dependencies = [
     { name = "rich" },
