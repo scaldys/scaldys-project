@@ -21,17 +21,19 @@ import os
 import re
 import shutil
 import tomllib
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Optional, Any, Union, Iterable
+from typing import Any
+
 from scaldys_project.common.base import BaseBuildEnvironment, BaseBuilder
-from scaldys_project.common.docs import DocumentationBuilder, DocEngine, _detect_engine
+from scaldys_project.common.docs import DocEngine, DocumentationBuilder, _detect_engine
 from scaldys_project.common.utils import (
-    safe_empty_dir,
     safe_copy,
     safe_copytree,
-    safe_unlink,
+    safe_empty_dir,
     safe_rename,
     safe_rmtree,
+    safe_unlink,
 )
 
 logger = logging.getLogger(__name__)
@@ -372,7 +374,7 @@ class Compiler:
 
         # 4. Copy remaining source files from src to the staging area.
         #    Excludes .py files already present as .pyd and common build artefacts.
-        def ignore_logic(directory: Union[str, Path], contents: list[str]) -> Iterable[str]:
+        def ignore_logic(directory: str | Path, contents: list[str]) -> Iterable[str]:
             ignored = []
             dir_path = Path(directory)
             try:
@@ -385,10 +387,7 @@ class Compiler:
                 # Ignore common junk and build artifacts
                 if name == "__pycache__" or name.endswith(
                     (".pyc", ".pyo", ".c", ".html", ".obj", ".lib", ".exp")
-                ):
-                    ignored.append(name)
-                # Ignore .py files that are already present as .pyd
-                elif str(full_rel_path) in compiled_py_files:
+                ) or str(full_rel_path) in compiled_py_files:
                     ignored.append(name)
             return ignored
 
@@ -927,7 +926,7 @@ class WindowsBuilder(BaseBuilder):
         self,
         steps: list[tuple[str, Any]],
         title: str,
-        console: Optional[Any] = None,
+        console: Any | None = None,
     ) -> None:
         """
         Execute a list of named build steps with a Rich progress bar.
@@ -942,7 +941,7 @@ class WindowsBuilder(BaseBuilder):
         console : Console, optional
             A rich console instance for synchronized output.
         """
-        from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
+        from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 
         if console is None:
             from rich.console import Console
@@ -1051,7 +1050,7 @@ class WindowsBuilder(BaseBuilder):
             steps.append(("Building installer", self.build_installer))
         return steps
 
-    def build_distribution(self, console: Optional[Any] = None) -> None:
+    def build_distribution(self, console: Any | None = None) -> None:
         """
         Build the Windows distribution artifact without building documentation.
 
@@ -1072,7 +1071,7 @@ class WindowsBuilder(BaseBuilder):
         )
         logger.info("Windows distribution build completed successfully!")
 
-    def main(self, console: Optional[Any] = None) -> None:
+    def main(self, console: Any | None = None) -> None:
         """
         Run the complete end-to-end build workflow (documentation + distribution).
 

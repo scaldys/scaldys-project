@@ -1,17 +1,18 @@
-# -*- coding: utf-8 -*-
 
 import logging
 
 import typer
 from rich.logging import RichHandler
 
-import scaldys_project.cli.commands.cmd_build as cmd_build
-import scaldys_project.cli.commands.cmd_check as cmd_check
-import scaldys_project.cli.commands.cmd_ci as cmd_ci
-import scaldys_project.cli.commands.cmd_format as cmd_format
-import scaldys_project.cli.commands.cmd_init as cmd_init
-import scaldys_project.cli.commands.cmd_publish as cmd_publish
-import scaldys_project.cli.commands.cmd_test as cmd_test
+from scaldys_project.cli.commands import (
+    cmd_build,
+    cmd_check,
+    cmd_ci,
+    cmd_format,
+    cmd_init,
+    cmd_publish,
+    cmd_test,
+)
 from scaldys_project.cli.utils import console
 
 logging.basicConfig(

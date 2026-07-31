@@ -19,7 +19,8 @@ import os
 import sys
 import tomllib
 from pathlib import Path
-from setuptools import setup, Extension, find_packages
+
+from setuptools import Extension, find_packages, setup
 from setuptools.dist import Distribution
 
 

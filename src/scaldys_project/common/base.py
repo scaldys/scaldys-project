@@ -1,14 +1,14 @@
 import ast
 import logging
 import os
-import sys
 import shutil
+import sys
 import tomllib
 from pathlib import Path
 from subprocess import PIPE, CalledProcessError, run
 from typing import Any
 
-from scaldys_project.common.config import load_config, BuildConfig
+from scaldys_project.common.config import BuildConfig, load_config
 from scaldys_project.common.utils import safe_empty_dir, safe_unlink
 
 logger = logging.getLogger(__name__)
@@ -198,7 +198,6 @@ class BaseBuilder:
         **kwargs : Any
             Arguments passed to the environment's pre-flight checks.
         """
-        pass
 
     def clean(self) -> None:
         """

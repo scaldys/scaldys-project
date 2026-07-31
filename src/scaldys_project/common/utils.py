@@ -14,13 +14,14 @@ import logging
 import os
 import shutil
 import stat
+import sys
+import tempfile
 import time
 import uuid
-import tempfile
-import sys
+from collections.abc import Callable
 from pathlib import Path
 from subprocess import run
-from typing import Any, Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 

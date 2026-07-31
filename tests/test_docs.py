@@ -5,7 +5,6 @@ from unittest.mock import MagicMock
 
 from scaldys_project.common.docs import DocEngine, DocumentationBuilder, _detect_engine
 
-
 # ---------------------------------------------------------------------------
 # _detect_engine
 # ---------------------------------------------------------------------------
