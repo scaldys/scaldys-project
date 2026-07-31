@@ -14,7 +14,6 @@ import logging
 import os
 import shutil
 import stat
-import sys
 import tempfile
 import time
 import uuid
@@ -114,11 +113,8 @@ def safe_rmtree(path: Path) -> None:
                 time.sleep(0.1 * (2**i))
 
     try:
-        # Using onexc for Python 3.12+, falling back to onerror for older versions
-        if sys.version_info >= (3, 12):
-            shutil.rmtree(path, onexc=handle_error)
-        else:
-            shutil.rmtree(path, onerror=handle_error)
+        # Using onexc for Python 3.12+
+        shutil.rmtree(path, onexc=handle_error)
     except Exception as e:
         # Final fallback for Windows
         if os.name == "nt":

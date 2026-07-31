@@ -5,7 +5,7 @@ import shutil
 import sys
 import tomllib
 from pathlib import Path
-from subprocess import PIPE, CalledProcessError, run
+from subprocess import CalledProcessError, run
 from typing import Any
 
 from scaldys_project.common.config import BuildConfig, load_config
@@ -119,8 +119,7 @@ class BaseBuildEnvironment:
         try:
             proc = run(
                 cmd,
-                stdout=PIPE,
-                stderr=PIPE,
+                capture_output=True,
                 text=True,
                 check=True,
                 cwd=cwd,

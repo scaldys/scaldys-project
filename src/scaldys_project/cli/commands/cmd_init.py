@@ -7,7 +7,7 @@ import tempfile
 import urllib.request
 import zipfile
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 import typer
 
@@ -347,7 +347,7 @@ def _post_process(root: Path, params: dict[str, Any]) -> None:
     2. pyproject.toml: set the description and initial version.
     3. scaldys-project.toml: set the deployment_mode if not the default.
     """
-    year = str(datetime.date.today().year)
+    year = str(datetime.datetime.now(datetime.UTC).date().year)
     package_name: str = params["package_name"]
     author_name: str = params["author_name"] or package_name
 
@@ -431,25 +431,35 @@ def _run_post_init(project_dir: Path, init_git: bool, run_sync: bool) -> None:
 
 
 def init(
-    local: Path | None = typer.Option(
-        None,
-        "--local",
-        metavar="PATH",
-        help="Use a local template directory instead of downloading from GitHub.",
-    ),
-    template_ref: str = typer.Option(
-        "main",
-        "--template-ref",
-        help="Branch or tag of scaldys-template to download (e.g. 'v1.0.0').",
-    ),
-    force: bool = typer.Option(
-        False,
-        "--force",
-        "-f",
-        help="Overwrite target directory if it already exists.",
-    ),
-    no_git: bool = typer.Option(False, "--no-git", help="Skip git repository initialisation."),
-    no_sync: bool = typer.Option(False, "--no-sync", help="Skip running 'uv sync' after creation."),
+    local: Annotated[
+        Path | None,
+        typer.Option(
+            "--local",
+            metavar="PATH",
+            help="Use a local template directory instead of downloading from GitHub.",
+        ),
+    ] = None,
+    template_ref: Annotated[
+        str,
+        typer.Option(
+            "--template-ref",
+            help="Branch or tag of scaldys-template to download (e.g. 'v1.0.0').",
+        ),
+    ] = "main",
+    force: Annotated[
+        bool,
+        typer.Option(
+            "--force",
+            "-f",
+            help="Overwrite target directory if it already exists.",
+        ),
+    ] = False,
+    no_git: Annotated[
+        bool, typer.Option("--no-git", help="Skip git repository initialisation.")
+    ] = False,
+    no_sync: Annotated[
+        bool, typer.Option("--no-sync", help="Skip running 'uv sync' after creation.")
+    ] = False,
 ) -> None:
     """Create a new scaldys-template-based project interactively.
 
