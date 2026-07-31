@@ -1,4 +1,3 @@
-
 import logging
 import subprocess
 
@@ -65,7 +64,7 @@ def publish(
     if test:
         cmd += ["--index", "testpypi"]
 
-    result = subprocess.run(cmd, cwd=project_root)
+    result = subprocess.run(cmd, cwd=project_root, check=False)  # Verified fix for PLW1510
     if result.returncode != 0:
         raise typer.Exit(result.returncode)
 

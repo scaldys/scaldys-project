@@ -1,4 +1,3 @@
-
 import datetime
 import logging
 import re
@@ -402,12 +401,15 @@ def _run_post_init(project_dir: Path, init_git: bool, run_sync: bool) -> None:
     """Run optional post-creation steps; failures are warnings, not fatal errors."""
     if init_git:
         with console.status("[bold]Initialising git repository…[/bold]"):
-            r1 = subprocess.run(["git", "init"], cwd=project_dir, capture_output=True)
-            r2 = subprocess.run(["git", "add", "."], cwd=project_dir, capture_output=True)
+            r1 = subprocess.run(["git", "init"], cwd=project_dir, capture_output=True, check=False)
+            r2 = subprocess.run(
+                ["git", "add", "."], cwd=project_dir, capture_output=True, check=False
+            )
             r3 = subprocess.run(
                 ["git", "commit", "-m", "chore: initial project scaffolded from scaldys-template"],
                 cwd=project_dir,
                 capture_output=True,
+                check=False,
             )
         if any(r.returncode != 0 for r in (r1, r2, r3)):
             logger.warning("[yellow]⚠ git initialisation failed.[/yellow] Run 'git init' manually.")
@@ -416,7 +418,7 @@ def _run_post_init(project_dir: Path, init_git: bool, run_sync: bool) -> None:
 
     if run_sync:
         with console.status("[bold]Running uv sync…[/bold]"):
-            result = subprocess.run(["uv", "sync"], cwd=project_dir)
+            result = subprocess.run(["uv", "sync"], cwd=project_dir, check=False)
         if result.returncode != 0:
             logger.warning(
                 "[yellow]⚠ uv sync failed.[/yellow] Run 'uv sync' manually inside the project."

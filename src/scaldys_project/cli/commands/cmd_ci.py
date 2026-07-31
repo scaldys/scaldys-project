@@ -1,4 +1,3 @@
-
 import importlib.resources
 import logging
 import subprocess
@@ -20,7 +19,7 @@ ci_app = typer.Typer(
 def _run(cmd: list[str], *, quiet: bool = False) -> None:
     """Run a subprocess in cwd; raise typer.Exit with its return code on failure."""
     logger.info(f"  [dim]Command: {' '.join(cmd)}[/dim]")
-    result = subprocess.run(cmd, cwd=Path.cwd(), capture_output=True, text=True)
+    result = subprocess.run(cmd, cwd=Path.cwd(), capture_output=True, text=True, check=False)
     if not quiet:
         output = (result.stdout + result.stderr).strip()
         for line in output.splitlines():
@@ -33,7 +32,7 @@ def _run(cmd: list[str], *, quiet: bool = False) -> None:
 def _run_format_diff(cmd: list[str]) -> None:
     """Run a format --diff command; show affected file names instead of full diffs."""
     logger.info(f"  [dim]Command: {' '.join(cmd)}[/dim]")
-    result = subprocess.run(cmd, cwd=Path.cwd(), capture_output=True, text=True)
+    result = subprocess.run(cmd, cwd=Path.cwd(), capture_output=True, text=True, check=False)
     output = result.stdout + result.stderr
 
     affected: list[str] = []

@@ -385,9 +385,11 @@ class Compiler:
             for name in contents:
                 full_rel_path = rel_dir.joinpath(name)
                 # Ignore common junk and build artifacts
-                if name == "__pycache__" or name.endswith(
-                    (".pyc", ".pyo", ".c", ".html", ".obj", ".lib", ".exp")
-                ) or str(full_rel_path) in compiled_py_files:
+                if (
+                    name == "__pycache__"
+                    or name.endswith((".pyc", ".pyo", ".c", ".html", ".obj", ".lib", ".exp"))
+                    or str(full_rel_path) in compiled_py_files
+                ):
                     ignored.append(name)
             return ignored
 

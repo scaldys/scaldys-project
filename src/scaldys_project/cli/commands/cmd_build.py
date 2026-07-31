@@ -1,4 +1,3 @@
-
 import typer
 
 from scaldys_project.cli.utils import console, find_project_root

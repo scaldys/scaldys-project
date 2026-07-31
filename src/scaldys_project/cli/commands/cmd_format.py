@@ -1,4 +1,3 @@
-
 import logging
 import re
 import subprocess
@@ -29,7 +28,7 @@ def _run(cmd: list[str], success_codes: frozenset[int] = frozenset({0})) -> None
     means "files were reformatted" rather than an error.
     """
     logger.info(f"  [dim]Command: {' '.join(cmd)}[/dim]")
-    result = subprocess.run(cmd, cwd=Path.cwd(), capture_output=True, text=True)
+    result = subprocess.run(cmd, cwd=Path.cwd(), capture_output=True, text=True, check=False)
     output = (result.stdout + result.stderr).strip()
     lines = [
         f"  {markup_escape(_ANSI_RE.sub('', line))}"

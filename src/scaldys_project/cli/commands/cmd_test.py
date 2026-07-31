@@ -1,4 +1,3 @@
-
 import logging
 import subprocess
 from pathlib import Path
@@ -15,6 +14,7 @@ def test() -> None:
     result = subprocess.run(
         cmd,
         cwd=Path.cwd(),
+        check=False,
     )
     if result.returncode != 0:
         raise typer.Exit(result.returncode)
