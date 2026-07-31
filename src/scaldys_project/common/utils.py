@@ -20,7 +20,7 @@ import time
 import uuid
 from collections.abc import Callable
 from pathlib import Path
-from subprocess import run
+from subprocess import CalledProcessError, run
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ def get_safe_temp_dir(path: Path) -> Path:
         # Use case-insensitive comparison for drive letters (e.g., 'C:' == 'c:')
         if system_temp.drive.lower() == path.drive.lower():
             return system_temp
-    except Exception:
+    except (AttributeError, TypeError):
         pass
     return path.parent
 
@@ -125,7 +125,7 @@ def safe_rmtree(path: Path) -> None:
             try:
                 run(["cmd", "/c", "rd", "/s", "/q", str(path)], check=True, capture_output=True)
                 return
-            except Exception:
+            except CalledProcessError:
                 pass
 
         if was_renamed:
@@ -203,7 +203,7 @@ def safe_empty_dir(path: Path) -> None:
                     safe_rmtree(item)
                 else:
                     safe_unlink(item)
-            except Exception as ex:
+            except (OSError, RuntimeError) as ex:
                 logger.warning(f"Could not remove {item} while emptying {path}: {ex}")
 
 

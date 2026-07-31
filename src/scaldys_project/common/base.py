@@ -165,7 +165,7 @@ class BaseBuildEnvironment:
                     if isinstance(node, match_type):
                         issues.append(str(file_path.relative_to(self.project_path)))
                         break
-            except Exception:
+            except (SyntaxError, OSError):
                 # If it doesn't parse as valid Python, Cython will fail anyway.
                 pass
         return issues

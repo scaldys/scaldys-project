@@ -134,7 +134,7 @@ def ci_all() -> None:
             except typer.Exit as e:
                 if e.exit_code != 0:
                     failed_steps.append(name)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.error(f"Step '{name}' failed with an unexpected error: {e}")
                 failed_steps.append(name)
             progress.advance(task)

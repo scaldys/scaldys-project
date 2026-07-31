@@ -210,7 +210,7 @@ def _download_template(ref: str, tmp_dir: Path) -> Path:
                 urllib.request.urlretrieve(url, zip_path)
                 last_exc = None
                 break
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001
                 last_exc = exc
 
     if last_exc is not None:
