@@ -148,11 +148,11 @@ set of options tuned for Windows distribution.
     package, ensuring dynamically-imported submodules are included.
 
 **Hook file handling**
-    If an ``extra_hooks/`` directory exists in the compiled source tree and
-    contains a file named ``hook_package.py``, ``scaldys-project`` renames it
-    to ``hook-<package_name>.py`` so that PyInstaller discovers it correctly.
-    Use this generic name in your source tree to keep hook files reusable
-    across projects.
+    If an ``extra_hooks/`` directory exists in the compiled source tree,
+    ``scaldys-project`` passes it to PyInstaller as an additional hooks
+    directory.  Hook files should be named ``hook-<package_name>.py``
+    (e.g., ``hook-scaldys_template.py``) to be correctly discovered by
+    PyInstaller.
 
 **Icon support**
     If ``<project_name>.ico`` is found in ``[windows] script_dir``, it is
