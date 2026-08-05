@@ -8,6 +8,27 @@
     Docs       for any documentation changes
 
 
+[0.20.0] - 2026-08-05
+---------------------
+
+**Changed**:
+    - Simplified PyInstaller hook handling: the automatic renaming of
+      ``hook_package.py`` to ``hook-<package_name>.py`` has been removed.
+      Hook files must now be named correctly (``hook-<package_name>.py``)
+      directly in the project source tree.
+
+      .. note::
+         **Breaking change for consuming projects.**  Existing projects must
+         rename their ``src/extra_hooks/hook_package.py`` to
+         ``src/extra_hooks/hook-<package_name>.py`` (e.g.
+         ``hook-scaldys_template.py``) to remain compatible with
+         ``scaldys-project >= 0.20.0``.
+
+**Docs**:
+    - Updated ``users/topics/windows_exe.rst`` to instruct developers to use
+      the ``hook-<package_name>.py`` naming convention directly.
+
+
 [0.15.0] - 2026-07-31
 ---------------------
 

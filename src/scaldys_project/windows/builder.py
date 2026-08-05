@@ -423,14 +423,6 @@ class Compiler:
         )
         hooks_dir = self.env.src_compiled_dir_path.joinpath("extra_hooks")
 
-        # Ensure we have a hook file named correctly for PyInstaller to pick it up.
-        # We use a generic name in the source to make it reusable across projects.
-        if hooks_dir.exists():
-            generic_hook = hooks_dir / "hook_package.py"
-            if generic_hook.exists():
-                target_hook = hooks_dir / f"hook-{self.env.project_package_name}.py"
-                safe_rename(generic_hook, target_hook)
-
         cmd = [
             str(self.env.pyinstaller_exe_path),
             "--noconfirm",
