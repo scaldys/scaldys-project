@@ -12,11 +12,11 @@ directory of this repository as LICENSE.
 - https://github.com/cython/cython
 - License file: [cython.md](cython.md)
 
-## pre-commit
+## mdformat
 
 - MIT license
-- https://github.com/pre-commit/pre-commit
-- License file: [pre_commit.md](pre_commit.md)
+- https://github.com/executablebooks/mdformat
+- License file: [mdformat.md](mdformat.md)
 
 ## pyinstaller
 

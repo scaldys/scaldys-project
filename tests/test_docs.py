@@ -3,7 +3,12 @@ import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from scaldys_project.common.docs import DocEngine, DocumentationBuilder, _detect_engine
+from scaldys_project.common.docs import (
+    DocEngine,
+    DocumentationBuilder,
+    _detect_engine,
+    get_markdown_target_files,
+)
 
 # ---------------------------------------------------------------------------
 # _detect_engine
@@ -131,3 +136,76 @@ def test_build_sphinx_calls_sphinx_build(caplog):
         builder.build()
     # Two sphinx-build calls: html and singlehtml
     assert env.run_command.call_count == 2
+
+
+# ---------------------------------------------------------------------------
+# get_markdown_target_files
+# ---------------------------------------------------------------------------
+
+
+def test_get_markdown_target_files_empty():
+    """Returns empty list when project root has no README.md or MkDocs docs."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        assert get_markdown_target_files(Path(tmpdir)) == []
+
+
+def test_get_markdown_target_files_readme_only():
+    """Discovers README.md and ignores RELEASES.md and other root files."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir)
+        (root / "README.md").touch()
+        (root / "RELEASES.md").touch()
+        (root / "ideas.md").touch()
+        (root / "licenses").mkdir()
+        (root / "licenses" / "README.md").touch()
+
+        targets = get_markdown_target_files(root)
+        assert targets == [Path("README.md")]
+
+
+def test_get_markdown_target_files_mkdocs_subdirectories():
+    """Discovers README.md and .md files in MkDocs doc subdirectories, ignoring Sphinx doc markdown."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir)
+        (root / "README.md").touch()
+        (root / "RELEASES.md").touch()
+
+        docs_dir = root / "docs"
+        docs_dir.mkdir()
+
+        # MkDocs unit
+        site_dir = docs_dir / "site"
+        site_dir.mkdir()
+        (site_dir / "mkdocs.yml").touch()
+        (site_dir / "index.md").touch()
+        sub_dir = site_dir / "sub"
+        sub_dir.mkdir()
+        (sub_dir / "page.md").touch()
+
+        # Sphinx unit
+        manual_dir = docs_dir / "manual"
+        manual_dir.mkdir()
+        (manual_dir / "source").mkdir()
+        (manual_dir / "source" / "conf.py").touch()
+        (manual_dir / "source" / "notes.md").touch()
+
+        targets = get_markdown_target_files(root)
+        expected = [
+            Path("README.md"),
+            Path("docs/site/index.md"),
+            Path("docs/site/sub/page.md"),
+        ]
+        assert targets == expected
+
+
+def test_get_markdown_target_files_mkdocs_at_docs_root():
+    """Discovers .md files when mkdocs.yml is directly inside docs/."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir)
+        docs_dir = root / "docs"
+        docs_dir.mkdir()
+        (docs_dir / "mkdocs.yml").touch()
+        (docs_dir / "index.md").touch()
+
+        targets = get_markdown_target_files(root)
+        assert targets == [Path("docs/index.md")]

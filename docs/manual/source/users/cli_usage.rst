@@ -206,7 +206,7 @@ in the terminal output:
 1. ``uv run ruff check .`` — Python lint
 2. ``uv run ruff format --diff .`` — format check (no rewrite)
 3. ``uv sync && uv run pyright ./src`` — Python type checking
-4. ``uv run pre-commit run prettier --all-files`` (``--check`` mode, bundled config) — Markdown format check
+4. ``uv run mdformat --check <targets>`` — Markdown format check
 5. ``uv run sphinx-lint docs/`` — RST documentation lint
 
 If any step fails, the command continues to the next one. After all steps have
@@ -266,22 +266,21 @@ installed stubs.
 ``ci markdown``
 -----------------
 
-Check Markdown file formatting with Prettier.
+Check Markdown file formatting with mdformat.
 
 .. code-block:: bash
 
     scaldys-project ci markdown
 
-Runs Prettier via pre-commit in check-only mode (``--check``).  The
-pre-commit configuration is bundled inside the ``scaldys-project`` wheel —
-**no** ``.pre-commit-check-config.yaml`` file is required in your project.
-Prettier reports which files would be reformatted and exits non-zero if any
-file is not correctly formatted.  **No files are modified.**
+Runs mdformat in check-only mode (``--check``) on discovered target Markdown
+files (``README.md`` and any MkDocs documentation files in ``docs/``).
+mdformat reports which files need formatting and exits non-zero if any file is
+not correctly formatted.  **No files are modified.**
 
-This mirrors the *Prettier format* step in the GitHub Actions ``ci.yml``
+This mirrors the *Markdown format check* step in the GitHub Actions ``ci.yml``
 workflow exactly.  To actually reformat Markdown files, use
 ``scaldys-project format markdown``.  See :ref:`markdown_formatting_guide`
-for configuration details.
+for details.
 
 ----
 
@@ -556,8 +555,8 @@ Auto-format all Python and Markdown files in sequence.
     scaldys-project format all
 
 Runs ``format python`` followed by ``format markdown``, continuing regardless
-of errors.  Use this as a quick pre-commit sweep to fix any formatting issues
-before running ``ci all``.  If any step fails, a summary is displayed and the
+of errors.  Use this as a quick formatting sweep to fix any issues before
+running ``ci all``.  If any step fails, a summary is displayed and the
 command exits non-zero.
 
 ----
@@ -580,16 +579,16 @@ with the ``--diff`` flag removed so files are actually rewritten.
 ``format markdown``
 -------------------
 
-Auto-format Markdown files with prettier.
+Auto-format Markdown files with mdformat.
 
 .. code-block:: bash
 
     scaldys-project format markdown
 
-Executes ``uv run pre-commit run prettier --all-files``.  Prettier rewrites
-any Markdown file that is not correctly formatted **in place**, then
-pre-commit exits non-zero to signal that files were changed.  If all files
-are already correctly formatted, the command exits with code ``0``.
+Executes ``uv run mdformat <targets>`` on discovered target Markdown files
+(``README.md`` and any MkDocs documentation files in ``docs/``).  mdformat
+rewrites any unformatted files **in place**.  If no target files exist or all
+files are already correctly formatted, the command exits with code ``0``.
 
 Typical workflow after a ``ci markdown`` failure::
 
@@ -597,7 +596,7 @@ Typical workflow after a ``ci markdown`` failure::
     git add -p
     git commit
 
-See :ref:`markdown_formatting_guide` for configuration details.
+See :ref:`markdown_formatting_guide` for details.
 
 ----
 

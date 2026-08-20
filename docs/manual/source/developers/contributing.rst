@@ -26,11 +26,7 @@ Clone the repository and create the virtual environment with `uv
     uv sync --group dev
 
 This installs the package in editable mode together with all development
-dependencies (pytest, ruff, pyright, Sphinx, etc.).
-
-Install the pre-commit hooks so they run automatically on every commit::
-
-    uv run pre-commit install
+dependencies (pytest, ruff, pyright, Sphinx, mdformat, etc.).
 
 Running the Tests
 -----------------
@@ -61,7 +57,7 @@ syntax before execution::
     scaldys-project ci lint         # ruff check only (Python lint)
     scaldys-project ci format       # ruff format --diff (check, no rewrite)
     scaldys-project ci typecheck    # pyright only (Python type check)
-    scaldys-project ci markdown     # prettier --check (check, no rewrite)
+    scaldys-project ci markdown     # mdformat --check (check, no rewrite)
     scaldys-project ci doclint      # sphinx-lint on docs/ (RST lint)
 
 Run these from the root of the ``scaldys-project`` repository.  If
@@ -71,16 +67,16 @@ When a ``ci`` step reports failures, use the corresponding ``format`` command
 to fix the files in place::
 
     scaldys-project format python   # rewrite Python files with ruff format
-    scaldys-project format markdown # rewrite Markdown files with prettier
+    scaldys-project format markdown # rewrite Markdown files with mdformat
     scaldys-project format all      # rewrite both (continues on error)
 
 After formatting, stage and commit the changes, then re-run ``ci all`` to
 confirm everything is clean.
 
 See :ref:`markdown_formatting_guide` for the full technical explanation of
-how ``ci markdown`` and ``format markdown`` differ, how the pre-commit config
-is split between a project-level file and the bundled wheel resource, and how
-local behaviour compares to GitHub Actions.
+how ``ci markdown`` and ``format markdown`` work, how target markdown files
+are discovered (``README.md`` and MkDocs documentation), and how local behaviour
+compares to GitHub Actions.
 
 Building the Documentation Locally
 ------------------------------------

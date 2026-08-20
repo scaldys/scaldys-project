@@ -121,8 +121,7 @@ Output & post-init actions
        current working directory.  Default: ``./<project-slug>``.
    * - **Initialise git repository?**
      - When ``Y``, runs ``git init`` and makes an initial commit.  Default:
-       ``Y``.  Required for ``scaldys-project ci markdown`` to work (pre-commit
-       needs a git repository).
+       ``Y``.
    * - **Run uv sync?**
      - When ``Y``, runs ``uv sync`` to install all dependencies and create the
        project-local ``.venv``.  Default: ``Y``.

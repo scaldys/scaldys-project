@@ -8,6 +8,7 @@ from rich.markup import escape as markup_escape
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 
 from scaldys_project.cli.utils import console
+from scaldys_project.common.docs import get_markdown_target_files
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +25,6 @@ def _run(cmd: list[str], success_codes: frozenset[int] = frozenset({0})) -> None
     """Run a subprocess in cwd; raise typer.Exit with its return code on failure.
 
     success_codes: set of return codes treated as success (default: {0}).
-    Use frozenset({0, 1}) for pre-commit format commands where exit code 1
-    means "files were reformatted" rather than an error.
     """
     logger.info(f"  [dim]Command: {' '.join(cmd)}[/dim]")
     result = subprocess.run(cmd, cwd=Path.cwd(), capture_output=True, text=True, check=False)
@@ -50,9 +49,13 @@ def format_python() -> None:
 
 @format_app.command("markdown")
 def format_markdown() -> None:
-    """Auto-format Markdown files with prettier (rewrites files in place)."""
+    """Auto-format Markdown files with mdformat (rewrites files in place)."""
     logger.info("[bold]Formatting Markdown files...[/bold]")
-    _run(["uv", "run", "pre-commit", "run", "prettier", "--all-files"], frozenset({0, 1}))
+    target_files = get_markdown_target_files()
+    if not target_files:
+        logger.info("  No markdown files to format.")
+        return
+    _run(["uv", "run", "mdformat", *[str(p) for p in target_files]])
 
 
 @format_app.command("all")

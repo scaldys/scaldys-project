@@ -1,4 +1,3 @@
-import importlib.resources
 import logging
 import subprocess
 from pathlib import Path
@@ -7,6 +6,7 @@ import typer
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 
 from scaldys_project.cli.utils import console
+from scaldys_project.common.docs import get_markdown_target_files
 
 logger = logging.getLogger(__name__)
 
@@ -80,24 +80,13 @@ def ci_typecheck() -> None:
 
 @ci_app.command("markdown")
 def ci_markdown() -> None:
-    """Check markdown formatting with prettier (check only, no rewrite)."""
+    """Check markdown formatting with mdformat (check only, no rewrite)."""
     logger.info("[bold]Checking markdown formatting...[/bold]")
-    _check_config = importlib.resources.files("scaldys_project.resources").joinpath(
-        ".pre-commit-check-config.yaml"
-    )
-    with importlib.resources.as_file(_check_config) as config_path:
-        _run(
-            [
-                "uv",
-                "run",
-                "pre-commit",
-                "run",
-                "--config",
-                str(config_path),
-                "prettier",
-                "--all-files",
-            ]
-        )
+    target_files = get_markdown_target_files()
+    if not target_files:
+        logger.info("  No markdown files to check.")
+        return
+    _run(["uv", "run", "mdformat", "--check", *[str(p) for p in target_files]])
 
 
 @ci_app.command("doclint")

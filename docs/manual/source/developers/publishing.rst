@@ -119,8 +119,8 @@ Runs on every push and pull request::
 
 Jobs:
 
-- **code_quality** — ``ruff check``, ``ruff format --diff``, Prettier,
-  ``pyright``
+- **code_quality** — ``ruff check``, ``ruff format --diff``, ``mdformat``,
+  ``pyright``, ``sphinx-lint``
 - **test** — ``pytest --cov`` on Ubuntu, macOS, and Windows
 - **build** — ``uv build`` (verifies the package can be built cleanly)
 

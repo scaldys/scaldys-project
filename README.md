@@ -28,7 +28,7 @@ and a working `scaldys-project.toml`.
 For a full guide on using and integrating `scaldys-project` in your project, see
 the [user documentation](https://github.com/scaldys/scaldys-project).
 
----
+______________________________________________________________________
 
 ## Development
 
@@ -51,7 +51,7 @@ uv run ruff check src tests && uv run pyright
 To automatically "bump" the version constraints in `pyproject.toml` to their
 latest versions, you have two primary options:
 
-1. **Recommended: `uv-upgrade`**  
+1. **Recommended: `uv-upgrade`**\
    The community-developed `uv-upgrade` tool specifically handles this workflow.
    You can run it without permanent installation using `uvx`:
 
@@ -59,9 +59,10 @@ latest versions, you have two primary options:
    uvx uv-upgrade
    ```
 
-2. **Native `uv` Workflow**  
+1. **Native `uv` Workflow**\
    You can update specific packages manually using `uv add <package>`. To update
    the lockfile (`uv.lock`) while respecting your current constraints, use:
+
    ```bash
    uv lock --upgrade
    ```

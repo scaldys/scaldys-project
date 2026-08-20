@@ -39,6 +39,59 @@ def _detect_engine(doc_dir: Path) -> DocEngine:
     return DocEngine.UNKNOWN
 
 
+def get_markdown_target_files(project_root: Path | None = None) -> list[Path]:
+    """
+    Discover all target Markdown files for formatting and CI checks.
+
+    Targets:
+    - ``README.md`` in the project root if it exists.
+    - All ``*.md`` files under ``docs/`` subdirectories where MkDocs is detected
+      (or directly under ``docs/`` if ``docs/mkdocs.yml`` is present).
+
+    Excluded:
+    - ``RELEASES.md`` and all other root-level markdown files.
+    - Markdown files in documentation directories not managed by MkDocs.
+
+    Parameters
+    ----------
+    project_root : Path | None
+        The root directory of the project (defaults to ``Path.cwd()``).
+
+    Returns
+    -------
+    list[Path]
+        Sorted list of target Markdown file paths (relative to ``project_root``).
+    """
+    if project_root is None:
+        project_root = Path.cwd()
+
+    targets: list[Path] = []
+    readme = project_root / "README.md"
+    if readme.is_file():
+        targets.append(readme)
+
+    docs_root = project_root / "docs"
+    if docs_root.is_dir():
+        if _detect_engine(docs_root) == DocEngine.MKDOCS:
+            targets.extend(p for p in docs_root.rglob("*.md") if p.is_file())
+        else:
+            for doc_dir in sorted(p for p in docs_root.iterdir() if p.is_dir()):
+                if _detect_engine(doc_dir) == DocEngine.MKDOCS:
+                    targets.extend(p for p in doc_dir.rglob("*.md") if p.is_file())
+
+    unique_paths = list(
+        {
+            p.resolve().relative_to(project_root.resolve())
+            for p in targets
+            if p.name != "RELEASES.md"
+        }
+    )
+    return sorted(
+        unique_paths,
+        key=lambda p: (0 if p == Path("README.md") else 1, p.as_posix().lower()),
+    )
+
+
 class DocumentationBuilder:
     """
     Handles documentation generation for all doc units found under ``docs/``.

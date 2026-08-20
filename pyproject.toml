@@ -1,6 +1,6 @@
 [project]
 name = "scaldys-project"
-version = "0.20.0"
+version = "0.30.0"
 authors = [
   { name="Scaldys", email="scaldys@scaldys.net" },
 ]
@@ -43,13 +43,10 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.setuptools.package-data]
-"scaldys_project.resources" = [".pre-commit-check-config.yaml"]
-
 [dependency-groups]
 dev = [
     "cython>=3.2.9",
-    "pre-commit>=4.6.1",
+    "mdformat>=0.7.22",
     "pyinstaller>=6.21.0",
     "pyright>=1.1.411",
     "pytest>=9.1.1",
