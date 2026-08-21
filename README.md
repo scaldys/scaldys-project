@@ -26,7 +26,7 @@ already integrated: packaging scripts, Sphinx documentation, CI/CD workflows,
 and a working `scaldys-project.toml`.
 
 For a full guide on using and integrating `scaldys-project` in your project, see
-the [user documentation](https://github.com/scaldys/scaldys-project).
+the [user documentation](https://scaldys.github.io/scaldys-project/).
 
 ______________________________________________________________________
 

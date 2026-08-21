@@ -5,8 +5,8 @@ Publishing
 ***********
 
 This guide covers everything needed to publish ``scaldys-project`` to PyPI
-using GitHub Actions with OIDC Trusted Publishing — no API tokens or secrets
-to manage.
+using GitHub Actions with OIDC Trusted Publishing and deploy project documentation
+to GitHub Pages — no API tokens or secrets to manage.
 
 .. contents:: On this page
    :local:
@@ -19,6 +19,8 @@ Overview
 Releases are triggered by pushing a version tag (e.g. ``v1.0.0``) to GitHub.
 The ``release.yml`` workflow then builds the distributions with ``uv build``
 and publishes them to PyPI via ``uv publish --trusted-publishing always``.
+In parallel, the ``docs.yml`` workflow builds the Sphinx manual and deploys
+the updated documentation site to GitHub Pages (``https://scaldys.github.io/scaldys-project/``).
 
 CI (``ci.yml``) runs on every push and pull request: it lints, type-checks,
 tests across Ubuntu / macOS / Windows, and verifies the build.  A release
@@ -105,10 +107,24 @@ The ``id-token: write`` permission in the workflow is what allows GitHub to
 mint the OIDC token that PyPI verifies.
 
 
-Step 3 — Workflow Files
+Step 3 — GitHub Pages Configuration
+====================================
+
+GitHub Pages hosts the public Sphinx documentation.
+
+1. In the GitHub repository, go to **Settings → Pages**.
+2. Under **Build and deployment → Source**, select **GitHub Actions**.
+3. Save.
+
+The ``docs.yml`` workflow automatically deploys the built documentation to
+GitHub Pages (``https://scaldys.github.io/scaldys-project/``) on release tags
+using native GitHub Pages deployment actions.
+
+
+Step 4 — Workflow Files
 ========================
 
-The two workflow files are located in the repository under ``.github/workflows/``.
+The workflow files are located in the repository under ``.github/workflows/``.
 
 ci.yml
 ------
@@ -148,14 +164,59 @@ Runs when a ``v*`` tag is pushed::
           id-token: write
         steps:
           - uses: actions/checkout@v4
-          - uses: astral-sh/setup-uv@v3
+          - uses: astral-sh/setup-uv@v6
           - name: Build the project
             run: uv build --index-strategy unsafe-best-match
           - name: Publish
             run: uv publish --trusted-publishing always
 
+docs.yml
+--------
 
-Step 4 — Version Bump
+Runs when a ``v*`` tag is pushed (or triggered manually via ``workflow_dispatch``)::
+
+    .github/workflows/docs.yml
+
+.. code-block:: yaml
+
+    on:
+      push:
+        tags:
+          - 'v*'
+      workflow_dispatch:
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    concurrency:
+      group: 'pages'
+      cancel-in-progress: false
+
+    jobs:
+      deploy-docs:
+        environment:
+          name: github-pages
+          url: ${{ steps.deployment.outputs.page_url }}
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v4
+          - uses: astral-sh/setup-uv@v6
+          - name: Install documentation dependencies
+            run: uv sync --only-group dev
+          - name: Build Sphinx HTML documentation
+            run: uv run sphinx-build -b html docs/manual/source build/manual/html
+          - uses: actions/configure-pages@v5
+          - uses: actions/upload-pages-artifact@v3
+            with:
+              path: build/manual/html
+          - name: Deploy to GitHub Pages
+            id: deployment
+            uses: actions/deploy-pages@v4
+
+
+Step 5 — Version Bump
 ======================
 
 Version is declared once in ``pyproject.toml``::
@@ -175,10 +236,10 @@ Before tagging a release:
        git commit -am "Release v1.0.0"
 
 
-Step 5 — Trigger a Release
+Step 6 — Trigger a Release
 ============================
 
-Push a version tag to kick off the ``release.yml`` workflow::
+Push a version tag to kick off both the ``release.yml`` and ``docs.yml`` workflows::
 
     git tag v1.0.0
     git push origin v1.0.0
@@ -186,13 +247,12 @@ Push a version tag to kick off the ``release.yml`` workflow::
 GitHub Actions will:
 
 1. Check out the repository at the tagged commit.
-2. Run ``uv build``, producing ``dist/scaldys_project-1.0.0-py3-none-any.whl``
-   and ``dist/scaldys_project-1.0.0.tar.gz``.
-3. Authenticate to PyPI using an OIDC token (no secret needed).
-4. Upload both distributions via ``uv publish``.
+2. Build and publish package distributions to PyPI via ``release.yml``.
+3. Compile the Sphinx manual and deploy the updated static site to GitHub Pages
+   (``https://scaldys.github.io/scaldys-project/``) via ``docs.yml``.
 
 The package will appear on ``https://pypi.org/project/scaldys-project/``
-within a minute or two.
+and the updated documentation will be live on GitHub Pages within a minute or two.
 
 
 .. _testpypi_dry_run:

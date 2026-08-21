@@ -20,6 +20,12 @@ dependencies = [
     "typer>=0.27.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/scaldys/scaldys-project"
+Documentation = "https://scaldys.github.io/scaldys-project/"
+Repository = "https://github.com/scaldys/scaldys-project"
+Issues = "https://github.com/scaldys/scaldys-project/issues"
+
 [project.optional-dependencies]
 cython = [
     "cython>=3.2.9",
