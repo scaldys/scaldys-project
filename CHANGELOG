@@ -8,6 +8,35 @@
     Docs       for any documentation changes
 
 
+[0.30.0] - 2026-08-20
+---------------------
+
+**Changed**:
+    - Replaced the Node.js-based ``prettier`` markdown formatter and ``pre-commit``
+      framework with ``mdformat``, a pure-Python CommonMark formatter invoked
+      directly via ``uv run mdformat``.
+    - Scoped Markdown CI checks and formatting: ``scaldys-project ci markdown`` and
+      ``scaldys-project format markdown`` now target ``README.md`` (in the project root)
+      and all ``*.md`` files under MkDocs documentation directories (``docs/**``),
+      explicitly excluding ``RELEASES.md`` and non-documentation Markdown files.
+    - Updated GitHub Actions CI workflow (``.github/workflows/ci.yml``) to verify
+      Markdown formatting directly via ``uv run mdformat --check README.md``.
+    - Updated ``pyproject.toml`` dev dependencies to include ``mdformat>=0.7.22``
+      and removed ``pre-commit``.
+
+**Removed**:
+    - Removed ``.pre-commit-config.yaml``, ``.prettierrc``, and the bundled resource
+      ``src/scaldys_project/resources/.pre-commit-check-config.yaml``.
+    - Removed ``licenses/pre_commit.md``.
+
+**Docs**:
+    - Rewrote ``developers/markdown_formatting.rst`` to document direct ``mdformat``
+      execution, CommonMark compliance, target scoping, and developer workflows.
+    - Updated ``users/cli_usage.rst``, ``developers/contributing.rst``, and
+      ``developers/publishing.rst`` with ``mdformat`` command syntax and descriptions.
+    - Added ``licenses/mdformat.md`` (MIT License) and updated ``licenses/README.md``.
+
+
 [0.20.0] - 2026-08-05
 ---------------------
 
