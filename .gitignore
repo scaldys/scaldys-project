@@ -11,6 +11,7 @@ artifacts/
 build/
 .eggs/
 wheels/
+wip/
 
 # Virtual environments
 .venv/
