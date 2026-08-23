@@ -5,8 +5,9 @@ from pathlib import Path
 import typer
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 
-from scaldys_project.cli.utils import console
-from scaldys_project.common.docs import get_markdown_target_files
+from scaldys_project.cli.utils import console, find_project_root
+from scaldys_project.common.config import load_config
+from scaldys_project.common.docs import check_ci_markdown_drift, get_markdown_target_files
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +83,12 @@ def ci_typecheck() -> None:
 def ci_markdown() -> None:
     """Check markdown formatting with mdformat (check only, no rewrite)."""
     logger.info("[bold]Checking markdown formatting...[/bold]")
-    target_files = get_markdown_target_files()
+    project_root = find_project_root()
+    config = load_config(project_root)
+    drift_warning = check_ci_markdown_drift(project_root, config=config.format)
+    if drift_warning:
+        logger.warning(f"[yellow]\u26a0 {drift_warning}[/yellow]")
+    target_files = get_markdown_target_files(project_root, config=config.format)
     if not target_files:
         logger.info("  No markdown files to check.")
         return

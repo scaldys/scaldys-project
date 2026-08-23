@@ -173,6 +173,42 @@ distribution options.
 See :ref:`windows_installer` for details on what each packaging file should
 contain.
 
+``[format]``
+------------
+
+Controls target files and directories for Markdown and code formatting.
+
+.. code-block:: toml
+
+    [format]
+    markdown_targets = ["README.md", "docs/site"]
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 15 60
+
+   * - Key
+     - Default
+     - Description
+   * - ``markdown_targets``
+     - ``None`` (unconfigured)
+     - List of files and directories (relative to project root) to format with
+       ``mdformat``. Specified files are formatted directly; directories are
+       scanned recursively for ``*.md`` files.
+
+       When omitted or ``None``, automatic discovery applies (``README.md`` and
+       all MkDocs documentation directories under ``docs/``).
+       When set to an explicit empty list (``[]``), no Markdown files are formatted.
+
+**Example — customize formatting targets**
+
+.. code-block:: toml
+
+    [format]
+    markdown_targets = ["README.md", "docs/user_guide"]
+
+See :ref:`markdown_formatting_guide` for details on Markdown formatting and CI checks.
+
 Complete example
 ================
 
@@ -191,6 +227,9 @@ Complete example
 
     [docs]
     public_doc_dirs = ["manual"]
+
+    [format]
+    markdown_targets = ["README.md", "docs/manual"]
 
 Annotated reference file
 ========================
@@ -222,3 +261,5 @@ defaults apply:
      - ``false`` (online installer; only applies in ``pyruntime`` mode)
    * - ``docs.public_doc_dirs``
      - ``[]`` (no documentation distributed)
+   * - ``format.markdown_targets``
+     - ``None`` (auto-discovery: ``README.md`` + MkDocs docs)

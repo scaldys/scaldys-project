@@ -7,7 +7,8 @@ import typer
 from rich.markup import escape as markup_escape
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 
-from scaldys_project.cli.utils import console
+from scaldys_project.cli.utils import console, find_project_root
+from scaldys_project.common.config import load_config
 from scaldys_project.common.docs import get_markdown_target_files
 
 logger = logging.getLogger(__name__)
@@ -51,7 +52,9 @@ def format_python() -> None:
 def format_markdown() -> None:
     """Auto-format Markdown files with mdformat (rewrites files in place)."""
     logger.info("[bold]Formatting Markdown files...[/bold]")
-    target_files = get_markdown_target_files()
+    project_root = find_project_root()
+    config = load_config(project_root)
+    target_files = get_markdown_target_files(project_root, config=config.format)
     if not target_files:
         logger.info("  No markdown files to format.")
         return

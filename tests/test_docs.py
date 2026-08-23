@@ -209,3 +209,43 @@ def test_get_markdown_target_files_mkdocs_at_docs_root():
 
         targets = get_markdown_target_files(root)
         assert targets == [Path("docs/index.md")]
+
+
+def test_get_markdown_target_files_explicit_targets():
+    """Resolves specific markdown files and scans directories recursively when configured."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir)
+        (root / "README.md").touch()
+        (root / "ideas.md").touch()
+        (root / "improvements.md").touch()
+
+        notes_dir = root / "notes"
+        notes_dir.mkdir()
+        (notes_dir / "draft1.md").touch()
+        (notes_dir / "sub").mkdir()
+        (notes_dir / "sub" / "draft2.md").touch()
+        (notes_dir / "sub" / "ignored.txt").touch()
+
+        (root / "scaldys-project.toml").write_text(
+            '[format]\nmarkdown_targets = ["README.md", "notes", "ideas.md"]\n'
+        )
+
+        targets = get_markdown_target_files(root)
+        expected = [
+            Path("README.md"),
+            Path("ideas.md"),
+            Path("notes/draft1.md"),
+            Path("notes/sub/draft2.md"),
+        ]
+        assert targets == expected
+
+
+def test_get_markdown_target_files_explicit_empty_list():
+    """Returns empty list when markdown_targets is explicitly set to []."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir)
+        (root / "README.md").touch()
+        (root / "scaldys-project.toml").write_text("[format]\nmarkdown_targets = []\n")
+
+        targets = get_markdown_target_files(root)
+        assert targets == []

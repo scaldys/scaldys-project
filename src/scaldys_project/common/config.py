@@ -112,6 +112,22 @@ class DocsConfig:
 
 
 @dataclass
+class FormatConfig:
+    """
+    Markdown and code formatting settings.
+
+    Attributes
+    ----------
+    markdown_targets : list of str or None
+        List of files and directories to format with mdformat.
+        If None (default), auto-discovery applies (README.md + MkDocs docs).
+        If empty list [], no markdown files are formatted.
+    """
+
+    markdown_targets: list[str] | None = None
+
+
+@dataclass
 class BuildConfig:
     """
     Complete build configuration for a consuming project.
@@ -122,6 +138,7 @@ class BuildConfig:
     cython: CythonConfig = field(default_factory=CythonConfig)
     windows: WindowsConfig = field(default_factory=WindowsConfig)
     docs: DocsConfig = field(default_factory=DocsConfig)
+    format: FormatConfig = field(default_factory=FormatConfig)
 
 
 def load_config(project_path: Path) -> BuildConfig:
@@ -151,6 +168,7 @@ def load_config(project_path: Path) -> BuildConfig:
     cython_data = data.get("cython", {})
     windows_data = data.get("windows", {})
     docs_data = data.get("docs", {})
+    format_data = data.get("format", {})
 
     deployment_mode = windows_data.get("deployment_mode", "wheel_only")
     if deployment_mode not in ("pyinstaller", "pyruntime", "wheel_only"):
@@ -171,5 +189,8 @@ def load_config(project_path: Path) -> BuildConfig:
         ),
         docs=DocsConfig(
             public_doc_dirs=docs_data.get("public_doc_dirs", []),
+        ),
+        format=FormatConfig(
+            markdown_targets=format_data.get("markdown_targets", None),
         ),
     )

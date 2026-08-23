@@ -11,6 +11,8 @@ def test_load_config_defaults_when_no_file():
     assert config.cython.compiled_modules == []
     assert config.cython.source_root == "src"
     assert config.windows.script_dir == "packaging/windows"
+    assert config.docs.public_doc_dirs == []
+    assert config.format.markdown_targets is None
 
 
 def test_load_config_reads_compiled_modules():
@@ -79,3 +81,22 @@ def test_load_config_docs_defaults_when_empty_file():
         (Path(tmpdir) / "scaldys-project.toml").write_text("")
         config = load_config(Path(tmpdir))
     assert config.docs.public_doc_dirs == []
+    assert config.format.markdown_targets is None
+
+
+def test_load_config_reads_markdown_targets():
+    """load_config reads markdown_targets from the [format] section."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        (Path(tmpdir) / "scaldys-project.toml").write_text(
+            '[format]\nmarkdown_targets = ["README.md", "docs/manual"]\n'
+        )
+        config = load_config(Path(tmpdir))
+    assert config.format.markdown_targets == ["README.md", "docs/manual"]
+
+
+def test_load_config_reads_empty_markdown_targets():
+    """load_config preserves explicit empty list for markdown_targets."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        (Path(tmpdir) / "scaldys-project.toml").write_text("[format]\nmarkdown_targets = []\n")
+        config = load_config(Path(tmpdir))
+    assert config.format.markdown_targets == []

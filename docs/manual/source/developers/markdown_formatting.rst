@@ -36,24 +36,48 @@ formatting:
 Target File Scoping
 ===================
 
-Markdown formatting in ``scaldys-project`` is intentionally scoped to prevent
-touching root-level release logs, notes, or license files:
+Markdown formatting in ``scaldys-project`` can be explicitly configured via
+``scaldys-project.toml`` or discovered automatically.
 
-Targeted for formatting:
-------------------------
+Configured targets:
+-------------------
+
+When ``[format]`` defines ``markdown_targets`` in ``scaldys-project.toml``:
+
+* **File paths** (e.g. ``"README.md"``, ``"docs/guide.md"``) are targeted directly.
+* **Directory paths** (e.g. ``"docs/manual"``, ``"docs"``) are scanned recursively
+  for all ``*.md`` files.
+* **Empty list** (``markdown_targets = []``) cleanly skips all Markdown formatting.
+
+Default auto-discovery:
+-----------------------
+
+When ``[format]`` or ``markdown_targets`` is omitted, automatic discovery is used:
 
 1. **``README.md``** — in the project root directory (if present).
 2. **MkDocs documentation files** — all ``*.md`` files located within ``docs/``
    subdirectories that are detected as MkDocs projects (containing ``mkdocs.yml``).
 
-Excluded from formatting:
--------------------------
+Excluded by default:
+--------------------
 
 * **``RELEASES.md``** — preserved as-is so release notes remain untouched.
 * **Other root markdown files** — internal notes (e.g. ``ideas.md``,
   ``improvements.md``) and license files (``licenses/*.md``).
 * **Sphinx documentation** — Sphinx projects in ``docs/`` typically use
   reStructuredText (``*.rst``) and are checked by ``sphinx-lint``.
+
+
+CI Drift Detection
+==================
+
+When ``scaldys-project ci markdown`` runs, it compares the target files configured
+in ``scaldys-project.toml`` against the ``mdformat`` check step in
+``.github/workflows/ci.yml`` (if present).
+
+If the arguments in ``ci.yml`` differ from the configured targets, a warning is
+logged to notify developers of the discrepancy, ensuring local checks and CI
+remain synchronized.
 
 
 Command Summary

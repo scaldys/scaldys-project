@@ -240,3 +240,32 @@ deployment_mode = "wheel_only"
 # Default: false
 #
 # bundle_pyruntime = false
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# [format] — Code and documentation formatting settings
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Controls target files and directories for code and documentation formatters.
+#
+# If the [format] section is omitted entirely, all defaults below apply.
+
+[format]
+
+# markdown_targets
+#
+# A list of files and directories (relative to project root) to format with mdformat.
+# Direct file paths (e.g. "README.md") and directories (e.g. "docs/site") can be
+# specified. Directories are scanned recursively for *.md files.
+#
+# If omitted or set to None, automatic discovery applies (README.md and all
+# MkDocs documentation directories under docs/).
+# If set to an explicit empty list ([]), markdown formatting is skipped.
+#
+# Example:
+#   markdown_targets = ["README.md", "docs/site"]
+#
+# Default: unconfigured (auto-discovery)
+#
+# scaldys-project formats only README.md to avoid touching notes or draft files.
+markdown_targets = ["README.md"]
