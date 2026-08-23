@@ -163,8 +163,8 @@ Runs when a ``v*`` tag is pushed::
         permissions:
           id-token: write
         steps:
-          - uses: actions/checkout@v4
-          - uses: astral-sh/setup-uv@v6
+          - uses: actions/checkout@v6
+          - uses: astral-sh/setup-uv@v7
           - name: Build the project
             run: uv build --index-strategy unsafe-best-match
           - name: Publish
@@ -201,8 +201,8 @@ Runs when a ``v*`` tag is pushed (or triggered manually via ``workflow_dispatch`
           url: ${{ steps.deployment.outputs.page_url }}
         runs-on: ubuntu-latest
         steps:
-          - uses: actions/checkout@v4
-          - uses: astral-sh/setup-uv@v6
+          - uses: actions/checkout@v6
+          - uses: astral-sh/setup-uv@v7
           - name: Install documentation dependencies
             run: uv sync --only-group dev
           - name: Build Sphinx HTML documentation
