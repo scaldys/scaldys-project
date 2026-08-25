@@ -35,6 +35,11 @@
 [0.30.0] - 2026-08-20
 ---------------------
 
+**Added**:
+    - GitHub Actions documentation workflow (``.github/workflows/docs.yml``) to build
+      Sphinx HTML documentation and deploy it to GitHub Pages on release tag pushes
+      (``v*``) and manual ``workflow_dispatch`` triggers.
+
 **Changed**:
     - Replaced the Node.js-based ``prettier`` markdown formatter and ``pre-commit``
       framework with ``mdformat``, a pure-Python CommonMark formatter invoked
