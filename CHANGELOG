@@ -12,6 +12,9 @@
 ---------------------
 
 **Added**:
+    - GitHub Actions documentation workflow (``.github/workflows/docs.yml``) to build
+      Sphinx HTML documentation and deploy it to GitHub Pages on release tag pushes
+      (``v*``) and manual ``workflow_dispatch`` triggers.
     - Dedicated ``[format]`` configuration section in ``scaldys-project.toml`` with the
       ``markdown_targets`` setting, enabling explicit configuration of Markdown files and
       directories formatted by ``mdformat`` (directories are recursively scanned for ``*.md``).
@@ -19,11 +22,6 @@
     - CI workflow drift detection: ``scaldys-project ci markdown`` inspects
       ``.github/workflows/ci.yml`` (if present) and logs a warning when workflow ``mdformat``
       arguments diverge from the configured ``markdown_targets``.
-
-**Changed**:
-    - ``scaldys-project format markdown`` and ``scaldys-project ci markdown`` now resolve target
-      paths from ``[format] markdown_targets`` in ``scaldys-project.toml``, falling back to
-      default discovery (``README.md`` and MkDocs doc directories) when unconfigured.
 
 **Docs**:
     - Updated ``users/topics/configuration.rst`` and ``users/topics/scaldys_project_toml_reference.rst``
@@ -34,11 +32,6 @@
 
 [0.30.0] - 2026-08-20
 ---------------------
-
-**Added**:
-    - GitHub Actions documentation workflow (``.github/workflows/docs.yml``) to build
-      Sphinx HTML documentation and deploy it to GitHub Pages on release tag pushes
-      (``v*``) and manual ``workflow_dispatch`` triggers.
 
 **Changed**:
     - Replaced the Node.js-based ``prettier`` markdown formatter and ``pre-commit``
