@@ -8,6 +8,22 @@
     Docs       for any documentation changes
 
 
+[0.32.0] - 2026-11-03
+---------------------
+
+**Changed**:
+    - Relocated PyInstaller additional hooks lookup from ``src/extra_hooks/``
+      to ``packaging/hooks/`` to keep packaging-specific configuration
+      outside the application source tree.  For backward compatibility,
+      ``scaldys-project`` falls back to ``src/extra_hooks/`` if
+      ``packaging/hooks/`` is not present.
+
+**Docs**:
+    - Updated ``users/topics/windows_exe.rst`` and ``users/topics/project_layout.rst``
+      to document ``packaging/hooks/`` as the standard hook location and
+      reflect the updated project layout.
+
+
 [0.31.0] - 2026-08-23
 ---------------------
 

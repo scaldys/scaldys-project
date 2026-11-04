@@ -57,6 +57,7 @@ The following layout is the recommended structure for a project using
     │       └── source/
     │           └── conf.py
     ├── packaging/
+    │   ├── hooks/                  ← PyInstaller hooks (e.g. hook-myapp.py)
     │   └── windows/                ← Windows packaging files (default location)
     │       ├── myapp.iss           ← Inno Setup script (pyinstaller/pyruntime modes)
     │       ├── myapp_commandline.bat
@@ -102,6 +103,11 @@ The directory containing Windows packaging files defaults to
 
     [windows]
     script_dir = "deploy/windows"
+
+Custom PyInstaller hooks are placed in ``packaging/hooks/`` (e.g.
+``hook-<package_name>.py``).  ``scaldys-project`` automatically passes this
+directory to PyInstaller as an additional hooks directory when building in
+``pyinstaller`` mode.
 
 Examples directory
 ------------------

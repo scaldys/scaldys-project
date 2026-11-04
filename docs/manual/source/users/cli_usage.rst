@@ -440,6 +440,7 @@ and runs the corresponding distribution pipeline:
 ``wheel_only`` mode
     1. Cython compilation (if ``compiled_modules`` is non-empty).
     2. Binary wheel built and placed in ``dist/wheels/``.
+
     No installer is created.
 
 For full details on each mode see :ref:`windows_exe`.

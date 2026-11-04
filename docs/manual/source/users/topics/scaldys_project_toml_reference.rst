@@ -1,8 +1,8 @@
 .. _scaldys_project_toml_reference:
 
-**********************************
+*************************************
 scaldys-project.toml — Full Reference
-**********************************
+*************************************
 
 The annotated file below lists every available ``scaldys-project.toml`` setting in
 one place.  Each option is accompanied by an inline comment that describes

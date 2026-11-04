@@ -97,7 +97,7 @@ How the wheel is built
 2. The copy of ``pyproject.toml`` is patched to:
 
    - restrict package discovery to the project package only (excluding
-     ``extra_hooks/`` and other top-level directories), and
+     legacy ``extra_hooks/`` and other non-package directories), and
    - declare ``*.pyd`` files as package data so that setuptools includes the
      compiled extensions in the wheel.
 
@@ -148,10 +148,13 @@ set of options tuned for Windows distribution.
     package, ensuring dynamically-imported submodules are included.
 
 **Hook file handling**
-    If an ``extra_hooks/`` directory exists in the compiled source tree,
+    If a ``packaging/hooks/`` directory exists at the project root,
     ``scaldys-project`` passes it to PyInstaller as an additional hooks
-    directory.  Hook files should be named ``hook-<package_name>.py``
-    (e.g., ``hook-scaldys_template.py``) to be correctly discovered by
+    directory (``--additional-hooks-dir``).  For backward compatibility, if
+    ``packaging/hooks/`` is not found, ``scaldys-project`` falls back to
+    checking for ``extra_hooks/`` in the compiled source tree.  Hook files
+    should be named ``hook-<package_name>.py`` (e.g.,
+    ``hook-scaldys_template.py``) to be correctly discovered by
     PyInstaller.
 
 **Icon support**

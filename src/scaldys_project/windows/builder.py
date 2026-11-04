@@ -421,7 +421,9 @@ class Compiler:
         entry_point = self.env.src_compiled_dir_path.joinpath(
             f"{self.env.project_package_name}", "__main__.py"
         )
-        hooks_dir = self.env.src_compiled_dir_path.joinpath("extra_hooks")
+        hooks_dir = self.env.project_path.joinpath("packaging", "hooks")
+        if not hooks_dir.exists():
+            hooks_dir = self.env.src_compiled_dir_path.joinpath("extra_hooks")
 
         cmd = [
             str(self.env.pyinstaller_exe_path),
