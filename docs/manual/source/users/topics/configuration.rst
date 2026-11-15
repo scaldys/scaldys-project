@@ -122,6 +122,7 @@ distribution options.
     script_dir = "packaging/windows"
     deployment_mode = "pyinstaller"
     bundle_pyruntime = false
+    exe_name = "myapp"
 
 .. list-table::
    :header-rows: 1
@@ -169,6 +170,15 @@ distribution options.
        no internet access on the end-user's machine.  Requires
        ``.python-version`` at the project root and ``uv`` on ``PATH``.
        See :ref:`windows_installer` — *Online and offline installer modes*.
+   * - ``exe_name``
+     - ``[project] name``
+     - *Only meaningful when* ``deployment_mode = "pyinstaller"``.
+       Base name (without ``.exe``) of the executable produced by
+       PyInstaller.  Use it when the command-line name differs from the
+       distribution name, e.g. distribution ``trill-py`` with command
+       ``trill``.  Must be a plain file name: no path separators and no
+       ``.exe`` suffix.  Packaging file names (``.iss``, launchers,
+       ``.ico``) keep using the project name.
 
 See :ref:`windows_installer` for details on what each packaging file should
 contain.
@@ -259,6 +269,8 @@ defaults apply:
      - ``"pyinstaller"``
    * - ``windows.bundle_pyruntime``
      - ``false`` (online installer; only applies in ``pyruntime`` mode)
+   * - ``windows.exe_name``
+     - ``None`` (the ``[project] name`` from ``pyproject.toml``)
    * - ``docs.public_doc_dirs``
      - ``[]`` (no documentation distributed)
    * - ``format.markdown_targets``

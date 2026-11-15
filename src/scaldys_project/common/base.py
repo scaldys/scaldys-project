@@ -55,7 +55,8 @@ class BaseBuildEnvironment:
 
         self.python_exe_path = Path(sys.executable)
         self.python_dir_path = self.python_exe_path.parent
-        self.exe_name = self.project_name
+        # Executable base name: [windows] exe_name, falling back to the project name.
+        self.exe_name = self.config.windows.exe_name or self.project_name
 
         # Core project paths
         self.build_dir_path = self.project_path.joinpath("build")

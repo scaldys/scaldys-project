@@ -198,6 +198,17 @@ For narrative explanations of each section see :ref:`configuration`.
     # Default: false
     bundle_pyruntime = false
 
+    # exe_name
+    #
+    # Base name (without .exe) of the executable that PyInstaller produces in
+    # "pyinstaller" mode.  Set it when the command-line name differs from the
+    # [project] name in pyproject.toml, e.g. distribution "myapp-py" with
+    # command "myapp".  Packaging file names (.iss, launchers, .ico) are not
+    # affected and keep using the project name.
+    #
+    # Default: the [project] name from pyproject.toml
+    # exe_name = "myapp-py"
+
 
     # ══════════════════════════════════════════════════════════════════════════
     # [format] — Code and documentation formatting settings

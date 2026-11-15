@@ -1,6 +1,8 @@
 import tempfile
 from pathlib import Path
 
+import pytest
+
 from scaldys_project.common.config import load_config
 
 
@@ -100,3 +102,32 @@ def test_load_config_reads_empty_markdown_targets():
         (Path(tmpdir) / "scaldys-project.toml").write_text("[format]\nmarkdown_targets = []\n")
         config = load_config(Path(tmpdir))
     assert config.format.markdown_targets == []
+
+
+def test_load_config_exe_name_defaults_to_none():
+    """exe_name is None when not set, so the project name is used."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        (Path(tmpdir) / "scaldys-project.toml").write_text(
+            '[windows]\ndeployment_mode = "pyinstaller"\n'
+        )
+        config = load_config(Path(tmpdir))
+    assert config.windows.exe_name is None
+
+
+def test_load_config_reads_exe_name():
+    """load_config reads exe_name from the [windows] section."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        (Path(tmpdir) / "scaldys-project.toml").write_text('[windows]\nexe_name = "trill"\n')
+        config = load_config(Path(tmpdir))
+    assert config.windows.exe_name == "trill"
+
+
+@pytest.mark.parametrize(
+    "value", ['""', '"  "', '"bin/trill"', r"'bin\trill'", '"trill.exe"', "42"]
+)
+def test_load_config_rejects_invalid_exe_name(value):
+    """load_config rejects exe_name values that are not a plain file base name."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        (Path(tmpdir) / "scaldys-project.toml").write_text(f"[windows]\nexe_name = {value}\n")
+        with pytest.raises(RuntimeError, match="exe_name"):
+            load_config(Path(tmpdir))

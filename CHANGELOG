@@ -8,6 +8,20 @@
     Docs       for any documentation changes
 
 
+[0.33.0] - 2026-11-15
+---------------------
+
+**Added**:
+    - ``[windows] exe_name`` setting in ``scaldys-project.toml`` to choose the
+      base name of the PyInstaller executable.  It defaults to the
+      ``[project] name``, so existing projects are unaffected.  Use it when
+      the command-line name differs from the distribution name.
+
+**Docs**:
+    - Documented ``exe_name`` in ``users/topics/configuration.rst`` and
+      ``users/topics/scaldys_project_toml_reference.rst``.
+
+
 [0.32.0] - 2026-11-03
 ---------------------
 

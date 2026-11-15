@@ -88,11 +88,19 @@ class WindowsConfig:
         When ``False`` (default), ``uv.exe`` is still bundled in ``bin/`` but
         the environment is created *online* by ``setup_pyruntime.ps1``
         during installation.
+    exe_name : str or None
+        Base name (without ``.exe``) of the executable produced by PyInstaller
+        in ``pyinstaller`` mode.  ``None`` (default) uses the ``[project] name``
+        from ``pyproject.toml``.  Set it when the command-line name differs
+        from the distribution name (e.g. distribution ``trill-py``, command
+        ``trill``).  Packaging file names (``.iss``, launchers, ``.ico``) are
+        not affected and keep using the project name.
     """
 
     script_dir: str = "packaging/windows"
     deployment_mode: str = "wheel_only"
     bundle_pyruntime: bool = False
+    exe_name: str | None = None
 
 
 @dataclass
@@ -177,6 +185,19 @@ def load_config(project_path: Path) -> BuildConfig:
             f"'pyinstaller', 'pyruntime', or 'wheel_only', got '{deployment_mode}'"
         )
 
+    exe_name = windows_data.get("exe_name")
+    if exe_name is not None and (
+        not isinstance(exe_name, str)
+        or not exe_name.strip()
+        or exe_name != exe_name.strip()
+        or any(c in exe_name for c in '/\\:*?"<>|')
+        or exe_name.lower().endswith(".exe")
+    ):
+        raise RuntimeError(
+            f"{config_file}: [windows] exe_name must be a non-empty file base name "
+            f"without path separators or '.exe' suffix, got {exe_name!r}"
+        )
+
     return BuildConfig(
         cython=CythonConfig(
             compiled_modules=cython_data.get("compiled_modules", []),
@@ -186,6 +207,7 @@ def load_config(project_path: Path) -> BuildConfig:
             script_dir=windows_data.get("script_dir", "packaging/windows"),
             deployment_mode=deployment_mode,
             bundle_pyruntime=windows_data.get("bundle_pyruntime", False),
+            exe_name=exe_name,
         ),
         docs=DocsConfig(
             public_doc_dirs=docs_data.get("public_doc_dirs", []),
