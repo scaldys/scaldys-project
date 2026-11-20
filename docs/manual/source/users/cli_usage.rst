@@ -334,9 +334,9 @@ sequence, with a Rich progress bar tracking overall progress:
 4. **Packaging** — mode-dependent:
 
    - ``pyinstaller`` / ``pyruntime`` — stages artefacts and runs Inno Setup
-     to produce a setup ``.exe`` in ``dist/installer/``.
+     to produce a setup ``.exe`` in ``artifacts/installer/``.
    - ``wheel_only`` — copies each ``public_doc_dirs`` entry from
-     ``build/<name>/html/`` to ``dist/documentation/<name>/``.
+     ``build/<name>/html/`` to ``artifacts/documentation/<name>/``.
 
 Any stage failure stops the build and reports the error.
 
@@ -422,24 +422,25 @@ and runs the corresponding distribution pipeline:
 
 ``pyinstaller`` mode
     1. Cython compilation (if ``compiled_modules`` is non-empty).
-    2. PyInstaller bundles the application into ``dist/portable/bin/``.
-    3. Binary wheel built and placed in ``dist/wheels/``.
+    2. PyInstaller bundles the application into ``artifacts/portable/bin/``.
+    3. Binary wheel built and placed in ``dist/``.
     4. Launcher scripts, documentation (from ``build/``), and examples are
-       staged into ``dist/portable/``.
-    5. Inno Setup produces a setup ``.exe`` in ``dist/installer/``.
+       staged into ``artifacts/portable/``.
+    5. Inno Setup produces a setup ``.exe`` in ``artifacts/installer/``.
 
 ``pyruntime`` mode
     1. Cython compilation (if ``compiled_modules`` is non-empty).
-    2. Binary wheel built and placed in ``dist/wheels/``.
+    2. Binary wheel built and placed in ``dist/``.
     3. Launcher scripts, documentation, examples, ``setup_pyruntime.ps1``,
-       ``uv.exe``, and the wheel are staged into ``dist/portable/``.
-    4. Optionally, a PythonRuntime venv is pre-built (``bundle_pyruntime =
-       true``).
-    5. Inno Setup produces a setup ``.exe`` in ``dist/installer/``.
+       ``uv.exe``, and the wheel are staged into ``artifacts/portable/``.
+    4. Optionally (``bundle_pyruntime = true``), a PythonRuntime venv is
+       pre-built at ``artifacts/pyruntime/`` with the project's own wheel
+       (and its dependencies) and ``pyyaml`` installed into it.
+    5. Inno Setup produces a setup ``.exe`` in ``artifacts/installer/``.
 
 ``wheel_only`` mode
     1. Cython compilation (if ``compiled_modules`` is non-empty).
-    2. Binary wheel built and placed in ``dist/wheels/``.
+    2. Binary wheel built and placed in ``dist/``.
 
     No installer is created.
 

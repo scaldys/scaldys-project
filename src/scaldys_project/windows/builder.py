@@ -665,7 +665,7 @@ class Packager:
 
             # Stage the built wheel into dist/portable/wheels/ so that the ISS
             # script can bundle it in the installer.  The wheel is always built
-            # first by Compiler._build_wheel() into dist/wheels/.
+            # first by Compiler._build_wheel() into dist/.
             src_wheels = self.env.dist_wheels_dir_path
             dest_wheels = self.env.dist_exe_dir_path / "wheels"
             if src_wheels.is_dir():
@@ -759,8 +759,9 @@ class Packager:
         Uses the ``uv`` tool (must be on PATH) to:
 
         1. Download the Python version declared in ``.python-version``.
-        2. Create a virtual environment at ``dist/pyruntime/``.
-        3. Install ``jupyter`` and ``pyyaml`` and all their dependencies.
+        2. Create a virtual environment at ``artifacts/pyruntime/``.
+        3. Install the project's own binary wheel (resolved from ``dist/`` by
+           its ``[project] name``) and ``pyyaml``, with all their dependencies.
 
         The resulting directory is picked up automatically by ``run_innosetup()``
         and included in the ``setup.exe`` as an optional component, producing an
@@ -802,8 +803,10 @@ class Packager:
 
         python_exe = pyruntime_dir / "Scripts" / "python.exe"
         wheels_dir = self.env.dist_wheels_dir_path
+        package_name = self.env.project_name
         logger.info(
-            "  [green]\u25ba[/green] [3/3] Installing softspin (with dependencies) and pyyaml ..."
+            f"  [green]\u25ba[/green] [3/3] Installing {package_name} "
+            "(with dependencies) and pyyaml ..."
         )
         self.env.run_command(
             [
@@ -814,7 +817,7 @@ class Packager:
                 str(python_exe),
                 "--find-links",
                 str(wheels_dir),
-                "softspin",
+                package_name,
                 "pyyaml",
             ],
             "Failed to install packages into PythonRuntime environment",

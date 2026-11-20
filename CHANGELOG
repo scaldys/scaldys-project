@@ -8,6 +8,26 @@
     Docs       for any documentation changes
 
 
+[0.34.0] - 2026-11-18
+---------------------
+
+**Fixed**:
+    - Offline PythonRuntime build (``deployment_mode = "pyruntime"`` with
+      ``bundle_pyruntime = true``) installed a hardcoded ``softspin`` package
+      into ``artifacts/pyruntime/`` instead of the project's own wheel, so
+      ``build windows`` failed for every other project.  The package name is
+      now taken from the ``[project] name`` in ``pyproject.toml``.
+
+**Docs**:
+    - ``users/topics/windows_installer.rst``: the offline PythonRuntime
+      contains the project's wheel (with its dependencies) and ``pyyaml``,
+      not ``jupyter``.
+    - ``users/cli_usage.rst``, ``users/topics/configuration.rst`` and
+      ``users/topics/scaldys_project_toml_reference.rst``: corrected the
+      artifact paths (``artifacts/portable/``, ``artifacts/installer/``,
+      ``artifacts/pyruntime/``, wheels in ``dist/``).
+
+
 [0.33.0] - 2026-11-15
 ---------------------
 

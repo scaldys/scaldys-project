@@ -185,7 +185,7 @@ For narrative explanations of each section see :ref:`configuration`.
     #
     # true            — OFFLINE mode
     #   A complete PythonRuntime virtual environment is pre-built at
-    #   dist/pyruntime/ during the build itself (using uv).  Its path is then
+    #   artifacts/pyruntime/ during the build itself (using uv).  Its path is then
     #   passed to Inno Setup via the /DPythonRuntimeDir preprocessor define,
     #   and the entire environment is embedded inside setup.exe.
     #   No internet access is needed on the end-user's machine at install time.

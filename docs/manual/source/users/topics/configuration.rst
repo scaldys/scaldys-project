@@ -165,7 +165,7 @@ distribution options.
      - ``false``
      - *Only meaningful when* ``deployment_mode = "pyruntime"``.
        When ``true``, pre-builds a PythonRuntime virtual environment at
-       ``dist/pyruntime/`` and passes its path to Inno Setup as
+       ``artifacts/pyruntime/`` and passes its path to Inno Setup as
        ``/DPythonRuntimeDir``, enabling an offline installer that requires
        no internet access on the end-user's machine.  Requires
        ``.python-version`` at the project root and ``uv`` on ``PATH``.

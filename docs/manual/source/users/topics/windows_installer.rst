@@ -224,8 +224,9 @@ They control how the Python runtime environment is delivered to end users.
        project root.
     2. Installs that Python version via ``uv python install``.
     3. Creates a virtual environment at ``artifacts/pyruntime/`` and installs
-       ``jupyter``, ``pyyaml``, and the project's binary wheel
-       (from ``dist/``) into it.
+       the project's binary wheel (from ``dist/``, looked up by the
+       ``[project] name`` in ``pyproject.toml``) with all its dependencies,
+       plus ``pyyaml``.
     4. Passes ``/DPythonRuntimeDir=<path>`` to Inno Setup so the script
        can bundle the pre-built environment.
 
