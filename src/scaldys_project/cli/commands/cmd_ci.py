@@ -1,11 +1,12 @@
 import logging
 import subprocess
+import tomllib
 from pathlib import Path
 
 import typer
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 
-from scaldys_project.cli.utils import console, find_project_root
+from scaldys_project.cli.utils import console, current_workspace, workspace_root
 from scaldys_project.common.config import load_config
 from scaldys_project.common.docs import check_ci_markdown_drift, get_markdown_target_files
 
@@ -18,9 +19,9 @@ ci_app = typer.Typer(
 
 
 def _run(cmd: list[str], *, quiet: bool = False) -> None:
-    """Run a subprocess in cwd; raise typer.Exit with its return code on failure."""
+    """Run a subprocess at the workspace (or project) root; raise typer.Exit on failure."""
     logger.info(f"  [dim]Command: {' '.join(cmd)}[/dim]")
-    result = subprocess.run(cmd, cwd=Path.cwd(), capture_output=True, text=True, check=False)
+    result = subprocess.run(cmd, cwd=workspace_root(), capture_output=True, text=True, check=False)
     if not quiet:
         output = (result.stdout + result.stderr).strip()
         for line in output.splitlines():
@@ -33,7 +34,7 @@ def _run(cmd: list[str], *, quiet: bool = False) -> None:
 def _run_format_diff(cmd: list[str]) -> None:
     """Run a format --diff command; show affected file names instead of full diffs."""
     logger.info(f"  [dim]Command: {' '.join(cmd)}[/dim]")
-    result = subprocess.run(cmd, cwd=Path.cwd(), capture_output=True, text=True, check=False)
+    result = subprocess.run(cmd, cwd=workspace_root(), capture_output=True, text=True, check=False)
     output = result.stdout + result.stderr
 
     affected: list[str] = []
@@ -74,16 +75,40 @@ def ci_format() -> None:
 def ci_typecheck() -> None:
     """Run pyright type checking."""
     logger.info("[bold]Syncing Python dependencies...[/bold]")
-    _run(["uv", "sync"], quiet=True)
+    # A bare 'uv sync' in a workspace member uninstalls the other members.
+    workspace = current_workspace()
+    _run(["uv", "sync", "--all-packages"] if workspace else ["uv", "sync"], quiet=True)
     logger.info("[bold]Running Python type check...[/bold]")
-    _run(["uv", "run", "pyright", "./src", "./tests"])
+    if workspace is None:
+        _run(["uv", "run", "pyright", "./src", "./tests"])
+    elif _root_has_pyright_config(workspace.root):
+        # Let the root [tool.pyright] include/exclude decide what is checked.
+        _run(["uv", "run", "pyright"])
+    else:
+        # No root config: check every member's source root and tests/.
+        paths: list[str] = []
+        for member in workspace.members.values():
+            source_root = load_config(member.path, workspace.root).cython.source_root
+            for folder in (member.path / source_root, member.path / "tests"):
+                if folder.is_dir():
+                    paths.append(folder.relative_to(workspace.root).as_posix())
+        _run(["uv", "run", "pyright", *paths])
+
+
+def _root_has_pyright_config(root: Path) -> bool:
+    """Return True when the workspace root pyproject.toml has [tool.pyright]."""
+    try:
+        with open(root / "pyproject.toml", "rb") as f:
+            return "pyright" in tomllib.load(f).get("tool", {})
+    except (OSError, tomllib.TOMLDecodeError):
+        return False
 
 
 @ci_app.command("markdown")
 def ci_markdown() -> None:
     """Check markdown formatting with mdformat (check only, no rewrite)."""
     logger.info("[bold]Checking markdown formatting...[/bold]")
-    project_root = find_project_root()
+    project_root = workspace_root()
     config = load_config(project_root)
     drift_warning = check_ci_markdown_drift(project_root, config=config.format)
     if drift_warning:
@@ -97,9 +122,23 @@ def ci_markdown() -> None:
 
 @ci_app.command("doclint")
 def ci_doclint() -> None:
-    """Run sphinx-lint on the docs directory."""
+    """Run sphinx-lint on the docs directory (every member's in a workspace)."""
     logger.info("[bold]Running doc lint...[/bold]")
-    _run(["uv", "run", "sphinx-lint", "docs/"])
+    workspace = current_workspace()
+    if workspace is None:
+        _run(["uv", "run", "sphinx-lint", "docs/"])
+        return
+    doc_dirs = [workspace.root / "docs"] + [m.path / "docs" for m in workspace.members.values()]
+    targets: list[str] = []
+    for doc_dir in doc_dirs:
+        if doc_dir.is_dir():
+            rel = doc_dir.relative_to(workspace.root).as_posix() + "/"
+            if rel not in targets:
+                targets.append(rel)
+    if not targets:
+        logger.info("  No docs/ directories to lint.")
+        return
+    _run(["uv", "run", "sphinx-lint", *targets])
 
 
 @ci_app.command("all")

@@ -12,6 +12,11 @@ sections you do not need.
 
 For narrative explanations of each section see :ref:`configuration`.
 
+In a uv workspace, the same file can also sit at the workspace root.  There
+it provides defaults: each member's file is merged over it section by
+section, key by key, and ``[format]`` is read from the root file only.  See
+:ref:`uv_workspaces`.
+
 .. code-block:: toml
 
     # scaldys-project.toml — complete annotated reference

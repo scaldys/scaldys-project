@@ -33,7 +33,9 @@ breaking the design:
 - **Config is loaded once.**  ``load_config()`` is called inside
   ``BaseBuildEnvironment.__init__`` and stored as ``self.config``.  No
   component re-reads ``scaldys-project.toml`` at runtime.  Extend ``config.py`` if
-  new configuration keys are needed.
+  new configuration keys are needed.  New keys are merged over the workspace
+  root's file automatically; a workspace-wide section must be special-cased
+  in ``_merge_config()`` like ``[format]``.
 
 - **Platform code stays in its subdirectory.**  Windows-specific logic lives
   entirely inside ``windows/builder.py``.  Shared logic (base classes, config,

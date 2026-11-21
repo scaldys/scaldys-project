@@ -74,7 +74,8 @@ being run.
      - ``{source_root}/{package}/__main__.py`` must exist.  This file is
        used as the application entry point by PyInstaller (``pyinstaller``
        mode) and by the installed console script in all modes.
-     - All build commands
+     - All build commands — *not* ``wheel_only`` mode (libraries need no
+       entry point)
      - :ref:`windows_exe`
    * - 5
      - The Windows packaging directory (``packaging/windows/`` by default,
@@ -104,7 +105,8 @@ being run.
      - ``.python-version`` must exist at the project root.  It is the single
        source of truth for the Python version used by the PythonRuntime
        setup script and the offline venv build.  Create the file with the
-       target version string on a single line (e.g. ``3.13``).
+       target version string on a single line (e.g. ``3.13``).  A workspace
+       member without its own file uses the workspace root's.
      - ``build windows``, ``build all`` — ``pyruntime`` mode only
      - :ref:`windows_installer` — *Online and offline installer modes*
    * - 10
@@ -114,7 +116,9 @@ being run.
        PyInstaller hook can call ``copy_metadata()`` to bundle the package's
        dist-info into the frozen executable, making
        ``importlib.metadata.version()`` work at runtime.  If the check
-       fails, run ``uv sync`` (or ``pip install -e .``) and retry.
+       fails, run ``uv sync`` (or ``pip install -e .``) and retry.  In a uv
+       workspace the app's internal dependencies must be installed too; run
+       ``uv sync --all-packages`` or list the members in the root dev group.
      - ``build windows``, ``build all``, ``check`` — ``pyinstaller`` mode only
      - :ref:`windows_exe` — *Mode 1: pyinstaller*
    * - 11
@@ -138,6 +142,13 @@ being run.
    skipped entirely because no installer is created.  Rule 9 is only
    evaluated in ``pyruntime`` mode.  Rule 10 is only evaluated in
    ``pyinstaller`` mode.  Rule 11 and 12 are unconditional and always evaluated.
+
+.. note::
+
+   For a uv workspace member, the check also validates the version
+   constraints on its internal dependencies: a constraint that the
+   dependency's current version does not meet is an error, and a missing
+   constraint is a warning.  See :ref:`uv_workspaces`.
 
 .. note::
 

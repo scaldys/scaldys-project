@@ -12,6 +12,7 @@ from typing import Annotated, Any
 import typer
 
 from scaldys_project.cli.utils import console
+from scaldys_project.common.workspace import find_workspace_root
 
 logger = logging.getLogger(__name__)
 
@@ -467,6 +468,15 @@ def init(
     scaffolds a new project by substituting all placeholder names with the
     values you provide.
     """
+    ws_root = find_workspace_root(Path.cwd())
+    if ws_root is not None:
+        logger.error(
+            f"[bold red]Refusing to create a project inside the uv workspace at "
+            f"'{ws_root}'.[/bold red] Adding members to a workspace is not supported "
+            "yet; run 'init' outside the workspace."
+        )
+        raise typer.Exit(1)
+
     params = _collect_params()
     if no_git:
         params["init_git"] = False

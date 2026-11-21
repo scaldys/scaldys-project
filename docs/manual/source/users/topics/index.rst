@@ -21,6 +21,7 @@ troubleshoot an issue.
    cython_compilation
    windows_exe
    windows_installer
+   uv_workspaces
 
 Guide summaries
 ===============
@@ -63,3 +64,9 @@ Guide summaries
     How Inno Setup is invoked to produce the final ``.exe`` installer,
     including the required packaging files and a minimal ``.iss`` script
     template.
+
+:ref:`uv_workspaces`
+    How to build the members of a uv workspace — selecting targets with
+    ``--package`` / ``--all-packages``, workspace-wide defaults, internal
+    dependencies and their version constraints, and apps that bundle
+    library members into one installer.

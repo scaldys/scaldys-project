@@ -10,6 +10,7 @@ from typing import Any
 
 from scaldys_project.common.config import BuildConfig, load_config
 from scaldys_project.common.utils import safe_empty_dir, safe_unlink
+from scaldys_project.common.workspace import Member, Workspace, find_workspace
 
 logger = logging.getLogger(__name__)
 
@@ -50,8 +51,19 @@ class BaseBuildEnvironment:
         self.project_package_name: str = _meta["name"].replace("-", "_")
         self.version: str = _meta["version"]
 
-        # Load project-specific build configuration from scaldys-project.toml (defaults if absent).
-        self.config: BuildConfig = load_config(self.project_path)
+        # uv workspace this project belongs to (None for a standalone project).
+        # build/, dist/, artifacts/, docs/ and packaging/ stay per member; only
+        # .python-version and scaldys-project.toml defaults come from the root.
+        self.workspace: Workspace | None = find_workspace(self.project_path)
+        self.workspace_root_path: Path = (
+            self.workspace.root if self.workspace else self.project_path
+        )
+
+        # Load project-specific build configuration from scaldys-project.toml
+        # (defaults if absent; merged over the workspace root's file for members).
+        self.config: BuildConfig = load_config(
+            self.project_path, self.workspace_root_path if self.workspace else None
+        )
 
         self.python_exe_path = Path(sys.executable)
         self.python_dir_path = self.python_exe_path.parent
@@ -60,7 +72,12 @@ class BaseBuildEnvironment:
 
         # Core project paths
         self.build_dir_path = self.project_path.joinpath("build")
+        # The member's own .python-version wins; otherwise the workspace root's.
         self.python_version_file_path = self.project_path / ".python-version"
+        if not self.python_version_file_path.exists():
+            root_version_file = self.workspace_root_path / ".python-version"
+            if root_version_file.exists():
+                self.python_version_file_path = root_version_file
         self.docs_dir_path = self.project_path.joinpath("docs")
         self.src_dir_path = self.project_path / self.config.cython.source_root
         self.dist_dir_path = self.project_path.joinpath("dist")
@@ -70,6 +87,11 @@ class BaseBuildEnvironment:
         self.sphinx_exe_path = self._find_tool(
             "sphinx-build" + (".exe" if os.name == "nt" else ""), self.python_dir_path
         )
+
+    @property
+    def workspace_member(self) -> Member | None:
+        """This project's entry in the workspace, or ``None`` outside a workspace."""
+        return self.workspace.member_at(self.project_path) if self.workspace else None
 
     def _find_tool(self, name: str, fallback_path: Path) -> Path:
         """

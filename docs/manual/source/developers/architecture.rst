@@ -21,19 +21,23 @@ The module layout mirrors this split:
     ├── __main__.py             # minimal entry point — imports app from cli/
     ├── cli/
     │   ├── cli.py              # Typer app, logging setup, command wiring
-    │   ├── utils.py            # shared Console instance, find_project_root()
+    │   ├── utils.py            # shared Console, find_project_root(), workspace target
+    │   │                       #   resolution (resolve_targets, run_for_targets)
     │   └── commands/
     │       ├── cmd_build.py    # build subcommands (all, docs, windows, clean)
     │       ├── cmd_check.py    # check command
-    │       ├── cmd_ci.py       # ci subcommands (all, lint, format, typecheck, build)
+    │       ├── cmd_ci.py       # ci subcommands (all, lint, format, typecheck, markdown, doclint)
+    │       ├── cmd_format.py   # format subcommands (all, python, markdown)
     │       ├── cmd_init.py     # init command — project scaffolding from scaldys-template
+    │       ├── cmd_publish.py  # publish command
     │       └── cmd_test.py     # test command
     ├── common/
     │   ├── base.py             # BaseBuildEnvironment, BaseBuilder
     │   ├── compile_runner.py   # Cython/setuptools build script (run as subprocess)
     │   ├── config.py           # scaldys-project.toml loading and dataclasses
     │   ├── docs.py             # DocumentationBuilder (Sphinx)
-    │   └── utils.py            # Retry-safe file operations
+    │   ├── utils.py            # Retry-safe file operations
+    │   └── workspace.py        # uv workspace discovery: Workspace, Member
     └── windows/
         └── builder.py          # WindowsBuildEnvironment, Compiler, Packager, WindowsBuilder
 
@@ -61,7 +65,8 @@ For the Windows platform the composition looks like this:
     Owns the Cython + PyInstaller sub-pipeline.  ``run_cython()`` stages
     source files, compiles declared modules to ``.pyd``, and excludes their
     ``.py`` originals from the staging area.  ``run_pyinstaller()`` then
-    bundles the staged tree into a standalone executable.
+    bundles the staged tree into a standalone executable.  ``_build_wheel()``
+    builds the wheel from the staged tree and returns its path.
 
 **Packager** (``windows/builder.py``)
     Owns the distribution-layout step and installer creation.
@@ -76,9 +81,9 @@ For the Windows platform the composition looks like this:
 **WindowsBuilder** (``windows/builder.py``)
     Thin orchestrator.  Its ``main()`` method defines an ordered ``steps``
     list and drives the Rich progress bar.  Each step is a ``(label, callable)``
-    pair.  Individual step methods (``build_docs``, ``build_exe``,
-    ``build_installer``) are also exposed so the CLI can invoke them
-    independently.
+    pair.  Individual step methods (``build_docs``, ``build_internal_deps``,
+    ``build_exe``, ``build_installer``) are also exposed so the CLI can
+    invoke them independently.
 
 
 Execution Flow
@@ -88,18 +93,25 @@ Tracing what happens when ``scaldys-project build all`` is run:
 
 1. **Module load** — ``__main__.py`` is the minimal entry point; it imports
    ``app`` from ``cli/cli.py``, which sets up logging and wires all command
-   modules.  When the ``build_all`` command is invoked, ``find_project_root()``
-   (from ``cli/utils.py``) walks up from ``cwd`` until it finds a
-   ``pyproject.toml`` file.
+   modules.  When the ``build_all`` command is invoked,
+   ``resolve_targets_or_exit()`` (from ``cli/utils.py``) returns the project
+   directories to build.  Outside a uv workspace that is the single directory
+   found by ``find_project_root()``, which walks up from ``cwd`` until it
+   finds a ``pyproject.toml`` file.  In a workspace it is the selected
+   members, in topological order (see *uv Workspaces* below).
 
-2. **Builder instantiation** — the ``build_all`` command function calls
-   ``WindowsBuilder(find_project_root(), verbose=verbose)``.  The constructor chain:
+2. **Builder instantiation** — ``run_for_targets()`` calls the command's
+   action once per target directory, which runs
+   ``WindowsBuilder(path, verbose=verbose).main(...)``.  The constructor chain:
 
    a. ``WindowsBuilder.__init__`` creates a ``WindowsBuildEnvironment``.
    b. ``WindowsBuildEnvironment.__init__`` calls ``super().__init__()``
       (``BaseBuildEnvironment``), which reads ``pyproject.toml`` for ``name``
-      and ``version``, calls ``load_config()`` to read ``scaldys-project.toml``, and
-      discovers shared tools (``sphinx-build``).
+      and ``version``, looks up the uv workspace with ``find_workspace()``,
+      calls ``load_config()`` to read ``scaldys-project.toml`` (merged over
+      the workspace root's file for a member), resolves ``.python-version``
+      (member first, then workspace root), and discovers shared tools
+      (``sphinx-build``).
    c. Back in ``WindowsBuildEnvironment``, Windows-specific tools are
       discovered (``pyinstaller.exe``, ``ISCC.exe``) and Windows-specific
       paths are resolved from the loaded config.
@@ -117,7 +129,8 @@ Tracing what happens when ``scaldys-project build all`` is run:
            ("Checking project compliance", ...),
            ("Pre-flight checks",           lambda: self.env.pre_flight_checks(...)),
            ("Cleaning build directories",  self.clean),
-           ("Building documentation",      self.build_docs),
+           ("Building documentation",      self.build_docs),    # omitted when there is no docs/
+           ("Building internal dependencies", self.build_internal_deps),  # workspace apps only
            ("Building distribution",       self.build_exe),     # Cython + wheel (+ PyInstaller in Mode 1)
            # ("Building installer", self.build_installer),      # omitted in wheel_only mode
        ]
@@ -135,8 +148,8 @@ Tracing what happens when ``scaldys-project build all`` is run:
 Configuration Loading
 ---------------------
 
-``common/config.py`` provides the single ``load_config(project_path)``
-function.  It is called once inside ``BaseBuildEnvironment.__init__`` and its
+``common/config.py`` provides the single
+``load_config(project_path, workspace_root=None)`` function.  It is called once inside ``BaseBuildEnvironment.__init__`` and its
 result is stored as ``self.config``.
 
 .. code-block:: text
@@ -147,15 +160,24 @@ result is stored as ``self.config``.
                                               │       source_root: str
                                               ├── docs: DocsConfig
                                               │       public_doc_dirs: list[str]
-                                              └── windows: WindowsConfig
-                                                      script_dir: str
-                                                      deployment_mode: str
-                                                      bundle_pyruntime: bool
+                                              ├── windows: WindowsConfig
+                                              │       script_dir: str
+                                              │       deployment_mode: str
+                                              │       bundle_pyruntime: bool
+                                              │       exe_name: str | None
+                                              └── format: FormatConfig
+                                                      markdown_targets: list[str] | None
 
-If ``scaldys-project.toml`` is absent ``load_config()`` returns ``BuildConfig()``
-immediately, applying all dataclass defaults.  If the file is present,
-``tomllib`` parses it and each section is mapped to the corresponding
-dataclass; any missing key falls back to its dataclass default.
+If ``scaldys-project.toml`` is absent, every section takes its dataclass
+defaults.  If the file is present, ``tomllib`` parses it and each section is
+mapped to the corresponding dataclass; any missing key falls back to its
+dataclass default.
+
+When ``workspace_root`` is given and differs from ``project_path`` (a uv
+workspace member), the root ``scaldys-project.toml`` is read first and the
+member's file is merged over it section by section, key by key
+(``_merge_config()``).  ``[format]`` is always taken from the root.  The
+merged result is validated like a single file.
 
 The config object is accessed throughout the codebase via ``self.env.config``
 (for step classes) or ``self.config`` (inside ``BaseBuildEnvironment``
@@ -186,10 +208,57 @@ working directory to ``sys.path``, so only installed packages and the staging
 directory influence the build, regardless of what the parent process has on
 its path.
 
+The child process reads its ``compiled_modules`` and ``source_root``
+through the same ``load_config()`` (with the workspace root found by
+``find_workspace()``), so a member's Cython settings match the parent's.
+
 The deferred Cython import in ``compile_runner.py`` (inside the
 ``if __name__ == "__main__":`` block) is a direct consequence of this design:
 the module can be safely scanned by import tools and test runners without
 requiring the ``[cython]`` extra to be installed.
+
+uv Workspaces
+-------------
+
+``common/workspace.py`` reads uv workspace metadata; it never runs uv.
+
+.. code-block:: text
+
+    find_workspace(start)  ──▶  Workspace
+                                ├── root: Path
+                                ├── is_virtual_root: bool
+                                └── members: dict[canonical name, Member]
+                                        name, path, version, package_name,
+                                        internal_deps: dict[name, SpecifierSet | None],
+                                        private: bool
+
+- ``find_workspace_root()`` walks up to the nearest ``pyproject.toml`` with
+  ``[tool.uv.workspace]``.  ``find_workspace()`` returns ``None`` when the
+  nearest project is neither the root nor a member (e.g. it is excluded).
+- Members come from the ``members`` globs minus ``exclude``, keeping
+  directories with a ``pyproject.toml``; a root with ``[project]`` is a
+  member too.
+- A dependency is internal when its name has a ``{ workspace = true }``
+  source in the member's or the root's ``[tool.uv.sources]`` and names a
+  member.
+- ``topological_order()`` puts dependencies first and raises
+  ``WorkspaceError`` on cycles or unknown names; ``internal_closure()``
+  returns a member's transitive internal dependencies.
+
+The CLI resolves targets with ``resolve_targets()`` and runs them with
+``run_for_targets()``, which stops on the first failure and prints a summary
+table when there is more than one target.
+
+On the build side, ``BaseBuildEnvironment`` exposes ``workspace``,
+``workspace_root_path`` and ``workspace_member``;
+``WindowsBuildEnvironment`` adds ``internal_closure()``,
+``_check_internal_constraints()`` (used by ``check_compliance()``) and
+``internal_wheels_dir_path``.  ``WindowsBuilder.build_internal_deps()``
+creates a ``WindowsBuilder`` per closure member, runs its ``clean``,
+``run_cython`` and ``_build_wheel``, and copies the wheel to
+``build/internal_wheels/``.  The module-level ``_BUILT_WHEELS`` cache
+(cleared with ``reset_built_wheels()``) makes each member build once per
+process; ``Compiler.build()`` registers a member's own wheel there too.
 
 ---
 

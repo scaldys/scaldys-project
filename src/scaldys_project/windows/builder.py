@@ -25,6 +25,8 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
+from packaging.version import InvalidVersion, Version
+
 from scaldys_project.common.base import BaseBuildEnvironment, BaseBuilder
 from scaldys_project.common.docs import DocEngine, DocumentationBuilder, _detect_engine
 from scaldys_project.common.utils import (
@@ -35,26 +37,67 @@ from scaldys_project.common.utils import (
     safe_rmtree,
     safe_unlink,
 )
+from scaldys_project.common.workspace import Member
 
 logger = logging.getLogger(__name__)
+
+# Wheels built during this process, keyed by member directory.  One CLI run
+# builds each workspace member at most once, even when several apps of an
+# ``--all-packages`` build depend on it.
+_BUILT_WHEELS: dict[Path, Path] = {}
+
+
+def reset_built_wheels() -> None:
+    """Forget the wheels built so far in this process (used by tests)."""
+    _BUILT_WHEELS.clear()
+
+
+# A TOML table header: [a.b] or [[a.b]], optionally followed by a comment.
+_TOML_HEADER_RE = re.compile(r"^\s*(\[\[?)\s*([^\[\]]+?)\s*(\]\]?)\s*(?:#.*)?$")
+# Quoted TOML strings, removed before counting brackets on a line.
+_TOML_STRING_RE = re.compile(r'"(?:[^"\\]|\\.)*"|' + r"'[^']*'")
+
+
+def _normalize_toml_key(key: str) -> str:
+    """Return a dotted TOML key without whitespace around dots or quotes on parts."""
+    parts = [part.strip().strip('"').strip("'") for part in key.split(".")]
+    return ".".join(parts)
 
 
 def _remove_toml_sections(text: str, *section_headers: str) -> str:
     """Return *text* with the named TOML table sections (and their keys) removed.
 
     Each *section_header* should be the bare header string, e.g.
-    ``"tool.setuptools.packages.find"``.  The section extends from its header
-    line up to (but not including) the next ``[``-prefixed header line or the
-    end of the file.
+    ``"tool.setuptools.packages.find"``.  A header also removes its dotted
+    sub-tables (``"tool.uv.sources"`` removes ``[tool.uv.sources.x]``) and
+    arrays of tables (``[[tool.uv.index]]``).  A section extends from its
+    header line up to the next table header or the end of the file.  Lines
+    inside a multi-line array that start with ``[`` are not mistaken for
+    headers.
     """
-    for header in section_headers:
-        # Match the header line and all subsequent non-header lines.
-        pattern = re.compile(
-            r"^\[" + re.escape(header) + r"\]\s*\n(?:(?!\[)[^\n]*\n)*",
-            re.MULTILINE,
+    prefixes = [_normalize_toml_key(h) for h in section_headers]
+
+    def is_removed(name: str) -> bool:
+        return any(name == p or name.startswith(p + ".") for p in prefixes)
+
+    out: list[str] = []
+    skipping = False
+    depth = 0  # open-bracket depth of a multi-line value
+    for line in text.splitlines(keepends=True):
+        if depth == 0:
+            header = _TOML_HEADER_RE.match(line)
+            if header and len(header.group(1)) == len(header.group(3)):
+                skipping = is_removed(_normalize_toml_key(header.group(2)))
+                if not skipping:
+                    out.append(line)
+                continue
+        code = _TOML_STRING_RE.sub("", line).split("#", 1)[0]
+        depth = max(
+            0, depth + code.count("[") + code.count("{") - code.count("]") - code.count("}")
         )
-        text = pattern.sub("", text)
-    return text
+        if not skipping:
+            out.append(line)
+    return "".join(out)
 
 
 class WindowsBuildEnvironment(BaseBuildEnvironment):
@@ -99,6 +142,52 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
         self.dist_exe_dir_path = self.artifacts_dir_path.joinpath("portable")
         self.dist_wheels_dir_path = self.dist_dir_path
         self.dist_setup_dir_path = self.artifacts_dir_path.joinpath("installer")
+        # Wheels of internal workspace dependencies, collected for the installer.
+        # Not dist/: publish refuses more than one binary wheel there.
+        self.internal_wheels_dir_path = self.build_dir_path.joinpath("internal_wheels")
+
+    def internal_closure(self) -> list[Member]:
+        """
+        Return the workspace members this project depends on, libraries first.
+
+        Empty for a standalone project or a member without internal dependencies.
+        """
+        member = self.workspace_member
+        if self.workspace is None or member is None:
+            return []
+        return [self.workspace.members[k] for k in self.workspace.internal_closure(member.name)]
+
+    def _check_internal_constraints(self) -> list[str]:
+        """
+        Check the version constraints on internal workspace dependencies.
+
+        A dependency without a constraint produces a warning.  A constraint that
+        the dependency's current version does not satisfy is returned as an issue.
+        """
+        member = self.workspace_member
+        if self.workspace is None or member is None or not member.internal_deps:
+            return []
+        issues: list[str] = []
+        for key, spec in member.internal_deps.items():
+            dep = self.workspace.members[key]
+            if spec is None:
+                logger.warning(
+                    f"  [yellow]\u26a0[/yellow] Internal dependency '{dep.name}' has no version "
+                    f"constraint; consider '{dep.name}>={dep.version}'."
+                )
+                continue
+            try:
+                ok = spec.contains(Version(dep.version), prereleases=True)
+            except InvalidVersion:
+                ok = False
+            if not ok:
+                issues.append(
+                    f"Internal dependency constraint '{dep.name}{spec}' is not met by the "
+                    f"workspace version {dep.version!r}."
+                )
+        if not issues:
+            logger.info("  [green]\u2713[/green] Internal workspace dependency constraints")
+        return issues
 
     def pre_flight_checks(
         self,
@@ -200,7 +289,8 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
 
         if layout_ok:
             logger.info("  [green]\u2713[/green] Source root and package layout")
-            if require_exe:
+            # Libraries (wheel_only) have no entry point; only apps need __main__.py.
+            if require_exe and self.config.windows.deployment_mode != "wheel_only":
                 # Only check __main__.py when the package dir exists (avoids duplicate noise).
                 main_py = pkg_dir / "__main__.py"
                 if not main_py.exists():
@@ -215,7 +305,9 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
         # for the Python version used by the build and the PythonRuntime setup.
         if not self.python_version_file_path.exists():
             issues.append(
-                ".python-version not found in project root. "
+                ".python-version not found in project root"
+                + (" or workspace root" if self.workspace else "")
+                + ". "
                 "Create it with the target Python version (e.g. '3.13')."
             )
         else:
@@ -229,15 +321,30 @@ class WindowsBuildEnvironment(BaseBuildEnvironment):
         if self.config.windows.deployment_mode == "pyinstaller":
             import importlib.metadata as _meta
 
-            try:
-                _meta.distribution(self.project_name)
+            # The internal dependencies are bundled with --copy-metadata too.
+            missing_dists = []
+            for dist_name in [self.project_name, *(m.name for m in self.internal_closure())]:
+                try:
+                    _meta.distribution(dist_name)
+                except _meta.PackageNotFoundError:
+                    missing_dists.append(dist_name)
+            if not missing_dists:
                 logger.info("  [green]\u2713[/green] Package installation in virtual environment")
-            except _meta.PackageNotFoundError:
+            elif self.workspace:
+                issues.append(
+                    f"Package(s) {', '.join(repr(d) for d in missing_dists)} not installed in "
+                    f"the active virtual environment (no dist-info found). In a uv workspace, "
+                    f"run 'uv sync --all-packages', or add the members to the root dev "
+                    f"dependency group, and retry."
+                )
+            else:
                 issues.append(
                     f"Package '{self.project_name}' is not installed in the active virtual "
                     f"environment (no dist-info found). Run 'uv sync' (or 'pip install -e .') "
                     f"and retry."
                 )
+
+        issues.extend(self._check_internal_constraints())
 
         if require_installer:
             if not self.script_dir_path.is_dir():
@@ -425,6 +532,14 @@ class Compiler:
         if not hooks_dir.exists():
             hooks_dir = self.env.src_compiled_dir_path.joinpath("extra_hooks")
 
+        # Internal workspace dependencies: their staged build/compiled/ trees go
+        # ahead of the app's own on the search path, so PyInstaller picks the
+        # staged (possibly Cython-compiled) copy over the editable install.
+        closure = self.env.internal_closure()
+        dep_paths: list[str] = []
+        for dep in closure:
+            dep_paths += ["--paths", str(dep.path / "build" / "compiled")]
+
         cmd = [
             str(self.env.pyinstaller_exe_path),
             "--noconfirm",
@@ -433,6 +548,7 @@ class Compiler:
             "--console",
             "--name",
             self.env.exe_name,
+            *dep_paths,
             "--paths",
             str(self.env.src_compiled_dir_path),
             "--distpath",
@@ -449,6 +565,16 @@ class Compiler:
         if hooks_dir.exists():
             cmd.extend(["--additional-hooks-dir", str(hooks_dir)])
 
+        for dep in closure:
+            # Plugins load through entry points, which PyInstaller's analysis
+            # cannot follow: collect every submodule, and copy the dist-info so
+            # importlib.metadata.entry_points() and version() work when frozen.
+            cmd.extend(["--collect-submodules", dep.package_name])
+            cmd.extend(["--copy-metadata", dep.name])
+            dep_hooks = dep.path / "packaging" / "hooks"
+            if dep_hooks.is_dir():
+                cmd.extend(["--additional-hooks-dir", str(dep_hooks)])
+
         if self.env.win32_icon_file_path.exists():
             cmd.extend(["--icon", str(self.env.win32_icon_file_path)])
 
@@ -464,7 +590,7 @@ class Compiler:
             safe_rmtree(bin_dir)
             safe_rename(pkg_dir, bin_dir)
 
-    def _build_wheel(self) -> None:
+    def _build_wheel(self) -> Path:
         """
         Build a distribution wheel from the compiled staging area.
 
@@ -479,6 +605,16 @@ class Compiler:
         additionally stages it into ``artifacts/portable/wheels/`` so that Inno
         Setup includes it in the installer and ``setup_pyruntime.ps1`` can
         install it into the PythonRuntime via ``uv pip install --find-links``.
+
+        The staged ``pyproject.toml`` has its uv-only tables
+        (``tool.uv.sources``, ``tool.uv.workspace``, ``tool.uv.index``)
+        removed and the build runs with ``--no-sources``, so a workspace
+        member builds exactly like a standalone project.
+
+        Returns
+        -------
+        Path
+            The wheel that was built.
 
         Raises
         ------
@@ -514,6 +650,14 @@ class Compiler:
             if _readme_src.exists():
                 safe_copy(_readme_src, compiled_path / _readme["file"])
 
+        # Copy the license files: setuptools resolves [project] license-files
+        # globs (and a legacy license = {file = ...}) relative to the staged
+        # pyproject.toml, and fails or omits them when they are missing.
+        for _license_file in self._license_files(_pyproject_meta.get("project", {})):
+            _license_dest = compiled_path / _license_file.relative_to(self.env.project_path)
+            _license_dest.parent.mkdir(parents=True, exist_ok=True)
+            safe_copy(_license_file, _license_dest)
+
         # Restrict setuptools package discovery to the project package only.
         # build/compiled/ contains extra_hooks/ (PyInstaller hooks) alongside the
         # package directory, and setuptools flat-layout auto-discovery refuses to
@@ -527,6 +671,10 @@ class Compiler:
             text,
             "tool.setuptools.packages.find",
             "tool.setuptools.package-data",
+            # uv-only tables: workspace sources cannot resolve from build/compiled/.
+            "tool.uv.sources",
+            "tool.uv.workspace",
+            "tool.uv.index",
         )
         text = text.rstrip() + (
             "\n\n"
@@ -561,11 +709,42 @@ class Compiler:
 
         logger.info("[bold]Building distribution wheel from compiled sources...[/bold]")
         self.env.run_command(
-            [uv_exe, "build", "--wheel", "--out-dir", str(wheels_dir)],
+            [uv_exe, "build", "--wheel", "--no-sources", "--out-dir", str(wheels_dir)],
             "Failed to build the distribution wheel",
             cwd=compiled_path,
         )
         logger.info(f"  [green]\u2713[/green] Wheel written to '{wheels_dir}'")
+        return self._find_wheel(wheels_dir)
+
+    def _license_files(self, project: dict[str, Any]) -> list[Path]:
+        """Return the files that ``[project] license-files`` (or ``license.file``) names."""
+        root = self.env.project_path
+        files: list[Path] = []
+        for pattern in project.get("license-files", []) or []:
+            files.extend(p for p in sorted(root.glob(pattern)) if p.is_file())
+        license_meta = project.get("license")
+        if isinstance(license_meta, dict) and license_meta.get("file"):
+            candidate = root / license_meta["file"]
+            if candidate.is_file():
+                files.append(candidate)
+        unique: list[Path] = []
+        for f in files:
+            if f not in unique and f.resolve().is_relative_to(root):
+                unique.append(f)
+        return unique
+
+    def _find_wheel(self, wheels_dir: Path) -> Path:
+        """Return the newest wheel for this project's name and version in *wheels_dir*."""
+        dist_name = re.sub(r"[-_.]+", "_", self.env.project_name).lower()
+        try:
+            version = str(Version(self.env.version))
+        except InvalidVersion:
+            version = self.env.version
+        prefix = f"{dist_name}-{version}-".lower()
+        matches = [w for w in wheels_dir.glob("*.whl") if w.name.lower().startswith(prefix)]
+        if not matches:
+            raise RuntimeError(f"No wheel for {self.env.project_name} found in '{wheels_dir}'.")
+        return max(matches, key=lambda w: w.stat().st_mtime)
 
     def build(self) -> None:
         """
@@ -577,7 +756,9 @@ class Compiler:
         self.run_cython()
         if self.env.config.windows.deployment_mode == "pyinstaller":
             self.run_pyinstaller()
-        self._build_wheel()
+        wheel = self._build_wheel()
+        # An app built later in this run reuses this wheel instead of rebuilding it.
+        _BUILT_WHEELS[self.env.project_path] = wheel
 
 
 class Packager:
@@ -671,6 +852,12 @@ class Packager:
             if src_wheels.is_dir():
                 safe_empty_dir(dest_wheels)
                 safe_copytree(src_wheels, dest_wheels, dirs_exist_ok=True)
+                # Wheels of internal workspace dependencies go next to the app
+                # wheel, so setup_pyruntime.ps1 can install them from wheels/.
+                internal = self.env.internal_wheels_dir_path
+                if internal.is_dir():
+                    for wheel in sorted(internal.glob("*.whl")):
+                        safe_copy(wheel, dest_wheels / wheel.name)
                 logger.info(f"  Staged wheels into '{dest_wheels}'")
             else:
                 logger.warning(
@@ -808,6 +995,12 @@ class Packager:
             f"  [green]\u25ba[/green] [3/3] Installing {package_name} "
             "(with dependencies) and pyyaml ..."
         )
+        # Internal workspace dependencies are not on any index: point uv at
+        # their wheels too.
+        extra_links: list[str] = []
+        internal = self.env.internal_wheels_dir_path
+        if internal.is_dir() and any(internal.glob("*.whl")):
+            extra_links = ["--find-links", str(internal)]
         self.env.run_command(
             [
                 uv_exe,
@@ -817,6 +1010,7 @@ class Packager:
                 str(python_exe),
                 "--find-links",
                 str(wheels_dir),
+                *extra_links,
                 package_name,
                 "pyyaml",
             ],
@@ -981,6 +1175,51 @@ class WindowsBuilder(BaseBuilder):
         """Generate all documentation using the documentation builder."""
         self.doc_builder.build()
 
+    def build_internal_deps(self) -> list[Path]:
+        """
+        Build the wheels of this app's internal workspace dependencies.
+
+        For every member in the app's internal closure (libraries first), runs
+        that member's own ``clean``, Cython staging and wheel build, so its own
+        ``compiled_modules`` apply, then copies the wheel into this project's
+        ``build/internal_wheels/``.  Not ``dist/``: ``publish`` refuses more
+        than one binary wheel there.
+
+        Each member is built at most once per process: a member already built
+        in this run (as a target of its own or for another app) is reused.
+        Its ``build/compiled/`` tree is what PyInstaller bundles via
+        ``--paths``.
+
+        Returns
+        -------
+        list of Path
+            The collected wheels in ``build/internal_wheels/``.
+        """
+        closure = self.env.internal_closure()
+        if not closure:
+            return []
+
+        logger.info("[bold]Building internal workspace dependencies...[/bold]")
+        dest_dir = self.env.internal_wheels_dir_path
+        safe_empty_dir(dest_dir)
+        collected: list[Path] = []
+        for member in closure:
+            wheel = _BUILT_WHEELS.get(member.path)
+            if wheel is not None and wheel.exists():
+                logger.info(f"  [green]\u25ba[/green] {member.name}: reusing '{wheel.name}'")
+            else:
+                logger.info(f"  [green]\u25ba[/green] {member.name}: building wheel")
+                dep = WindowsBuilder(member.path, verbose=self.env.verbose)
+                dep.clean()
+                dep.compiler.run_cython()
+                wheel = dep.compiler._build_wheel()
+                _BUILT_WHEELS[member.path] = wheel
+            target = dest_dir / wheel.name
+            safe_copy(wheel, target)
+            collected.append(target)
+        logger.info(f"  [green]\u2713[/green] Internal wheels collected in '{dest_dir}'")
+        return collected
+
     def build_exe(self) -> None:
         """
         Run the compilation and bundling step.
@@ -1041,8 +1280,12 @@ class WindowsBuilder(BaseBuilder):
                 ),
             ),
             ("Cleaning build directories", self.clean),
-            (dist_label, self.build_exe),
         ]
+        # Apps of a uv workspace bundle their internal dependencies; libraries
+        # (wheel_only) only build their own wheel.
+        if not is_wheel_only and self.env.internal_closure():
+            steps.append(("Building internal dependencies", self.build_internal_deps))
+        steps.append((dist_label, self.build_exe))
         if is_wheel_only:
             steps.append(("Distributing documentation", self.build_installer))
         else:
@@ -1081,8 +1324,12 @@ class WindowsBuilder(BaseBuilder):
         """
         has_sphinx = self._any_sphinx_docs()
         steps = self._distribution_steps(require_sphinx=has_sphinx)
-        # Insert the documentation step right after clean (index 3).
-        steps.insert(3, ("Building documentation", self.build_docs))
+        # Insert the documentation step right after clean (index 3).  A project
+        # (typically a workspace library) without docs/ simply has no such step.
+        if self.env.docs_dir_path.is_dir():
+            steps.insert(3, ("Building documentation", self.build_docs))
+        else:
+            logger.info(f"No docs/ directory in '{self.env.project_path}'; skipping documentation.")
         self._run_steps(
             steps,
             f"Building {self.env.project_name}...",

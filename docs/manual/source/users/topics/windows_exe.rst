@@ -101,8 +101,15 @@ How the wheel is built
    - declare ``*.pyd`` files as package data so that setuptools includes the
      compiled extensions in the wheel.
 
-3. ``uv build --wheel`` is invoked from ``build/compiled/`` and the resulting
-   ``.whl`` file is written to ``dist/``.
+3. ``uv build --wheel --no-sources`` is invoked from ``build/compiled/`` and
+   the resulting ``.whl`` file is written to ``dist/``.
+
+The files matched by ``[project] license-files`` are copied into
+``build/compiled/`` too, so they end up in the wheel's ``licenses/`` folder.
+The uv-only tables ``tool.uv.sources``, ``tool.uv.workspace`` and
+``tool.uv.index`` are removed from the staged ``pyproject.toml``.  For
+workspace members, and for apps that bundle other members, see
+:ref:`uv_workspaces`.
 
 
 Mode 1: ``pyinstaller``
@@ -156,6 +163,13 @@ set of options tuned for Windows distribution.
     should be named ``hook-<package_name>.py`` (e.g.,
     ``hook-scaldys_template.py``) to be correctly discovered by
     PyInstaller.
+
+**Internal workspace dependencies**
+    In a uv workspace, an app member that depends on other members also
+    gets, for each of them, ``--paths <dep>/build/compiled`` (ahead of its
+    own), ``--collect-submodules <dep_package>``, ``--copy-metadata <dep>``
+    and ``--additional-hooks-dir <dep>/packaging/hooks`` when that folder
+    exists.  See :ref:`uv_workspaces`.
 
 **Icon support**
     If ``<project_name>.ico`` is found in ``[windows] script_dir``, it is
@@ -227,7 +241,8 @@ Requirements
 ------------
 
 - ``.python-version`` at the project root (single source of truth for the
-  Python version).
+  Python version).  A uv workspace member without its own file uses the
+  workspace root's.
 - ``uv.exe`` available on ``PATH`` at build time (it is bundled into the
   installer for end users).
 - Inno Setup installed on the build machine.

@@ -6,6 +6,9 @@ If the file is absent, or a section is missing, all settings fall back to defaul
 so pure-Python projects with no Cython compilation and standard packaging layouts
 require no configuration file at all.
 
+In a uv workspace, the workspace root's ``scaldys-project.toml`` provides
+defaults that the member's file is merged over (see :func:`load_config`).
+
 Example ``scaldys-project.toml``::
 
     [cython]
@@ -149,7 +152,41 @@ class BuildConfig:
     format: FormatConfig = field(default_factory=FormatConfig)
 
 
-def load_config(project_path: Path) -> BuildConfig:
+def _read_toml(config_file: Path) -> dict:
+    """Read *config_file*; an absent file reads as an empty table."""
+    if not config_file.exists():
+        return {}
+    try:
+        with open(config_file, "rb") as f:
+            return tomllib.load(f)
+    except tomllib.TOMLDecodeError as exc:
+        raise RuntimeError(f"{config_file}: malformed TOML — {exc}") from exc
+
+
+def _merge_config(root_data: dict, member_data: dict) -> dict:
+    """
+    Merge a member's configuration over the workspace root defaults.
+
+    Each section is merged key by key: a key set in the member wins, any other
+    key comes from the root.  ``[format]`` is workspace-wide and is always
+    taken from the root.
+    """
+    merged: dict = {}
+    for section in set(root_data) | set(member_data):
+        if section == "format":
+            continue
+        root_section = root_data.get(section, {})
+        member_section = member_data.get(section, {})
+        if isinstance(root_section, dict) and isinstance(member_section, dict):
+            merged[section] = {**root_section, **member_section}
+        else:
+            merged[section] = member_data.get(section, root_section)
+    if "format" in root_data:
+        merged["format"] = root_data["format"]
+    return merged
+
+
+def load_config(project_path: Path, workspace_root: Path | None = None) -> BuildConfig:
     """
     Load build configuration from ``scaldys-project.toml``.
 
@@ -157,6 +194,11 @@ def load_config(project_path: Path) -> BuildConfig:
     ----------
     project_path : Path
         Root directory of the consuming project (where ``scaldys-project.toml`` lives).
+    workspace_root : Path, optional
+        Root of the uv workspace that *project_path* belongs to.  When given
+        and different from *project_path*, the root ``scaldys-project.toml``
+        provides the defaults, the member file is merged over it section by
+        section, and ``[format]`` is read from the root only.
 
     Returns
     -------
@@ -164,14 +206,13 @@ def load_config(project_path: Path) -> BuildConfig:
         Fully populated configuration.  Missing sections fall back to defaults.
     """
     config_file = project_path / "scaldys-project.toml"
-    if not config_file.exists():
-        return BuildConfig()
+    data = _read_toml(config_file)
 
-    try:
-        with open(config_file, "rb") as f:
-            data = tomllib.load(f)
-    except tomllib.TOMLDecodeError as exc:
-        raise RuntimeError(f"{config_file}: malformed TOML — {exc}") from exc
+    if workspace_root is not None and workspace_root.resolve() != project_path.resolve():
+        root_file = workspace_root / "scaldys-project.toml"
+        data = _merge_config(_read_toml(root_file), data)
+        if not config_file.exists():
+            config_file = root_file
 
     cython_data = data.get("cython", {})
     windows_data = data.get("windows", {})

@@ -39,6 +39,12 @@ replaced by underscores.
 
 In ``wheel_only`` mode, none of these files are required.
 
+In a uv workspace, an app member that depends on other members gets their
+wheels staged next to its own in ``wheels/`` (pyruntime mode).  Its online
+``setup_pyruntime.ps1`` must install from that folder with
+``--find-links``, because those libraries are not on any index.  See
+:ref:`uv_workspaces`.
+
 Inno Setup script (``myapp.iss``)
 ----------------------------------
 
@@ -221,7 +227,8 @@ They control how the Python runtime environment is delivered to end users.
     During the build, ``scaldys-project``:
 
     1. Reads the required Python version from ``.python-version`` at the
-       project root.
+       project root (a uv workspace member falls back to the workspace
+       root's file).
     2. Installs that Python version via ``uv python install``.
     3. Creates a virtual environment at ``artifacts/pyruntime/`` and installs
        the project's binary wheel (from ``dist/``, looked up by the

@@ -6,7 +6,8 @@ Invoked as a module by the build system::
     python -P -m scaldys_project.common.compile_runner build_ext --build-lib <path>
 
 Reads the list of modules to compile from ``scaldys-project.toml`` in the current
-working directory (the consuming project's root).  If no modules are configured
+working directory (the consuming project's root), merged over the workspace
+root's ``scaldys-project.toml`` when the project is a uv workspace member.  If no modules are configured
 or ``scaldys-project.toml`` is absent, exits immediately without error — fully
 supporting pure-Python projects that have no Cython compilation step.
 
@@ -17,11 +18,13 @@ supported for this purpose on Windows builds.
 
 import os
 import sys
-import tomllib
 from pathlib import Path
 
 from setuptools import Extension, find_packages, setup
 from setuptools.dist import Distribution
+
+from scaldys_project.common.config import load_config
+from scaldys_project.common.workspace import find_workspace
 
 
 class BinaryDistribution(Distribution):
@@ -33,7 +36,9 @@ class BinaryDistribution(Distribution):
 
 def _load_cython_config() -> tuple[list[str], str]:
     """
-    Read ``compiled_modules`` and ``source_root`` from ``scaldys-project.toml`` in cwd.
+    Read ``compiled_modules`` and ``source_root`` for the project in cwd.
+
+    Uses :func:`load_config`, so workspace root defaults apply to members.
 
     Returns
     -------
@@ -42,16 +47,10 @@ def _load_cython_config() -> tuple[list[str], str]:
     source_root : str
         Source directory relative to project root.  Defaults to ``"src"``.
     """
-    config_file = Path.cwd() / "scaldys-project.toml"
-    if not config_file.exists():
-        return [], "src"
-    with open(config_file, "rb") as f:
-        data = tomllib.load(f)
-    cython_cfg = data.get("cython", {})
-    return (
-        cython_cfg.get("compiled_modules", []),
-        cython_cfg.get("source_root", "src"),
-    )
+    project_path = Path.cwd()
+    workspace = find_workspace(project_path)
+    config = load_config(project_path, workspace.root if workspace else None)
+    return config.cython.compiled_modules, config.cython.source_root
 
 
 def _get_extensions(compiled_modules: list[str], source_root: str) -> list[Extension]:

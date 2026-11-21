@@ -20,6 +20,10 @@ Place ``scaldys-project.toml`` alongside ``pyproject.toml`` in your project root
         src/
         packaging/windows/
 
+In a uv workspace, a ``scaldys-project.toml`` at the workspace root provides
+defaults that each member's file is merged over, and ``[format]`` is read
+from the root only.  See :ref:`uv_workspaces`.
+
 Sections
 ========
 
@@ -158,7 +162,8 @@ distribution options.
            installation directory.  The launcher scripts activate that
            environment.  Use this mode when the application must coexist
            with tools such as Quarto or Jupyter that require a real Python
-           interpreter.  Requires ``.python-version`` at the project root.
+           interpreter.  Requires ``.python-version`` at the project root
+           (or, for a uv workspace member, at the workspace root).
 
        See :ref:`windows_exe` for a full description of each mode.
    * - ``bundle_pyruntime``
@@ -168,7 +173,8 @@ distribution options.
        ``artifacts/pyruntime/`` and passes its path to Inno Setup as
        ``/DPythonRuntimeDir``, enabling an offline installer that requires
        no internet access on the end-user's machine.  Requires
-       ``.python-version`` at the project root and ``uv`` on ``PATH``.
+       ``.python-version`` at the project root (or workspace root) and
+       ``uv`` on ``PATH``.
        See :ref:`windows_installer` — *Online and offline installer modes*.
    * - ``exe_name``
      - ``[project] name``
@@ -203,7 +209,9 @@ Controls target files and directories for Markdown and code formatting.
    * - ``markdown_targets``
      - ``None`` (unconfigured)
      - List of files and directories (relative to project root) to format with
-       ``mdformat``. Specified files are formatted directly; directories are
+       ``mdformat``.  In a uv workspace, ``[format]`` is read from the
+       workspace root's ``scaldys-project.toml`` only, and its paths are
+       relative to the workspace root. Specified files are formatted directly; directories are
        scanned recursively for ``*.md`` files.
 
        When omitted or ``None``, automatic discovery applies (``README.md`` and

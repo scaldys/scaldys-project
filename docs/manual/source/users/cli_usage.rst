@@ -10,6 +10,11 @@ option.  If you have not yet set up your project, start with :ref:`quickstart`.
 the project root by walking up the directory tree from the current working
 directory until a ``pyproject.toml`` file is found.
 
+In a uv workspace, ``build``, ``check``, ``test`` and ``publish`` also accept
+``--package NAME`` / ``-p NAME`` (repeatable) and ``--all-packages`` to choose
+the members to act on, and ``ci`` / ``format`` run at the workspace root.
+See :ref:`uv_workspaces`.
+
 Top-level usage::
 
     scaldys-project [OPTIONS] COMMAND [ARGS]...
@@ -42,8 +47,7 @@ Command tree
     │   ├── format
     │   ├── typecheck
     │   ├── markdown
-    │   ├── doclint
-    │   └── build
+    │   └── doclint
     └── format
         ├── all
         ├── python
@@ -143,8 +147,10 @@ at the start of ``build windows`` and ``build all``, but without triggering
 a build.
 
 The rules that are evaluated depend on the ``deployment_mode`` setting in
-``scaldys-project.toml``.  In ``wheel_only`` mode the Inno Setup script and launcher
-files are not required.
+``scaldys-project.toml``.  In ``wheel_only`` mode the Inno Setup script,
+the launcher files and ``__main__.py`` are not required.  For a uv
+workspace member the version constraints on its internal dependencies are
+checked as well.
 
 Use this command to verify a freshly cloned project, or to diagnose issues
 after a compliance failure during a build.
@@ -162,6 +168,11 @@ For the complete list of rules and what each one requires, see
      - Description
    * - ``--verbose``, ``-v``
      - Enable verbose (DEBUG-level) logging.
+   * - ``--package``, ``-p NAME``
+     - uv workspace only: check this member (repeatable).  See
+       :ref:`cli_targets`.
+   * - ``--all-packages``
+     - uv workspace only: check every member, libraries first.
    * - ``--help``
      - Show command help and exit.
 
@@ -174,7 +185,7 @@ Run the project test suite.
 
 .. code-block:: bash
 
-    scaldys-project test
+    scaldys-project test [OPTIONS]
 
 **What it does**
 
@@ -183,8 +194,33 @@ working directory. The complete command syntax is displayed in the terminal
 output before execution. Exits with the same return code as pytest (``0`` on
 success, non-zero on failure).
 
-This command has no options; pass pytest arguments directly if you need custom
-behaviour (e.g. ``uv run pytest -k my_test``).
+In a uv workspace, each selected member runs its own tests in its own
+environment, from the workspace root::
+
+    uv run --package <member> pytest <member>/tests -v --durations=0 --cov --cov-report=xml
+
+At a virtual workspace root with no member selected, ``uv run pytest ...``
+runs once at the root, using the root ``[tool.pytest.ini_options]
+testpaths``.
+
+Pass pytest arguments directly if you need custom behaviour
+(e.g. ``uv run pytest -k my_test``).
+
+**Options**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Option
+     - Description
+   * - ``--package``, ``-p NAME``
+     - uv workspace only: test this member (repeatable).  See
+       :ref:`cli_targets`.
+   * - ``--all-packages``
+     - uv workspace only: test every member, libraries first.
+   * - ``--help``
+     - Show command help and exit.
 
 ----
 
@@ -205,7 +241,7 @@ in the terminal output:
 
 1. ``uv run ruff check .`` — Python lint
 2. ``uv run ruff format --diff .`` — format check (no rewrite)
-3. ``uv sync && uv run pyright ./src`` — Python type checking
+3. ``uv sync && uv run pyright ./src ./tests`` — Python type checking
 4. ``uv run mdformat --check <targets>`` — Markdown format check
 5. ``uv run sphinx-lint docs/`` — RST documentation lint
 
@@ -213,9 +249,12 @@ If any step fails, the command continues to the next one. After all steps have
 been attempted, ``scaldys-project`` exits with code ``1`` if any failure
 occurred, and displays a summary of the failed steps.
 
-All ``ci`` commands operate on the **current working directory**, not the
-project root discovered by ``pyproject.toml`` walk-up.  Run them from the
-root of the project you want to check.
+All ``ci`` commands run at the **project root**, found by walking up from
+the current directory to the first ``pyproject.toml``, so they give the same
+result from any subfolder.  In a uv workspace they run once at the
+**workspace root**, also when started inside a member; the typecheck and
+doclint steps then cover every member (see ``ci typecheck`` and
+``ci doclint`` below).
 
 ----
 
@@ -228,8 +267,8 @@ Run ruff in lint mode.
 
     scaldys-project ci lint
 
-Executes ``uv run ruff check .`` in the current directory.  Exits with
-ruff's return code.
+Executes ``uv run ruff check .`` at the project (or workspace) root.  Exits
+with ruff's return code.
 
 ----
 
@@ -257,9 +296,18 @@ Run pyright type checking.
 
     scaldys-project ci typecheck
 
-Executes ``uv sync`` followed by ``uv run pyright ./src``.  The ``uv sync``
-step ensures the virtual environment is up to date before pyright inspects
-installed stubs.
+Executes ``uv sync`` followed by ``uv run pyright ./src ./tests``.  The
+``uv sync`` step ensures the virtual environment is up to date before
+pyright inspects installed stubs.
+
+In a uv workspace it runs ``uv sync --all-packages`` instead (a bare
+``uv sync`` in a member would uninstall the other members).  Then:
+
+- if the root ``pyproject.toml`` has a ``[tool.pyright]`` table, it runs
+  ``uv run pyright`` without paths, so that table's ``include`` decides
+  what is checked;
+- otherwise it passes every member's source root and ``tests/`` folder, for
+  example ``uv run pyright packages/app/src packages/app/tests ...``.
 
 ----
 
@@ -278,7 +326,10 @@ mdformat reports which files need formatting and exits non-zero if any file is
 not correctly formatted.  **No files are modified.**
 
 This mirrors the *Markdown format check* step in the GitHub Actions ``ci.yml``
-workflow exactly.  To actually reformat Markdown files, use
+workflow exactly.  The targets come from ``[format]`` in the root
+``scaldys-project.toml``, and a warning is shown when they differ from the
+``mdformat`` arguments in ``.github/workflows/ci.yml`` at the project (or
+workspace) root.  To actually reformat Markdown files, use
 ``scaldys-project format markdown``.  See :ref:`markdown_formatting_guide`
 for details.
 
@@ -293,22 +344,13 @@ Check RST documentation files with sphinx-lint.
 
     scaldys-project ci doclint
 
-Executes ``uv run sphinx-lint docs/`` in the current directory.  Reports RST
+Executes ``uv run sphinx-lint docs/`` at the project root.  Reports RST
 style and syntax issues and exits non-zero if any are found.  No files are
 modified.
 
-----
-
-``ci build``
--------------
-
-Build the project package.
-
-.. code-block:: bash
-
-    scaldys-project ci build
-
-Executes ``uv build``.  Produces a wheel and sdist in ``dist/``.
+In a uv workspace it lints the root ``docs/`` (if present) and the
+``docs/`` folder of every member in one call, for example
+``uv run sphinx-lint docs/ packages/app/docs/``.
 
 ----
 
@@ -327,11 +369,15 @@ distribution.
 Runs compliance and pre-flight checks, then executes the following steps in
 sequence, with a Rich progress bar tracking overall progress:
 
-1. **Documentation** — builds every Sphinx unit under ``docs/``.
-2. **Cython compilation** (if ``compiled_modules`` is non-empty) — compiles
+1. **Documentation** — builds every Sphinx unit under ``docs/``.  Skipped
+   with an info message when the project has no ``docs/`` folder.
+2. **Internal dependencies** (uv workspace apps only) — builds the wheels of
+   the workspace members the app depends on into ``build/internal_wheels/``
+   (see ``build windows`` below).
+3. **Cython compilation** (if ``compiled_modules`` is non-empty) — compiles
    selected modules to ``.pyd`` extension files.
-3. **Windows distribution** — mode-dependent (see ``build windows`` below).
-4. **Packaging** — mode-dependent:
+4. **Windows distribution** — mode-dependent (see ``build windows`` below).
+5. **Packaging** — mode-dependent:
 
    - ``pyinstaller`` / ``pyruntime`` — stages artefacts and runs Inno Setup
      to produce a setup ``.exe`` in ``artifacts/installer/``.
@@ -354,6 +400,11 @@ open file handles can cause intermittent failures during file operations.
      - Description
    * - ``--verbose``, ``-v``
      - Enable verbose (DEBUG-level) logging.
+   * - ``--package``, ``-p NAME``
+     - uv workspace only: act on this member (repeatable).  See
+       :ref:`cli_targets`.
+   * - ``--all-packages``
+     - uv workspace only: act on every member, libraries first.
    * - ``--help``
      - Show command help and exit.
 
@@ -400,6 +451,11 @@ Install it via the ``[docs]`` extra.
      - Description
    * - ``--verbose``, ``-v``
      - Enable verbose (DEBUG-level) logging.
+   * - ``--package``, ``-p NAME``
+     - uv workspace only: act on this member (repeatable).  See
+       :ref:`cli_targets`.
+   * - ``--all-packages``
+     - uv workspace only: act on every member, libraries first.
    * - ``--help``
      - Show command help and exit.
 
@@ -446,6 +502,15 @@ and runs the corresponding distribution pipeline:
 
 For full details on each mode see :ref:`windows_exe`.
 
+**uv workspace apps**: in ``pyinstaller`` and ``pyruntime`` mode, an app
+member that depends on other workspace members first builds their wheels
+(each member once per command run) into ``build/internal_wheels/``.  In
+``pyinstaller`` mode PyInstaller then bundles them (``--paths``,
+``--collect-submodules``, ``--copy-metadata``, their ``packaging/hooks``);
+in ``pyruntime`` mode they are staged into ``artifacts/portable/wheels/``
+and the offline PythonRuntime install finds them with ``--find-links``.
+See :ref:`uv_workspaces`.
+
 **Pre-flight requirements**
 
 - ``pyinstaller`` and ``pyruntime`` modes: Inno Setup (``ISCC.exe``) must be
@@ -463,6 +528,11 @@ For full details on each mode see :ref:`windows_exe`.
      - Description
    * - ``--verbose``, ``-v``
      - Enable verbose (DEBUG-level) logging.
+   * - ``--package``, ``-p NAME``
+     - uv workspace only: act on this member (repeatable).  See
+       :ref:`cli_targets`.
+   * - ``--all-packages``
+     - uv workspace only: act on every member, libraries first.
    * - ``--help``
      - Show command help and exit.
 
@@ -479,8 +549,9 @@ Remove all intermediate and final build artefacts.
 
 **What it does**
 
-Deletes the ``build/`` and ``dist/`` directories in the project root.
-Uses Windows-resilient retry logic to handle locked files.
+Empties the ``build/``, ``dist/`` and ``artifacts/`` directories in the
+project root (in a uv workspace: in each selected member).  Uses
+Windows-resilient retry logic to handle locked files.
 
 **Options**
 
@@ -492,6 +563,11 @@ Uses Windows-resilient retry logic to handle locked files.
      - Description
    * - ``--verbose``, ``-v``
      - Enable verbose (DEBUG-level) logging.
+   * - ``--package``, ``-p NAME``
+     - uv workspace only: act on this member (repeatable).  See
+       :ref:`cli_targets`.
+   * - ``--all-packages``
+     - uv workspace only: act on every member, libraries first.
    * - ``--help``
      - Show command help and exit.
 
@@ -527,6 +603,13 @@ On success, ``uv publish <wheel>`` is invoked to upload the wheel.  The
 ``--test`` flag appends ``--index testpypi`` to the ``uv publish`` call,
 redirecting the upload to Test PyPI.
 
+In a uv workspace the checks above apply to each selected member's own
+``dist/``.  Members are published libraries first, so a library reaches the
+index before the apps that require it.  Members with the
+``Private :: Do Not Upload`` classifier are skipped with a notice.  The
+wheels of internal dependencies collected in ``build/internal_wheels/`` are
+never published from the app.
+
 **Options**
 
 .. list-table::
@@ -537,6 +620,11 @@ redirecting the upload to Test PyPI.
      - Description
    * - ``--test``
      - Publish to `Test PyPI <https://test.pypi.org>`_ instead of PyPI.
+   * - ``--package``, ``-p NAME``
+     - uv workspace only: publish this member (repeatable).  See
+       :ref:`cli_targets`.
+   * - ``--all-packages``
+     - uv workspace only: publish every member, libraries first.
    * - ``--help``
      - Show command help and exit.
 
@@ -572,7 +660,8 @@ Auto-format Python source files with ruff.
 
     scaldys-project format python
 
-Executes ``uv run ruff format .``.  Rewrites any Python file whose
+Executes ``uv run ruff format .`` at the project (or workspace) root.
+Rewrites any Python file whose
 formatting differs from ruff's output.  Equivalent to ``ci format`` but
 with the ``--diff`` flag removed so files are actually rewritten.
 
@@ -591,6 +680,8 @@ Executes ``uv run mdformat <targets>`` on discovered target Markdown files
 (``README.md`` and any MkDocs documentation files in ``docs/``).  mdformat
 rewrites any unformatted files **in place**.  If no target files exist or all
 files are already correctly formatted, the command exits with code ``0``.
+In a uv workspace the targets come from ``[format]`` in the root
+``scaldys-project.toml`` and mdformat runs at the workspace root.
 
 Typical workflow after a ``ci markdown`` failure::
 
@@ -608,14 +699,40 @@ Global behaviour
 Project root discovery
 ^^^^^^^^^^^^^^^^^^^^^^
 
-The ``build``, ``check``, and ``publish`` commands resolve the project root at
-startup by walking up the directory tree from ``cwd`` until a
-``pyproject.toml`` file is found.  You can invoke them from any subdirectory
-of your project.
+The ``build``, ``check``, ``publish``, ``ci`` and ``format`` commands resolve
+the project root at startup by walking up the directory tree from ``cwd``
+until a ``pyproject.toml`` file is found.  You can invoke them from any
+subdirectory of your project.
 
-The ``ci`` and ``test`` commands operate directly on the **current working
-directory** and do not perform project root discovery.  Run them from the root
-of the project you want to check.
+Outside a uv workspace, the ``test`` command runs pytest in the **current
+working directory**.  Run it from the project root.
+
+.. _cli_targets:
+
+uv workspaces: choosing the targets
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When the project root belongs to a uv workspace (a parent ``pyproject.toml``
+with ``[tool.uv.workspace]``), ``build`` (all subcommands), ``check``,
+``test`` and ``publish`` act on one or more *members*:
+
+- ``--package NAME`` / ``-p NAME`` (repeatable) selects members by name;
+- ``--all-packages`` selects every member;
+- with neither, the member containing the current directory is used;
+- at a virtual workspace root, with neither, the command fails (exit code
+  ``2``) and lists the members.
+
+Selected members always run in topological order (libraries before the
+members that depend on them) and the run stops at the first failure.  With
+more than one target each one gets a header line, and a summary table with
+the result per member is printed at the end.
+
+Outside a workspace, ``--package`` and ``--all-packages`` are an error
+(exit code ``2``).
+
+``ci`` and ``format`` do not take these options: they always run once at
+the workspace root.  ``init`` refuses to run inside a workspace.  See
+:ref:`uv_workspaces` for the full guide.
 
 Logging
 ^^^^^^^

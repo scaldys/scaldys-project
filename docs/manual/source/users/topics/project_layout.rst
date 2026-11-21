@@ -9,6 +9,10 @@ This page describes the directory structure your project must follow for
 is written.  For how ``scaldys-project`` locates the project root at runtime,
 see :ref:`cli_usage`.
 
+In a uv workspace, every member follows this layout on its own; only
+``.python-version`` and workspace-wide ``scaldys-project.toml`` defaults can
+live at the workspace root.  See :ref:`uv_workspaces`.
+
 Project name and version
 ========================
 
@@ -43,7 +47,7 @@ The following layout is the recommended structure for a project using
     ├── src/
     │   └── myapp/                  ← Python source packages
     │       ├── __init__.py
-    │       ├── __main__.py         ← application entry point (required)
+    │       ├── __main__.py         ← application entry point (not needed in wheel_only mode)
     │       └── core/
     │           ├── engine.py
     │           └── utils.py
@@ -143,6 +147,7 @@ project root.  All three are safe to delete (use ``build clean``).
             html/               ← multi-page HTML
             singlehtml/         ← single-page HTML
         pyinstaller/            ← PyInstaller work directory (pyinstaller mode only)
+        internal_wheels/        ← wheels of internal workspace dependencies (uv workspace apps only)
 
 ``dist/`` — distribution wheel
 --------------------------------

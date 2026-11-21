@@ -45,6 +45,11 @@ For a quicker local run with terminal coverage output::
 
     uv run pytest --cov=scaldys_project --cov-report=term-missing
 
+Tests marked ``slow`` run a real ``uv build`` in a temporary uv workspace
+(``uv`` must be on ``PATH``).  Skip them with ``uv run pytest -m "not slow"``.
+The ``tmp_workspace`` fixture in ``tests/conftest.py`` creates a virtual
+workspace with a library and an app member for workspace tests.
+
 Linting, Type Checking, and Formatting
 ----------------------------------------
 

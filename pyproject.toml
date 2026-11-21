@@ -1,6 +1,6 @@
 [project]
 name = "scaldys-project"
-version = "0.34.0"
+version = "0.35.0"
 authors = [
   { name="Scaldys", email="scaldys@scaldys.net" },
 ]
@@ -16,6 +16,7 @@ classifiers = [
 ]
 license-files = ["LICEN[CS]E*"]
 dependencies = [
+    "packaging>=26.3",
     "rich>=15.0.0",
     "typer>=0.27.3",
 ]
@@ -74,6 +75,7 @@ exclude = ["artifacts", "build", "dist", ".venv"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["slow: runs real uv builds (deselect with -m \"not slow\")"]
 
 [tool.pyright]
 exclude = [".venv"]

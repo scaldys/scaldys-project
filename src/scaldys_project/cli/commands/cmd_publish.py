@@ -1,25 +1,24 @@
 import logging
 import subprocess
+from pathlib import Path
 
 import typer
 
-from scaldys_project.cli.utils import find_project_root
+from scaldys_project.cli.utils import (
+    AllPackagesOption,
+    PackagesOption,
+    current_workspace,
+    resolve_targets_or_exit,
+    run_for_targets,
+)
 
 logger = logging.getLogger(__name__)
 
 _PURE_PYTHON_SUFFIX = "-none-any.whl"
 
 
-def publish(
-    test: bool = typer.Option(False, "--test", help="Publish to TestPyPI instead of PyPI."),
-) -> None:
-    """Publish the binary wheel from dist/ to PyPI.
-
-    Refuses to publish pure-Python wheels to prevent Cython source code
-    from being exposed on PyPI.  Run 'scaldys-project build all' first to
-    produce a binary wheel with compiled extensions in dist/.
-    """
-    project_root = find_project_root()
+def _publish_one(project_root: Path, test: bool) -> None:
+    """Publish the single binary wheel in *project_root*/dist/."""
     dist_dir = project_root / "dist"
 
     if not dist_dir.exists():
@@ -32,8 +31,7 @@ def publish(
     wheels = list(dist_dir.glob("*.whl"))
     if not wheels:
         logger.error(
-            "[bold red]\u2717 No wheel found in dist/.[/bold red] "
-            "Run 'scaldys-project build all' first."
+            "[bold red]\u2717 No wheel found in dist/.[/bold red] Run 'scaldys-project build all' first."
         )
         raise typer.Exit(1)
 
@@ -69,3 +67,33 @@ def publish(
         raise typer.Exit(result.returncode)
 
     logger.info("[bold green]\u2713 Published successfully.[/bold green]")
+
+
+def publish(
+    test: bool = typer.Option(False, "--test", help="Publish to TestPyPI instead of PyPI."),
+    packages: PackagesOption = None,
+    all_packages: AllPackagesOption = False,
+) -> None:
+    """Publish the binary wheel from dist/ to PyPI.
+
+    Refuses to publish pure-Python wheels to prevent Cython source code
+    from being exposed on PyPI.  Run 'scaldys-project build all' first to
+    produce a binary wheel with compiled extensions in dist/.
+
+    In a uv workspace, members are published libraries first, and members
+    with the 'Private :: Do Not Upload' classifier are skipped.
+    """
+    targets = resolve_targets_or_exit(packages, all_packages)
+    workspace = current_workspace()
+
+    def action(path: Path) -> None:
+        member = workspace.member_at(path) if workspace else None
+        if member is not None and member.private:
+            logger.info(
+                f"[yellow]Skipping {member.name}:[/yellow] it has the "
+                "'Private :: Do Not Upload' classifier."
+            )
+            return
+        _publish_one(path, test)
+
+    run_for_targets(targets, action, title="Publish")

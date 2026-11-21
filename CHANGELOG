@@ -8,6 +8,72 @@
     Docs       for any documentation changes
 
 
+[0.35.0] - 2026-11-21
+---------------------
+
+**Added**:
+    - uv workspace support.  ``build`` (all subcommands), ``check``, ``test``
+      and ``publish`` accept ``--package/-p NAME`` (repeatable) and
+      ``--all-packages``.  Targets run in topological order (libraries
+      first), stop at the first failure, and end with a summary table.
+      Without either option the command acts on the member at the cwd; at a
+      virtual workspace root it fails with the list of members.  Projects
+      outside a workspace behave as before.
+    - Workspace root defaults: a member without its own ``.python-version``
+      uses the root's, and the root ``scaldys-project.toml`` is merged under
+      each member's file, section by section.  ``[format]`` is read from the
+      root only.
+    - Internal workspace dependencies: ``check`` and every build report a
+      version constraint that the dependency's current version does not meet
+      (error) and an internal dependency without a constraint (warning).
+    - ``build all`` / ``build windows`` on an app member with internal
+      dependencies builds their wheels (each member once per run) into
+      ``build/internal_wheels/``.  In ``pyinstaller`` mode they are bundled
+      with ``--paths``, ``--collect-submodules``, ``--copy-metadata`` and
+      their ``packaging/hooks``.  In ``pyruntime`` mode they are staged into
+      ``artifacts/portable/wheels/`` and found with ``--find-links`` by the
+      offline PythonRuntime build.
+    - ``publish`` skips members with the ``Private :: Do Not Upload``
+      classifier.  ``test`` runs ``uv run --package <member> pytest`` per
+      member.  ``ci typecheck`` runs ``uv sync --all-packages`` and uses the
+      root ``[tool.pyright]`` when present.  ``ci doclint`` lints every
+      member's ``docs/``.  ``init`` refuses to run inside a workspace.
+    - ``packaging`` is now an explicit dependency.
+
+**Changed**:
+    - Library members (``deployment_mode = "wheel_only"``) no longer need a
+      ``__main__.py``.
+    - ``build all`` skips the documentation step, with an info message, when
+      the project has no ``docs/`` folder.
+    - The wheel is built with ``uv build --no-sources``, and
+      ``tool.uv.sources``, ``tool.uv.workspace`` and ``tool.uv.index``
+      (including dotted sub-tables and arrays of tables) are removed from
+      the staged ``pyproject.toml``.
+
+**Fixed**:
+    - The files matched by ``[project] license-files`` (and a legacy
+      ``license = { file = ... }``) are now copied into ``build/compiled/``,
+      so they are included in the wheel.  Before, only the readme was copied.
+    - Removing a TOML section from the staged ``pyproject.toml`` stopped
+      early at a continuation line of a multi-line array that started with
+      ``[``.
+    - ``ci`` and ``format`` commands ran in the cwd instead of the project
+      root when started from a subfolder.  They now run at the workspace (or
+      project) root.  ``ci markdown`` also reads ``.github/workflows/ci.yml``
+      there; inside a member the drift check silently did nothing.
+    - The Cython compile runner now uses the same configuration loader as
+      the rest of the build, including workspace root defaults.
+
+**Docs**:
+    - New page ``users/topics/uv_workspaces.rst``: layout, target
+      selection, root defaults, internal dependencies and constraints, app
+      members that bundle libraries, and the root dev group pattern.
+    - Linked from ``configuration.rst``, ``cli_usage.rst``,
+      ``windows_exe.rst``, ``windows_installer.rst``,
+      ``scaldys_project_toml_reference.rst`` and
+      ``compliance_checking.rst``.
+
+
 [0.34.0] - 2026-11-18
 ---------------------
 

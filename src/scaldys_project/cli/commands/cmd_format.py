@@ -1,13 +1,12 @@
 import logging
 import re
 import subprocess
-from pathlib import Path
 
 import typer
 from rich.markup import escape as markup_escape
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 
-from scaldys_project.cli.utils import console, find_project_root
+from scaldys_project.cli.utils import console, workspace_root
 from scaldys_project.common.config import load_config
 from scaldys_project.common.docs import get_markdown_target_files
 
@@ -23,12 +22,12 @@ format_app = typer.Typer(
 
 
 def _run(cmd: list[str], success_codes: frozenset[int] = frozenset({0})) -> None:
-    """Run a subprocess in cwd; raise typer.Exit with its return code on failure.
+    """Run a subprocess at the workspace (or project) root; raise typer.Exit on failure.
 
     success_codes: set of return codes treated as success (default: {0}).
     """
     logger.info(f"  [dim]Command: {' '.join(cmd)}[/dim]")
-    result = subprocess.run(cmd, cwd=Path.cwd(), capture_output=True, text=True, check=False)
+    result = subprocess.run(cmd, cwd=workspace_root(), capture_output=True, text=True, check=False)
     output = (result.stdout + result.stderr).strip()
     lines = [
         f"  {markup_escape(_ANSI_RE.sub('', line))}"
@@ -52,7 +51,7 @@ def format_python() -> None:
 def format_markdown() -> None:
     """Auto-format Markdown files with mdformat (rewrites files in place)."""
     logger.info("[bold]Formatting Markdown files...[/bold]")
-    project_root = find_project_root()
+    project_root = workspace_root()
     config = load_config(project_root)
     target_files = get_markdown_target_files(project_root, config=config.format)
     if not target_files:
