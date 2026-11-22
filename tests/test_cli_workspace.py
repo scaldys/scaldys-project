@@ -1,5 +1,6 @@
 """CLI tests: --package / --all-packages run once per target, libraries first."""
 
+import re
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -178,12 +179,16 @@ def test_ci_typecheck_without_root_pyright_config(tmp_workspace, monkeypatch):
 
 def _summary_rows(output: str) -> list[list[str]]:
     """Return the body rows of the Rich summary table as lists of cell texts."""
+    # Rich draws the header row with "┃" or "│" depending on the terminal
+    # (box substitution for legacy/limited consoles), so accept both.
     rows = []
     for line in output.splitlines():
-        if line.startswith("│"):
-            rows.append([cell.strip() for cell in line.strip("│").split("│")])
-    assert rows and rows[0] == ["Package", "Version", "Result"], output
-    return rows[1:]
+        line = line.strip()
+        if line[:1] in ("│", "┃"):
+            rows.append([cell.strip() for cell in re.split("[│┃]", line.strip("│┃"))])
+    header = ["Package", "Version", "Result"]
+    assert header in rows, output
+    return [row for row in rows if row != header]
 
 
 def test_summary_all_packages_shows_versions(tmp_workspace, monkeypatch):
