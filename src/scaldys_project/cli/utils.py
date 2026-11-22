@@ -1,4 +1,5 @@
 import logging
+import tomllib
 from collections.abc import Callable
 from pathlib import Path
 from typing import Annotated
@@ -111,22 +112,28 @@ def resolve_targets_or_exit(packages: list[str] | None, all_packages: bool) -> l
         raise typer.Exit(2) from exc
 
 
+def _project_version(path: Path) -> str:
+    """Return ``[project] version`` from *path*/pyproject.toml, or ``"-"`` if unavailable."""
+    try:
+        with open(path / "pyproject.toml", "rb") as f:
+            version = tomllib.load(f).get("project", {}).get("version")
+    except (OSError, tomllib.TOMLDecodeError):
+        return "-"
+    return str(version) if version else "-"
+
+
 def run_for_targets(targets: list[Path], action: Callable[[Path], None], *, title: str) -> None:
     """
     Run *action* once per target directory, stopping on the first failure.
 
-    With several targets each one gets a header, and a summary table is
-    printed at the end (also after a failure).  A single target runs exactly
-    as it always did, without header or summary.
+    With several targets each one gets a header.  A summary table is always
+    printed at the end (also after a failure), even for a single target.
     """
-    if len(targets) == 1:
-        action(targets[0])
-        return
-
     results: list[tuple[str, str]] = []
     failure: BaseException | None = None
     for target in targets:
-        console.print(Rule(f"[bold]{title}: {target.name}[/bold]"))
+        if len(targets) > 1:
+            console.print(Rule(f"[bold]{title}: {target.name}[/bold]"))
         try:
             action(target)
         except (Exception, SystemExit, typer.Exit) as exc:  # noqa: BLE001
@@ -143,10 +150,12 @@ def run_for_targets(targets: list[Path], action: Callable[[Path], None], *, titl
     results.extend((t.name, "[dim]not run[/dim]") for t in targets if t.name not in done)
 
     table = Table(title=f"{title} summary")
+    versions = {t.name: _project_version(t) for t in targets}
     table.add_column("Package")
+    table.add_column("Version")
     table.add_column("Result")
     for name, status in results:
-        table.add_row(name, status)
+        table.add_row(name, versions[name], status)
     console.print(table)
 
     if failure is not None:

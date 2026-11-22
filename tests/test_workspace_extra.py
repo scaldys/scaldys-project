@@ -65,17 +65,24 @@ def test_standalone_environment_has_no_member(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-def test_run_for_targets_single_target_runs_plainly(tmp_path, capsys):
-    """One target: the action runs with no header and no summary table."""
+def test_run_for_targets_single_target_has_summary_no_header(tmp_path):
+    """One target: no header, but the summary table is still printed."""
+    (tmp_path / "pyproject.toml").write_text('[project]\nname = "solo"\nversion = "0.1.0"\n')
     calls = []
-    run_for_targets([tmp_path], calls.append, title="Build")
+    with patch("scaldys_project.cli.utils.console.print") as printed:
+        run_for_targets([tmp_path], calls.append, title="Build")
     assert calls == [tmp_path]
-    assert "summary" not in capsys.readouterr().out
+    assert len(printed.call_args_list) == 1  # the table only, no Rule header
+    table = printed.call_args_list[0].args[0]
+    cells = [list(col.cells) for col in table.columns]
+    assert cells == [[tmp_path.name], ["0.1.0"], ["[green]ok[/green]"]]
 
 
 def test_run_for_targets_summary_and_failure(tmp_path):
     """Several targets: stop at the failure, report 'not run', re-raise the error."""
     a, b, c = (tmp_path / n for n in ("alpha", "beta", "gamma"))
+    a.mkdir()
+    (a / "pyproject.toml").write_text('[project]\nname = "alpha"\nversion = "1.2.3"\n')
     calls = []
 
     def action(path: Path) -> None:
@@ -92,7 +99,36 @@ def test_run_for_targets_summary_and_failure(tmp_path):
     table = printed.call_args_list[-1].args[0]
     cells = [list(col.cells) for col in table.columns]
     assert cells[0] == ["alpha", "beta", "gamma"]
-    assert cells[1] == ["[green]ok[/green]", "[red]failed[/red]", "[dim]not run[/dim]"]
+    assert cells[1] == ["1.2.3", "-", "-"]
+    assert cells[2] == ["[green]ok[/green]", "[red]failed[/red]", "[dim]not run[/dim]"]
+
+
+def test_project_version_fallbacks(tmp_path):
+    """Version is '-' without pyproject.toml, with a dynamic version, or invalid TOML."""
+    from scaldys_project.cli.utils import _project_version
+
+    assert _project_version(tmp_path) == "-"
+    (tmp_path / "pyproject.toml").write_text('[project]\nname = "x"\ndynamic = ["version"]\n')
+    assert _project_version(tmp_path) == "-"
+    (tmp_path / "pyproject.toml").write_text("not = [valid")
+    assert _project_version(tmp_path) == "-"
+    (tmp_path / "pyproject.toml").write_text('[project]\nname = "x"\nversion = "2.0"\n')
+    assert _project_version(tmp_path) == "2.0"
+
+
+def test_run_for_targets_single_target_failure_still_summarises(tmp_path):
+    """One failing target: the summary shows 'failed' and the error is re-raised."""
+
+    def action(_: Path) -> None:
+        raise RuntimeError("boom")
+
+    with (
+        patch("scaldys_project.cli.utils.console.print") as printed,
+        pytest.raises(RuntimeError),
+    ):
+        run_for_targets([tmp_path], action, title="Build")
+    table = printed.call_args_list[-1].args[0]
+    assert [list(col.cells) for col in table.columns][2] == ["[red]failed[/red]"]
 
 
 def test_run_for_targets_exit_zero_counts_as_success(tmp_path):

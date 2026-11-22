@@ -86,7 +86,9 @@ options:
 Members always run in *topological order*: a library comes before the
 members that depend on it, whatever order you give on the command line.
 The run stops at the first failure.  With more than one target, each one is
-introduced by a header and a summary table is printed at the end.
+introduced by a header.  A summary table with the package, its version and
+its result is always printed at the end, also for a single target and after
+a failure (see :ref:`cli_summary`).
 
 Without either option:
 

@@ -246,8 +246,9 @@ uv Workspaces
   returns a member's transitive internal dependencies.
 
 The CLI resolves targets with ``resolve_targets()`` and runs them with
-``run_for_targets()``, which stops on the first failure and prints a summary
-table when there is more than one target.
+``run_for_targets()``, which stops on the first failure, prints a header per
+target when there is more than one, and always ends with a summary table
+(package, version read from ``pyproject.toml``, result).
 
 On the build side, ``BaseBuildEnvironment`` exposes ``workspace``,
 ``workspace_root_path`` and ``workspace_member``;

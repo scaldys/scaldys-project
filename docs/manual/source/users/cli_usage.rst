@@ -724,8 +724,8 @@ with ``[tool.uv.workspace]``), ``build`` (all subcommands), ``check``,
 
 Selected members always run in topological order (libraries before the
 members that depend on them) and the run stops at the first failure.  With
-more than one target each one gets a header line, and a summary table with
-the result per member is printed at the end.
+more than one target each one gets a header line.  The run always ends with
+a summary table (see :ref:`cli_summary`).
 
 Outside a workspace, ``--package`` and ``--all-packages`` are an error
 (exit code ``2``).
@@ -733,6 +733,30 @@ Outside a workspace, ``--package`` and ``--all-packages`` are an error
 ``ci`` and ``format`` do not take these options: they always run once at
 the workspace root.  ``init`` refuses to run inside a workspace.  See
 :ref:`uv_workspaces` for the full guide.
+
+.. _cli_summary:
+
+Summary table
+^^^^^^^^^^^^^
+
+``build`` (all subcommands), ``check``, ``test`` and ``publish`` end with a
+summary table listing each target with its version (``[project] version`` in
+its ``pyproject.toml``) and its result.  The table is printed for every run:
+a whole workspace, a single member, or a standalone project.  It is also
+printed after a failure, so you can see which targets succeeded, which one
+failed and which were not run::
+
+          Build summary
+    ┏━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+    ┃ Package ┃ Version ┃ Result  ┃
+    ┡━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+    │ store   │ 1.4.0   │ ok      │
+    │ report  │ 0.9.2   │ failed  │
+    │ app     │ 2.1.0   │ not run │
+    └─────────┴─────────┴─────────┘
+
+The *Package* column shows the project directory name.  *Version* shows
+``-`` when the version cannot be read (for example a dynamic version).
 
 Logging
 ^^^^^^^

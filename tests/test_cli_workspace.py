@@ -169,3 +169,82 @@ def test_ci_typecheck_without_root_pyright_config(tmp_workspace, monkeypatch):
         "packages/wslib/src",
         "packages/wslib/tests",
     ]
+
+
+# ---------------------------------------------------------------------------
+# Summary table (package, version, result)
+# ---------------------------------------------------------------------------
+
+
+def _summary_rows(output: str) -> list[list[str]]:
+    """Return the body rows of the Rich summary table as lists of cell texts."""
+    rows = []
+    for line in output.splitlines():
+        if line.startswith("│"):
+            rows.append([cell.strip() for cell in line.strip("│").split("│")])
+    assert rows and rows[0] == ["Package", "Version", "Result"], output
+    return rows[1:]
+
+
+def test_summary_all_packages_shows_versions(tmp_workspace, monkeypatch):
+    """build all --all-packages: one header per member and a summary with versions."""
+    monkeypatch.chdir(tmp_workspace.root)
+    with patch("scaldys_project.cli.commands.cmd_build.WindowsBuilder"):
+        result = runner.invoke(app, ["build", "all", "--all-packages"])
+    assert result.exit_code == 0, result.output
+    assert "Build: wslib" in result.output
+    assert "Build: wsapp" in result.output
+    assert "Build summary" in result.output
+    assert "Version" in result.output
+    assert _summary_rows(result.output) == [["wslib", "0.1.0", "ok"], ["wsapp", "0.2.0", "ok"]]
+
+
+def test_summary_after_failure_shows_not_run(tmp_workspace, monkeypatch):
+    """A failure still prints the summary: failed member and the ones not run."""
+    monkeypatch.chdir(tmp_workspace.root)
+    with patch("scaldys_project.cli.commands.cmd_build.WindowsBuilder") as builder:
+        builder.return_value.main.side_effect = SystemExit(1)
+        result = runner.invoke(app, ["build", "all", "--all-packages"])
+    assert result.exit_code == 1
+    assert _summary_rows(result.output) == [
+        ["wslib", "0.1.0", "failed"],
+        ["wsapp", "0.2.0", "not run"],
+    ]
+
+
+def test_summary_single_package(tmp_workspace, monkeypatch):
+    """-p NAME (one member): summary table printed, but no per-target header."""
+    monkeypatch.chdir(tmp_workspace.root)
+    with patch("scaldys_project.cli.commands.cmd_build.WindowsBuilder"):
+        result = runner.invoke(app, ["build", "all", "-p", "wsapp"])
+    assert result.exit_code == 0, result.output
+    assert "Build: wsapp" not in result.output
+    assert "Build summary" in result.output
+    assert _summary_rows(result.output) == [["wsapp", "0.2.0", "ok"]]
+
+
+def test_summary_member_at_cwd(tmp_workspace, monkeypatch):
+    """No selection inside a member: summary for that member."""
+    monkeypatch.chdir(tmp_workspace.lib)
+    with patch("scaldys_project.cli.commands.cmd_check.WindowsBuilder") as builder:
+        builder.return_value.env.config.windows.deployment_mode = "wheel_only"
+        result = runner.invoke(app, ["check"])
+    assert result.exit_code == 0, result.output
+    assert "Check summary" in result.output
+    assert _summary_rows(result.output) == [["wslib", "0.1.0", "ok"]]
+
+
+def test_summary_standalone_project(tmp_path, monkeypatch):
+    """A plain uv project (no workspace) also gets the summary table."""
+    project = tmp_path / "solo"
+    project.mkdir()
+    (project / "pyproject.toml").write_text(
+        '[project]\nname = "solo"\nversion = "3.4.5"\n', encoding="utf-8"
+    )
+    monkeypatch.chdir(project)
+    with patch("scaldys_project.cli.commands.cmd_build.WindowsBuilder"):
+        result = runner.invoke(app, ["build", "clean"])
+    assert result.exit_code == 0, result.output
+    assert "Clean: solo" not in result.output
+    assert "Clean summary" in result.output
+    assert _summary_rows(result.output) == [["solo", "3.4.5", "ok"]]

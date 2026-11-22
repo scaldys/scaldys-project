@@ -8,6 +8,24 @@
     Docs       for any documentation changes
 
 
+[0.36.0] - 2026-11-22
+---------------------
+
+**Added**:
+    - The summary table printed at the end of ``build`` (all subcommands),
+      ``check``, ``test`` and ``publish`` has a new *Version* column with
+      each package's ``[project] version`` (``-`` when it cannot be read).
+
+**Changed**:
+    - The summary table is now printed for every run, also for a single
+      workspace member and for a standalone (non-workspace) project.  The
+      per-target header line is still shown only with several targets.
+
+**Docs**:
+    - New "Summary table" section in the CLI reference; the uv workspaces
+      guide and the architecture notes describe the new behaviour.
+
+
 [0.35.0] - 2026-11-21
 ---------------------
 
