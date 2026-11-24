@@ -10,7 +10,7 @@ option.  If you have not yet set up your project, start with :ref:`quickstart`.
 the project root by walking up the directory tree from the current working
 directory until a ``pyproject.toml`` file is found.
 
-In a uv workspace, ``build``, ``check``, ``test`` and ``publish`` also accept
+In a uv workspace, ``build``, ``clean``, ``check``, ``test`` and ``publish`` also accept
 ``--package NAME`` / ``-p NAME`` (repeatable) and ``--all-packages`` to choose
 the members to act on, and ``ci`` / ``format`` run at the workspace root.
 See :ref:`uv_workspaces`.
@@ -39,8 +39,11 @@ Command tree
     ├── build
     │   ├── all
     │   ├── docs
-    │   ├── windows
-    │   └── clean
+    │   └── windows
+    ├── clean
+    │   ├── all
+    │   ├── docs
+    │   └── windows
     ├── ci
     │   ├── all
     │   ├── lint
@@ -538,20 +541,92 @@ See :ref:`uv_workspaces`.
 
 ----
 
-``build clean``
-----------------
+``clean all``
+-------------
 
-Remove all intermediate and final build artefacts.
+Remove all build, distribution and installer artefacts, as well as generated C files.
 
 .. code-block:: bash
 
-    scaldys-project build clean [OPTIONS]
+    scaldys-project clean all [OPTIONS]
 
 **What it does**
 
 Empties the ``build/``, ``dist/`` and ``artifacts/`` directories in the
-project root (in a uv workspace: in each selected member).  Uses
-Windows-resilient retry logic to handle locked files.
+project root (in a uv workspace: in each selected member) and deletes
+all generated ``*.c`` files in ``src/``.  Uses Windows-resilient retry logic
+to handle locked files and OneDrive synchronization.
+
+**Options**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Option
+     - Description
+   * - ``--verbose``, ``-v``
+     - Enable verbose (DEBUG-level) logging.
+   * - ``--package``, ``-p NAME``
+     - uv workspace only: act on this member (repeatable).  See
+       :ref:`cli_targets`.
+   * - ``--all-packages``
+     - uv workspace only: act on every member, libraries first.
+   * - ``--help``
+     - Show command help and exit.
+
+----
+
+``clean docs``
+--------------
+
+Remove documentation build output directories.
+
+.. code-block:: bash
+
+    scaldys-project clean docs [OPTIONS]
+
+**What it does**
+
+Empties the documentation build output directories under ``build/``
+(e.g., ``build/manual``) without touching compiled extensions, wheels,
+or installer artefacts.
+
+**Options**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Option
+     - Description
+   * - ``--verbose``, ``-v``
+     - Enable verbose (DEBUG-level) logging.
+   * - ``--package``, ``-p NAME``
+     - uv workspace only: act on this member (repeatable).  See
+       :ref:`cli_targets`.
+   * - ``--all-packages``
+     - uv workspace only: act on every member, libraries first.
+   * - ``--help``
+     - Show command help and exit.
+
+----
+
+``clean windows``
+-----------------
+
+Remove Windows compilation and distribution artefacts.
+
+.. code-block:: bash
+
+    scaldys-project clean windows [OPTIONS]
+
+**What it does**
+
+Empties ``build/compiled/``, ``build/internal_wheels/``,
+``build/pyinstaller/``, ``dist/`` and ``artifacts/``, and unlinks
+``build/*.spec`` and generated ``src/**/*.c`` files, leaving documentation
+outputs under ``build/`` intact.
 
 **Options**
 
@@ -596,7 +671,7 @@ Before uploading, the command performs the following safety checks in order:
    expose Cython source code on PyPI.  Run ``scaldys-project build all`` first
    to produce a binary (platform-specific) wheel.
 4. **Exactly one binary wheel** — if multiple binary wheels are present,
-   the command exits with code ``1``.  Run ``scaldys-project build clean``
+   the command exits with code ``1``.  Run ``scaldys-project clean all``
    followed by ``build all`` to obtain a clean single-wheel ``dist/``.
 
 On success, ``uv publish <wheel>`` is invoked to upload the wheel.  The
@@ -631,7 +706,7 @@ never published from the app.
 .. note::
    Run ``scaldys-project build all`` before publishing to ensure a fresh
    binary wheel exists in ``dist/``.  If stale wheels have accumulated,
-   run ``scaldys-project build clean`` first.
+   run ``scaldys-project clean all`` first.
 
 ----
 

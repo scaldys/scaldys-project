@@ -8,7 +8,9 @@ consuming project (the directory that contains ``pyproject.toml``)::
     scaldys-project build all       # full build: docs + Windows distribution
     scaldys-project build docs      # documentation only
     scaldys-project build windows   # Windows distribution only (mode-dependent)
-    scaldys-project build clean     # remove build/, dist/ and artifacts/
+    scaldys-project clean all       # remove build/, dist/ and artifacts/
+    scaldys-project clean docs      # remove documentation build output
+    scaldys-project clean windows   # remove Windows build and compilation output
     scaldys-project check           # verify project compliance
     scaldys-project publish         # upload binary wheel from dist/ to PyPI
     scaldys-project publish --test  # upload binary wheel to TestPyPI

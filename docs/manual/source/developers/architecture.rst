@@ -141,8 +141,9 @@ Tracing what happens when ``scaldys-project build all`` is run:
 4. **Individual commands** — ``build docs`` and ``build windows`` each
    instantiate ``WindowsBuilder``, call ``env.pre_flight_checks()`` with
    the specific tool flags they need, and invoke the appropriate step methods
-   directly, bypassing the full pipeline.  ``build clean`` calls
-   ``builder.clean()`` directly.
+   directly, bypassing the full pipeline.  Dedicated ``clean`` commands
+   invoke ``builder.clean_docs()``, ``builder.clean_windows()``, or
+   ``builder.clean_all()`` directly.
 
 
 Configuration Loading

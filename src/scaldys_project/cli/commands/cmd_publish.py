@@ -49,7 +49,7 @@ def _publish_one(project_root: Path, test: bool) -> None:
         names = [w.name for w in binary_wheels]
         logger.error(
             f"[bold red]\u2717 Multiple binary wheels found in dist/:[/bold red] {names}\n"
-            "  Run 'scaldys-project build clean' then 'scaldys-project build all' "
+            "  Run 'scaldys-project clean all' then 'scaldys-project build all' "
             "to get a clean build."
         )
         raise typer.Exit(1)

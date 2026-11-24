@@ -8,6 +8,23 @@
     Docs       for any documentation changes
 
 
+[0.37.0] - 2026-11-24
+---------------------
+
+**Added**:
+    - Dedicated top-level ``clean`` command group with ``all``, ``docs``, and
+      ``windows`` subcommands for granular artifact cleanup across standalone
+      projects and uv workspaces.
+
+**Removed**:
+    - Removed ``scaldys-project build clean`` subcommand in favor of
+      ``scaldys-project clean all``.
+
+**Docs**:
+    - Updated documentation and CLI references across user and developer guides
+      to reflect the new ``clean`` command group and its subcommands.
+
+
 [0.36.0] - 2026-11-22
 ---------------------
 

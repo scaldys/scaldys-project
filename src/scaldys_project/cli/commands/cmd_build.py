@@ -56,17 +56,3 @@ def build_windows(
         WindowsBuilder(path, verbose=verbose).build_distribution(console=console)
 
     run_for_targets(resolve_targets_or_exit(packages, all_packages), action, title="Build windows")
-
-
-@build_app.command("clean")
-def build_clean(
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output."),
-    packages: PackagesOption = None,
-    all_packages: AllPackagesOption = False,
-) -> None:
-    """Remove build/, dist/ and artifacts/ directories."""
-
-    def action(path: Path) -> None:
-        WindowsBuilder(path, verbose=verbose).clean()
-
-    run_for_targets(resolve_targets_or_exit(packages, all_packages), action, title="Clean")

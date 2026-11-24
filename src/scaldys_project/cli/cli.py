@@ -7,6 +7,7 @@ from scaldys_project.cli.commands import (
     cmd_build,
     cmd_check,
     cmd_ci,
+    cmd_clean,
     cmd_format,
     cmd_init,
     cmd_publish,
@@ -25,6 +26,7 @@ app = typer.Typer(help="Scaldys Project", no_args_is_help=True)
 
 app.add_typer(cmd_build.build_app, name="build")
 app.add_typer(cmd_ci.ci_app, name="ci")
+app.add_typer(cmd_clean.clean_app, name="clean")
 app.add_typer(cmd_format.format_app, name="format")
 app.command("check")(cmd_check.check)
 app.command("init")(cmd_init.init)

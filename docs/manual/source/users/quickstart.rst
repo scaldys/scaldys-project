@@ -175,8 +175,12 @@ You can run each stage independently:
     # Build Windows distribution only (mode-dependent, no docs rebuild)
     scaldys-project build windows
 
-    # Remove build/, dist/ and artifacts/ directories
-    scaldys-project build clean
+    # Remove all build/, dist/ and artifacts/ directories
+    scaldys-project clean all
+
+    # Or remove specific build outputs
+    scaldys-project clean docs      # documentation build output only
+    scaldys-project clean windows   # Windows compilation and distribution artifacts only
 
 All commands accept ``--verbose`` / ``-v`` for detailed debug output::
 

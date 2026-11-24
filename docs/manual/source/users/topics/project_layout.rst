@@ -134,7 +134,8 @@ Build output layout
 ===================
 
 ``scaldys-project`` writes all output under three top-level directories in the
-project root.  All three are safe to delete (use ``build clean``).
+project root.  All three are safe to delete (use ``clean all``, ``clean docs``,
+or ``clean windows``).
 
 ``build/`` — intermediate artefacts
 --------------------------------------

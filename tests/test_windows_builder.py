@@ -99,3 +99,100 @@ def test_build_pyruntime_uses_name_from_pyproject(tmp_path):
         ],
     ]
     assert pyruntime_dir.is_dir()
+
+
+# ---------------------------------------------------------------------------
+# Unit tests — clean_docs, clean_windows, clean_all
+# ---------------------------------------------------------------------------
+
+
+def _setup_mock_project(tmp_path: Path):
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "my-app"\nversion = "1.0.0"\n', encoding="utf-8"
+    )
+    (tmp_path / "scaldys-project.toml").write_text(
+        '[windows]\ndeployment_mode = "wheel_only"\n', encoding="utf-8"
+    )
+    # Docs
+    (tmp_path / "docs" / "manual" / "source").mkdir(parents=True)
+    (tmp_path / "docs" / "manual" / "source" / "conf.py").write_text("", encoding="utf-8")
+    (tmp_path / "build" / "manual" / "html").mkdir(parents=True)
+    (tmp_path / "build" / "manual" / "html" / "index.html").write_text("docs", encoding="utf-8")
+
+    # Windows compilation & outputs
+    (tmp_path / "build" / "compiled").mkdir(parents=True)
+    (tmp_path / "build" / "compiled" / "mod.pyd").write_text("binary", encoding="utf-8")
+    (tmp_path / "build" / "internal_wheels").mkdir(parents=True)
+    (tmp_path / "build" / "internal_wheels" / "dep.whl").write_text("wheel", encoding="utf-8")
+    (tmp_path / "build" / "pyinstaller").mkdir(parents=True)
+    (tmp_path / "build" / "pyinstaller" / "out.txt").write_text("cache", encoding="utf-8")
+    (tmp_path / "build" / "app.spec").write_text("spec", encoding="utf-8")
+    (tmp_path / "dist").mkdir(parents=True)
+    (tmp_path / "dist" / "my_app-1.0.0-cp313-cp313-win_amd64.whl").write_text(
+        "whl", encoding="utf-8"
+    )
+    (tmp_path / "artifacts").mkdir(parents=True)
+    (tmp_path / "artifacts" / "setup.exe").write_text("exe", encoding="utf-8")
+    (tmp_path / "src" / "my_app").mkdir(parents=True)
+    (tmp_path / "src" / "my_app" / "mod.c").write_text("c source", encoding="utf-8")
+
+
+def test_clean_docs(tmp_path):
+    """clean_docs empties build/<doc_unit> but preserves windows and dist artifacts."""
+    _setup_mock_project(tmp_path)
+    from scaldys_project.windows.builder import WindowsBuilder
+
+    builder = WindowsBuilder(tmp_path)
+    builder.clean_docs()
+
+    # Docs output cleaned
+    assert not (tmp_path / "build" / "manual" / "html" / "index.html").exists()
+
+    # Windows outputs preserved
+    assert (tmp_path / "build" / "compiled" / "mod.pyd").exists()
+    assert (tmp_path / "build" / "internal_wheels" / "dep.whl").exists()
+    assert (tmp_path / "build" / "pyinstaller" / "out.txt").exists()
+    assert (tmp_path / "build" / "app.spec").exists()
+    assert (tmp_path / "dist" / "my_app-1.0.0-cp313-cp313-win_amd64.whl").exists()
+    assert (tmp_path / "artifacts" / "setup.exe").exists()
+    assert (tmp_path / "src" / "my_app" / "mod.c").exists()
+
+
+def test_clean_windows(tmp_path):
+    """clean_windows empties compiled, dist, artifacts and removes .c files, preserving docs."""
+    _setup_mock_project(tmp_path)
+    from scaldys_project.windows.builder import WindowsBuilder
+
+    builder = WindowsBuilder(tmp_path)
+    builder.clean_windows()
+
+    # Docs preserved
+    assert (tmp_path / "build" / "manual" / "html" / "index.html").exists()
+
+    # Windows outputs removed
+    assert not (tmp_path / "build" / "compiled" / "mod.pyd").exists()
+    assert not (tmp_path / "build" / "internal_wheels" / "dep.whl").exists()
+    assert not (tmp_path / "build" / "pyinstaller" / "out.txt").exists()
+    assert not (tmp_path / "build" / "app.spec").exists()
+    assert not (tmp_path / "dist" / "my_app-1.0.0-cp313-cp313-win_amd64.whl").exists()
+    assert not (tmp_path / "artifacts" / "setup.exe").exists()
+    assert not (tmp_path / "src" / "my_app" / "mod.c").exists()
+
+
+def test_clean_all(tmp_path):
+    """clean_all removes all build, dist, artifacts and .c files."""
+    _setup_mock_project(tmp_path)
+    from scaldys_project.windows.builder import WindowsBuilder
+
+    builder = WindowsBuilder(tmp_path)
+    builder.clean_all()
+
+    # Everything removed
+    assert not (tmp_path / "build" / "manual" / "html" / "index.html").exists()
+    assert not (tmp_path / "build" / "compiled" / "mod.pyd").exists()
+    assert not (tmp_path / "build" / "internal_wheels" / "dep.whl").exists()
+    assert not (tmp_path / "build" / "pyinstaller" / "out.txt").exists()
+    assert not (tmp_path / "build" / "app.spec").exists()
+    assert not (tmp_path / "dist" / "my_app-1.0.0-cp313-cp313-win_amd64.whl").exists()
+    assert not (tmp_path / "artifacts" / "setup.exe").exists()
+    assert not (tmp_path / "src" / "my_app" / "mod.c").exists()

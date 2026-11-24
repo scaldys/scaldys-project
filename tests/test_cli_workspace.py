@@ -16,14 +16,14 @@ def _builder_paths(mock_builder: MagicMock) -> list[Path]:
     return [c.args[0] for c in mock_builder.call_args_list]
 
 
-def test_build_clean_all_packages(tmp_workspace, monkeypatch):
-    """build clean --all-packages creates one builder per member, libraries first."""
+def test_clean_all_packages(tmp_workspace, monkeypatch):
+    """clean all --all-packages creates one builder per member, libraries first."""
     monkeypatch.chdir(tmp_workspace.root)
-    with patch("scaldys_project.cli.commands.cmd_build.WindowsBuilder") as builder:
-        result = runner.invoke(app, ["build", "clean", "--all-packages"])
+    with patch("scaldys_project.cli.commands.cmd_clean.WindowsBuilder") as builder:
+        result = runner.invoke(app, ["clean", "all", "--all-packages"])
     assert result.exit_code == 0, result.output
     assert _builder_paths(builder) == [tmp_workspace.lib, tmp_workspace.app]
-    assert builder.return_value.clean.call_count == 2
+    assert builder.return_value.clean_all.call_count == 2
 
 
 def test_build_all_package_selection_order(tmp_workspace, monkeypatch):
@@ -247,9 +247,9 @@ def test_summary_standalone_project(tmp_path, monkeypatch):
         '[project]\nname = "solo"\nversion = "3.4.5"\n', encoding="utf-8"
     )
     monkeypatch.chdir(project)
-    with patch("scaldys_project.cli.commands.cmd_build.WindowsBuilder"):
-        result = runner.invoke(app, ["build", "clean"])
+    with patch("scaldys_project.cli.commands.cmd_clean.WindowsBuilder"):
+        result = runner.invoke(app, ["clean", "all"])
     assert result.exit_code == 0, result.output
-    assert "Clean: solo" not in result.output
-    assert "Clean summary" in result.output
+    assert "Clean all: solo" not in result.output
+    assert "Clean all summary" in result.output
     assert _summary_rows(result.output) == [["solo", "3.4.5", "ok"]]

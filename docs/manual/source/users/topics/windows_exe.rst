@@ -198,8 +198,8 @@ Build directories
 -----------------
 
 PyInstaller's intermediate working files are written to
-``build/pyinstaller/``.  The ``build clean`` command removes this directory
-along with all other build artefacts.
+``build/pyinstaller/``.  The ``clean windows`` or ``clean all`` commands
+remove this directory along with other build artefacts.
 
 Common issues
 -------------
