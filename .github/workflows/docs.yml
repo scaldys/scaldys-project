@@ -16,10 +16,12 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy-docs:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  # Build and upload in a separate job from the deploy: when deploy-pages runs
+  # right after upload-pages-artifact in the same job, the artifact lookup can
+  # miss the freshly finalized artifact ("No artifacts named github-pages"),
+  # see https://github.com/actions/deploy-pages/issues/451. A separate job also
+  # lets a failed deploy be re-run without uploading a duplicate artifact.
+  build-docs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -35,13 +37,20 @@ jobs:
         run: uv run sphinx-build -b html docs/manual/source build/manual/html
 
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: build/manual/html
 
+  deploy-docs:
+    needs: build-docs
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
